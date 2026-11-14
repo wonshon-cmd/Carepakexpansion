@@ -431,6 +431,29 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
 .spiral .end em{font-style:normal;color:#D2483D}
 @media (max-width:760px){.spiral{grid-template-columns:minmax(0,1fr)}.spiral svg{max-width:340px}}
 @media print{.spiral .nd rect{animation:none}}
+
+/* Growth map */
+.grow{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:clamp(20px,4vw,56px);align-items:center;margin-top:18px}
+.grow svg{width:100%;max-height:52vh;display:block}
+.grow .t rect{fill:#F3F6F8;stroke:#E2EAEE;transition:fill .35s,stroke .35s}
+.grow .t text{font-size:10px;font-weight:600;fill:#9AA8B1;transition:fill .35s}
+.grow .t circle{fill:#D3DDE2;transition:fill .35s,r .35s}
+.grow .t.on rect{fill:#EAF6FC;stroke:#9CCFE6}
+.grow .t.on text{fill:#087FAA}
+.grow .t.on circle{fill:#039EDC}
+.grow .t.now circle{animation:pulse 1.4s ease-in-out infinite}
+.grow .t.home rect{fill:#039EDC;stroke:#039EDC}.grow .t.home text{fill:#fff}.grow .t.home circle{fill:#fff}
+@keyframes pulse{50%{opacity:.35}}
+.phases{display:grid;gap:8px}
+.phz{display:grid;grid-template-columns:72px 1fr auto;gap:12px;align-items:center;text-align:left;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#fff;font:inherit;color:inherit;cursor:pointer;transition:border-color .2s,background .2s}
+.phz:hover{border-color:var(--blue)}
+.phz[aria-pressed="true"]{border-color:var(--blue);background:var(--wash2)}
+.phz .yr{font-family:var(--display);font-weight:500;font-size:22px;letter-spacing:-.4px}
+.phz .lbl{font-size:14px;line-height:1.35}.phz .lbl small{display:block;color:var(--muted);font-size:12.5px}
+.phz .ct{font-family:var(--display);font-weight:500;font-size:26px;color:var(--blue);font-variant-numeric:tabular-nums}
+.phz .ct small{font-family:var(--body);font-size:11px;color:var(--muted);font-weight:500;margin-left:3px}
+@media (max-width:760px){.grow{grid-template-columns:minmax(0,1fr)}}
+@media print{.grow .t.now circle{animation:none}}
 </style>
 </head>
 <body>
@@ -583,12 +606,13 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
   <header class="s-head"><div class="logo" aria-label="Carepak Pharmacy"><span class="word"><span class="par">(</span>Carepak<span class="par">)</span></span><span class="ph">Pharmacy</span></div></header>
   <div class="s-body">
     <p class="eyebrow r">Why it works</p>
-    <h2 class="r">Focused. Monthly. <em>No waste.</em></h2>
+    <h2 class="r">Focused. Monthly. No waste. <em>Not bound by geography.</em></h2>
     <div class="rows r">
       <div><span class="num">01</span><b>Medically complex only</b><span>Chronic, multi-med patients. Nothing else.</span></div>
       <div><span class="num">02</span><b>Monthly cycle</b><span>Fill monthly. Ship monthly. No gaps.</span></div>
       <div><span class="num">03</span><b>No wasted inventory</b><span>Stock what's dispensed. Nothing sits.</span></div>
       <div><span class="num">04</span><b>No workflow breaks</b><span>Predictable for patients and offices.</span></div>
+      <div><span class="num">05</span><b>Not bound geographically</b><span>We ship. No storefront needed. Any patient, any town, in every state we’re licensed.</span></div>
     </div>
   </div>
 </section>
@@ -696,23 +720,25 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
 </section>
 
 <!-- 14 Chat -->
-<section class="slide" data-title="How it runs" data-notes="Press Play. Shows one month of CCM between Carepak and the doctor's office, from consent to a billable month. Fictional patient and doctor.">
+<section class="slide" data-title="How it runs" data-notes="Press Play. Carepak AI reads the patient's fill history and chart and picks what to talk about this month, drafts the care plan, the call guide and the documentation. The pharmacist reviews and performs the CCM call. That is how one pharmacist covers many patients. Fictional patient and doctor.">
   <header class="s-head"><div class="logo" aria-label="Carepak Pharmacy"><span class="word"><span class="par">(</span>Carepak<span class="par">)</span></span><span class="ph">Pharmacy</span></div></header>
   <div class="s-body">
-    <p class="eyebrow r">One month of CCM</p>
-    <h2 class="r">Care, connected. <em>Paid.</em></h2>
+    <p class="eyebrow r">One month of CCM · AI-assisted</p>
+    <h2 class="r">AI tailors the month. <em>Pharmacist performs CCM.</em></h2>
     <div class="demo r">
       <div class="chat">
-        <div class="chat-head"><div><b>Carepak × Dr. Kim’s office</b><small>Illustrative preview · Fictional patient</small></div><span class="chip ok"><span class="d"></span>Secure</span></div>
+        <div class="chat-head"><div><b>Carepak AI + pharmacist × Dr. Kim’s office</b><small>Illustrative preview · Fictional patient</small></div><span class="chip ok"><span class="d"></span>Secure</span></div>
         <div class="chat-body" id="chatBody"><p class="empty">Press play</p></div>
       </div>
       <div>
         <ol class="steps" id="steps">
-          <li><span class="tick">1</span><span>Consent at visit</span></li>
-          <li><span class="tick">2</span><span>Care plan approved</span></li>
-          <li><span class="tick">3</span><span>Monthly call logged</span></li>
-          <li><span class="tick">4</span><span>Practice bills · Carepak paid</span></li>
+          <li><span class="tick">1</span><span>AI picks this month’s topics</span></li>
+          <li><span class="tick">2</span><span>Consent at visit</span></li>
+          <li><span class="tick">3</span><span>Care plan approved</span></li>
+          <li><span class="tick">4</span><span>Call done · AI documents</span></li>
+          <li><span class="tick">5</span><span>Practice bills · Carepak paid</span></li>
         </ol>
+        <p class="fine" style="margin-top:12px">AI prepares and documents. The pharmacist reviews everything and makes the call.</p>
         <div class="btn-row no-print" style="margin-top:16px"><button class="btn" id="playChat">Play <span aria-hidden="true">▶</span></button><button class="btn ghost" id="resetChat">Replay <span aria-hidden="true">↺</span></button></div>
       </div>
     </div>
@@ -760,6 +786,25 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
       <div><b>Doctors</b><span>New revenue. Less work.</span></div>
       <div><b>Carepak</b><span>New revenue. Every service.</span></div>
     </div>
+  </div>
+</section>
+
+<!-- 16b Growth map -->
+<section class="slide" data-title="Where we grow" data-notes="Illustrative growth path. Today we serve NJ, NY, CT and PA. Click each phase. The model is the same in every state: packaged, reconciled medication plus pharmacist-led CCM and BHI. Replace phases and years with your real plan.">
+  <header class="s-head"><div class="logo" aria-label="Carepak Pharmacy"><span class="word"><span class="par">(</span>Carepak<span class="par">)</span></span><span class="ph">Pharmacy</span></div></header>
+  <div class="s-body">
+    <p class="eyebrow r">How Carepak could grow</p>
+    <h2 class="r">Not bound by geography. <em>Same model, every state.</em></h2>
+    <div class="grow r">
+      <svg id="usmap" viewBox="0 0 488 356" role="img" aria-label="Map of US states, each with a dot. Lit dots show states Carepak serves in the selected phase."></svg>
+      <div class="phases" id="phases">
+        <button class="phz" data-p="0" aria-pressed="true"><span class="yr">Today</span><span class="lbl">NJ · NY · CT · PA<small>Home base</small></span><span class="ct">4<small>states</small></span></button>
+        <button class="phz" data-p="1" aria-pressed="false"><span class="yr">2027</span><span class="lbl">Northeast + Mid-Atlantic<small>Neighboring states</small></span><span class="ct">13<small>states</small></span></button>
+        <button class="phz" data-p="2" aria-pressed="false"><span class="yr">2028</span><span class="lbl">East Coast + Midwest<small>Clinic partners</small></span><span class="ct">24<small>states</small></span></button>
+        <button class="phz" data-p="3" aria-pressed="false"><span class="yr">2030</span><span class="lbl">National<small>Every state</small></span><span class="ct">51<small>incl. DC</small></span></button>
+      </div>
+    </div>
+    <p class="fine r">Illustrative growth path · Expansion subject to state pharmacy licensure</p>
   </div>
 </section>
 
@@ -859,21 +904,46 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
   slides.forEach(s=>s.addEventListener('click',e=>{if(e.target.closest('a,button,input,label,output,.chat,.notes'))return;if(String(getSelection()))return;next()}));
   slides.forEach(s=>s.style.cursor='pointer');
 
+
+  // Growth map
+  const T=[['AK',0,0],['ME',10,0],['VT',9,1],['NH',10,1],['WA',0,2],['ID',1,2],['MT',2,2],['ND',3,2],['MN',4,2],['IL',5,2],['WI',6,2],['MI',7,2],['NY',8,2],['RI',9,2],['MA',10,2],
+    ['OR',0,3],['NV',1,3],['WY',2,3],['SD',3,3],['IA',4,3],['IN',5,3],['OH',6,3],['PA',7,3],['NJ',8,3],['CT',9,3],
+    ['CA',0,4],['UT',1,4],['CO',2,4],['NE',3,4],['MO',4,4],['KY',5,4],['WV',6,4],['VA',7,4],['MD',8,4],['DE',9,4],
+    ['AZ',1,5],['NM',2,5],['KS',3,5],['AR',4,5],['TN',5,5],['NC',6,5],['SC',7,5],['DC',8,5],
+    ['OK',3,6],['LA',4,6],['MS',5,6],['AL',6,6],['GA',7,6],['HI',0,7],['TX',3,7],['FL',8,7]];
+  const PH=[['NJ','NY','CT','PA'],['MA','RI','NH','VT','ME','DE','MD','DC','VA'],['OH','MI','IL','IN','WV','NC','SC','GA','FL','KY','TN']];
+  const phaseOf={};PH.forEach((l,i)=>l.forEach(st=>phaseOf[st]=i));
+  const map=$('usmap'),NS='http://www.w3.org/2000/svg',tiles={};
+  T.forEach(([st,c,r])=>{const g=document.createElementNS(NS,'g');g.setAttribute('class','t');const x=c*44+2,y=r*44+2;
+    const rc=document.createElementNS(NS,'rect');rc.setAttribute('x',x);rc.setAttribute('y',y);rc.setAttribute('width',40);rc.setAttribute('height',40);rc.setAttribute('rx',7);
+    const tx=document.createElementNS(NS,'text');tx.setAttribute('x',x+20);tx.setAttribute('y',y+17);tx.setAttribute('text-anchor','middle');tx.textContent=st;
+    const ci=document.createElementNS(NS,'circle');ci.setAttribute('cx',x+20);ci.setAttribute('cy',y+29);ci.setAttribute('r',4.5);
+    g.append(rc,tx,ci);map.append(g);tiles[st]=g});
+  const phb=[...$('phases').querySelectorAll('.phz')];
+  function setPhase(k){phb.forEach((b,i)=>b.setAttribute('aria-pressed',String(i===k)));
+    T.forEach(([st])=>{const ph=st in phaseOf?phaseOf[st]:3,g=tiles[st];g.classList.toggle('on',ph<=k);g.classList.toggle('now',ph===k&&k>0);g.classList.toggle('home',ph===0)})}
+  phb.forEach((b,i)=>b.addEventListener('click',()=>setPhase(i)));setPhase(0);
+
   // Why cards
   const wc=[...$('why').children];
   wc.forEach(c=>c.addEventListener('click',()=>{c.classList.add('on');if(wc.every(x=>x.classList.contains('on')))$('turn').classList.add('show')}));
 
   // Chat
   const lines=[
-    ['ph','Carepak · Pharmacist','Rosa, 87. CHF + diabetes. 11 meds. Eligible for CCM. Consent at Tuesday visit?',0],
+    ['ai','Carepak AI · This month for Rosa','Rosa, 87 · CHF + diabetes · 11 meds · CCM eligible. Topics this month: 1) Furosemide refill 6 days late, so check swelling and weight. 2) Metformin dose changed at last visit. 3) Dizziness reported last month: fall risk.',1],
+    ['ph','Carepak · Pharmacist','Dr. Kim, Rosa is eligible for CCM. Consent at Tuesday visit?',0],
     ['dr','Dr. Kim','Yes. I’ll discuss it with her Tuesday.',0],
-    ['sys','','✓ Consent documented at visit',1],
-    ['ph','Carepak · Pharmacist','Care plan draft sent. Goals, meds, red flags.',0],
-    ['dr','Dr. Kim','Reviewed. Approved.',2],
-    ['ph','Carepak · Pharmacist','Monthly call done. 24 min. Mild ankle swelling. Notes in chart.',0],
-    ['dr','Dr. Kim','Thanks. I’ll adjust her diuretic. Please reinforce.',3],
+    ['sys','','✓ Consent documented at visit',2],
+    ['ai','Carepak AI · Care plan draft','Goals, med list, red flags drafted from her chart and fill history. Ready for pharmacist review.',0],
+    ['ph','Carepak · Pharmacist','Care plan reviewed and sent. Goals, meds, red flags.',0],
+    ['dr','Dr. Kim','Reviewed. Approved.',3],
+    ['ai','Carepak AI · Call guide','Ask: ankle swelling? Daily weight? Missed furosemide doses? Metformin with meals? Any dizziness or falls?',0],
+    ['ph','Carepak · Pharmacist','Monthly call done. 24 min. Mild ankle swelling, weight up 3 lb. Missed 2 furosemide doses.',0],
+    ['ai','Carepak AI · Documentation','Call note and 24-min time log drafted. Flag for doctor: possible fluid retention.',0],
+    ['dr','Dr. Kim','Thanks. I’ll adjust her diuretic. Please reinforce.',4],
     ['sys','','✓ Month closed · 24 min documented',0],
-    ['pay','','99490 billed by practice · Carepak fee per contract',4]
+    ['ai','Carepak AI · Next month','Recheck weight and swelling after diuretic change. Confirm refill on time.',0],
+    ['pay','','99490 billed by practice · Carepak fee per contract',5]
   ];
   let token=0;const wait=ms=>new Promise(r=>setTimeout(r,ms));
   const stepEls=[...$('steps').children];
@@ -904,7 +974,7 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
   function setStep(n){stps.forEach((s,i)=>{s.classList.toggle('done',i<n);s.classList.toggle('on',i===n);s.setAttribute('aria-pressed',i===n)});
     const pct=n/(stps.length-1)*100;const f=$('roadFill');if(matchMedia('(max-width:760px)').matches){f.style.height=pct+'%';f.style.width=''}else{f.style.width=pct+'%';f.style.height=''}}
   stps.forEach((s,i)=>s.addEventListener('click',()=>setStep(i)));setStep(0);
-  addEventListener('beforeprint',()=>{setStep(3);wc.forEach(c=>c.classList.add('on'));$('turn').classList.add('show');if(!$('chatBody').querySelector('.msg')){$('chatBody').innerHTML='';lines.forEach(l=>$('chatBody').append(bubble(l)));markStep(4)}});
+  addEventListener('beforeprint',()=>{setStep(3);wc.forEach(c=>c.classList.add('on'));$('turn').classList.add('show');if(!$('chatBody').querySelector('.msg')){$('chatBody').innerHTML='';lines.forEach(l=>$('chatBody').append(bubble(l)));markStep(5)}});
 })();
 </script>
 </body>
