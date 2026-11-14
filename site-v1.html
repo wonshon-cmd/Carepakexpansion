@@ -1,0 +1,669 @@
+<title>Carepak Pharmacy</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Carepak Pharmacy: medication packaged by the dose, reconciled across every prescriber, and pharmacist-led chronic care management for practices.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: clinical white page, Carepak blue as the single accent, one dark band for the opportunity, deck interactions kept as live demos */
+:root{
+  --bg:#FFFFFF; --surface:#FFFFFF; --soft:#F5FAFD; --ink:#14232D; --muted:#5D6C76; --line:#D9E4E9;
+  --blue:#039EDC; --deep:#087FAA; --wash:#EAF6FC; --ok:#2FA36B; --ok-ink:#1E7A4E; --ok-bg:#EDF8F3;
+  --wait:#8A6100; --wait-bg:#FFF4D6; --wait-line:#F0D58A;
+  --night:#122D3B; --night-card:#183A4B; --night-line:#2B4C5E; --night-ink:#FFFFFF; --night-muted:#B9CFDA; --night-accent:#7FCDEE; --night-chip:#1E4457;
+  --nav-bg:rgba(255,255,255,.92); --shadow:0 6px 22px rgba(20,35,45,.05);
+  --display:"Barlow",Arial,Helvetica,sans-serif; --body:"Inter",Arial,Helvetica,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0D1A21; --surface:#13252F; --soft:#102029; --ink:#E6EFF3; --muted:#93A8B4; --line:#24404F;
+  --blue:#2BB3EA; --deep:#7FCDEE; --wash:#123445; --ok:#3DBB7E; --ok-ink:#7FD9A8; --ok-bg:#12302A;
+  --wait:#F0C766; --wait-bg:#3A2F12; --wait-line:#6B5520;
+  --night:#08141A; --night-card:#112A36; --night-line:#22414F; --night-chip:#16394A;
+  --nav-bg:rgba(13,26,33,.92); --shadow:none; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D1A21; --surface:#13252F; --soft:#102029; --ink:#E6EFF3; --muted:#93A8B4; --line:#24404F;
+  --blue:#2BB3EA; --deep:#7FCDEE; --wash:#123445; --ok:#3DBB7E; --ok-ink:#7FD9A8; --ok-bg:#12302A;
+  --wait:#F0C766; --wait-bg:#3A2F12; --wait-line:#6B5520;
+  --night:#08141A; --night-card:#112A36; --night-line:#22414F; --night-chip:#16394A;
+  --nav-bg:rgba(13,26,33,.92); --shadow:none; color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:76px}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:var(--bg)}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:var(--deep)}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px;border-radius:4px}
+h1,h2,h3{font-family:var(--display);font-weight:500;margin:0;text-wrap:balance}
+p{margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+section{padding-block:clamp(64px,9vw,112px)}
+.band{background:var(--soft);border-block:1px solid var(--line)}
+
+/* Logo */
+.logo{display:inline-flex;flex-direction:column;align-items:flex-end;line-height:1;color:var(--ink);text-decoration:none;flex:none}
+.logo .word{font-family:var(--display);font-weight:600;font-size:25px;letter-spacing:-.7px;white-space:nowrap}
+.logo .par{color:var(--blue);font-weight:400}
+.logo .ph{font-family:var(--display);font-size:10.5px;margin-top:2px;margin-right:12px}
+
+/* Nav */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--nav-bg);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;gap:24px;height:68px}
+.links{display:flex;gap:26px;font-size:14px;font-weight:500}
+.links a{color:var(--ink);text-decoration:none}
+.links a:hover{color:var(--blue)}
+.navr{display:flex;align-items:center;gap:10px}
+.menu{display:none;border:1px solid var(--line);background:var(--surface);border-radius:6px;min-width:44px;min-height:44px;font-size:18px}
+#mnav{border-bottom:1px solid var(--line);background:var(--bg)}
+#mnav .wrap{display:flex;flex-direction:column;gap:4px;padding-block:10px 16px}
+#mnav a{color:var(--ink);text-decoration:none;padding:10px 0;font-weight:500}
+
+/* Type */
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:12px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;color:var(--deep);margin-bottom:16px}
+.eyebrow::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--blue);animation:blink 1.6s ease-in-out infinite}
+@keyframes blink{50%{opacity:.25}}
+h1{font-size:clamp(44px,6.4vw,88px);line-height:.98;letter-spacing:-.035em}
+h2{font-size:clamp(34px,4.4vw,58px);line-height:1.06;letter-spacing:-.03em;max-width:22ch}
+h1 em,h2 em{font-style:normal;color:var(--blue);display:block}
+h3{font-size:clamp(19px,1.6vw,23px);line-height:1.2;letter-spacing:-.01em}
+.lead{font-size:clamp(17px,1.5vw,21px);line-height:1.55;color:var(--muted);max-width:52ch;margin-top:22px}
+.fine{font-size:12.5px;color:var(--muted);margin-top:22px;max-width:100ch}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap}
+.head .lead{max-width:40ch;margin:0}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:14px;min-height:46px;padding:12px 22px;border-radius:6px;border:1px solid var(--blue);background:var(--blue);color:#fff;font-size:14px;font-weight:600;text-decoration:none;transition:transform .2s ease}
+.btn:hover{transform:translateY(-2px)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn:disabled{opacity:.45;cursor:default;transform:none}
+.btns{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+.navr .btn{min-height:42px;padding:10px 18px;font-size:13px}
+
+/* Cards / chips */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:clamp(18px,2vw,28px);box-shadow:var(--shadow);min-width:0}
+.card p{color:var(--muted);font-size:15px;margin-top:6px}
+.num{font-size:12px;font-weight:600;color:var(--deep);letter-spacing:.5px}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--wash);color:var(--deep);border-radius:99px;padding:5px 12px;font-size:12px;font-weight:600}
+.chip.ok{background:var(--ok-bg);color:var(--ok-ink)}
+.chip .d{width:7px;height:7px;border-radius:50%;background:currentColor}
+
+/* SVG paint classes */
+.s-wash{fill:var(--wash)}.s-surf{fill:var(--surface)}.s-blue{fill:var(--blue)}.s-ink{fill:var(--ink)}.s-deep{fill:var(--deep)}
+.k-line{stroke:var(--line)}.k-blue{stroke:var(--blue)}.k-ok{stroke:var(--ok)}
+svg text{font-family:var(--body)}
+
+/* Hero */
+.hero{padding-block:clamp(48px,7vw,96px) clamp(56px,7vw,96px);overflow:hidden}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,.9fr);gap:clamp(28px,5vw,72px);align-items:center}
+.orbit{width:100%;max-width:440px;aspect-ratio:1;margin-inline:auto}
+.orbit svg{width:100%;height:100%;overflow:visible}
+.spin{transform-origin:230px 230px;animation:spin 48s linear infinite}
+.spin.rev{animation-duration:70s;animation-direction:reverse}
+@keyframes spin{to{transform:rotate(360deg)}}
+.trust{border-block:1px solid var(--line)}
+.trust .wrap{display:flex;flex-wrap:wrap;gap:10px 28px;justify-content:center;padding-block:18px;font-size:13.5px;color:var(--muted)}
+.trust span{display:inline-flex;align-items:center;gap:10px}
+.trust span::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--blue)}
+
+/* Poll */
+.choices{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:32px;max-width:900px}
+.choice{min-height:56px;padding:14px 18px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-size:17px;font-weight:500;transition:border-color .2s,background .2s}
+.choice:hover{border-color:var(--blue)}
+.choice[aria-pressed="true"]{border-color:var(--blue);background:var(--wash)}
+.nobody{margin-top:24px;font-family:var(--display);font-weight:500;font-size:clamp(60px,9vw,128px);line-height:.9;letter-spacing:-.04em;color:var(--blue);animation:rise .45s ease both}
+.nobody small{display:block;font-family:var(--body);font-size:clamp(16px,1.4vw,19px);letter-spacing:0;color:var(--muted);margin-top:14px;font-weight:400}
+.prompt{margin-top:18px;color:var(--muted);font-size:14px}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* Big numbers */
+.bigrow{display:grid;grid-template-columns:auto minmax(0,1fr);gap:clamp(24px,5vw,72px);align-items:center;margin-top:28px}
+.big{font-family:var(--display);font-weight:500;line-height:.88;letter-spacing:-.05em;color:var(--blue);font-size:clamp(104px,15vw,220px)}
+.big small{font-size:.45em;letter-spacing:-.02em}
+.side{border-left:2px solid var(--line);padding-left:clamp(16px,2vw,28px);display:grid;gap:16px}
+.side p{font-size:clamp(17px,1.5vw,21px);line-height:1.4}
+.side b{font-weight:600}.side span{color:var(--muted)}
+.pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:36px}
+.who{font-size:12px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;color:var(--deep)}
+.pair .n{font-family:var(--display);font-weight:500;font-size:clamp(46px,5.4vw,80px);letter-spacing:-.03em;line-height:1;margin:14px 0 4px;font-variant-numeric:tabular-nums}
+.pair .n.blue{color:var(--blue)}
+
+/* What we do */
+.trio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(14px,2vw,28px);margin-top:40px}
+.trio .it{text-align:center}
+.trio svg{width:100%;max-width:300px;height:auto;display:block;margin:0 auto 16px}
+.trio p{color:var(--muted);margin-top:4px}
+.rows{display:grid;margin-top:56px;border-top:1px solid var(--line)}
+.rows div{display:grid;grid-template-columns:44px minmax(0,1fr) minmax(0,1.1fr);gap:12px;align-items:baseline;padding:18px 0;border-bottom:1px solid var(--line)}
+.rows b{font-family:var(--display);font-weight:500;font-size:clamp(20px,1.8vw,25px)}
+.rows span:last-child{color:var(--muted)}
+
+/* Story */
+.story{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin-top:36px}
+.story .st{padding-right:18px}
+.story .st::before{content:"";display:block;height:2px;background:var(--line);margin-bottom:14px}
+.story .st:last-child::before{background:var(--blue)}
+.story p{color:var(--muted);font-size:15px;margin-top:4px}
+.love{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:40px}
+.heart{color:var(--blue);font-size:20px;line-height:1}
+.badge{display:inline-flex;align-items:center;gap:10px;margin-top:22px;font-weight:600}
+.badge::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--ok)}
+
+/* Night band */
+.night{background:var(--night);color:var(--night-ink)}
+.night .eyebrow{color:var(--night-accent)}
+.night .lead,.night .fine{color:var(--night-muted)}
+.night h2 em{color:var(--night-accent)}
+.night .chip{background:var(--night-chip);color:#BFE6F7;font-size:13px;padding:7px 14px}
+.night .card{background:var(--night-card);border-color:var(--night-line);box-shadow:none;color:var(--night-ink)}
+.night .card p{color:var(--night-muted)}
+.night .num,.night .c{color:var(--night-accent)}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
+.codes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:40px}
+.c{font-size:12px;font-weight:600;letter-spacing:.5px}
+.amt{font-family:var(--display);font-weight:500;font-size:clamp(36px,3.6vw,52px);letter-spacing:-.03em;line-height:1;margin:12px 0 4px;font-variant-numeric:tabular-nums}
+.amt span{font-size:.4em;letter-spacing:0;color:var(--night-muted);margin-left:4px}
+.codes h3{font-size:17px;margin-top:10px}
+.night .bigrow .big{color:var(--night-accent)}
+.night .side{border-color:var(--night-line)}
+.night .side span{color:var(--night-muted)}
+.split2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(28px,5vw,72px);margin-top:72px;align-items:start}
+
+/* Why cards */
+.why{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:28px}
+.why .card{min-height:140px;display:flex;flex-direction:column;justify-content:center;text-align:left;cursor:pointer;font:inherit}
+.why .q{font-size:13px;font-weight:600;color:var(--muted)}
+.why .a{font-family:var(--display);font-weight:500;font-size:clamp(26px,2.8vw,40px);letter-spacing:-.02em;line-height:1.05;margin-top:8px;color:var(--muted);opacity:.35;transition:opacity .3s,color .3s}
+.why .card.on{border-color:var(--blue)}
+.why .card.on .a{opacity:1;color:var(--ink)}
+.turn{font-family:var(--display);font-size:clamp(24px,2.4vw,34px);letter-spacing:-.02em;line-height:1.15;margin-top:26px;animation:rise .45s ease both}
+.turn em{font-style:normal;color:var(--blue);display:block}
+
+/* Roles */
+.roles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:40px}
+.roles ul{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:8px}
+.roles li{display:flex;gap:10px;align-items:baseline}
+.roles li::before{content:"✓";color:var(--ok);font-weight:600}
+.roles .cp{border-color:var(--blue);background:var(--wash)}
+.roles .pay{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);font-weight:600;color:var(--ink)}
+.roles .cp .pay{color:var(--deep)}
+
+/* Chat demo */
+.demo{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:clamp(18px,3vw,44px);align-items:start;margin-top:36px}
+.chat{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--surface);box-shadow:var(--shadow);display:flex;flex-direction:column;height:480px;min-width:0}
+.chat-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 18px;border-bottom:1px solid var(--line);background:var(--wash)}
+.chat-head b{font-size:14px}
+.chat-head small{display:block;font-size:11.5px;color:var(--muted)}
+.chat-body{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:84%;padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.5;animation:rise .35s ease both}
+.msg small{display:block;font-size:11px;font-weight:600;margin-bottom:2px;color:var(--muted)}
+.msg.ph{background:var(--wash);border-bottom-left-radius:4px;align-self:flex-start}
+.msg.dr{background:var(--soft);border:1px solid var(--line);border-bottom-right-radius:4px;align-self:flex-end}
+.msg.sys{align-self:center;background:var(--ok-bg);color:var(--ok-ink);font-size:12.5px;font-weight:500;border-radius:99px;padding:7px 14px}
+.msg.pay{align-self:center;background:var(--wash);color:var(--deep);font-size:12.5px;font-weight:600;border-radius:99px;padding:7px 14px}
+.typing{align-self:flex-start;display:flex;gap:4px;padding:12px 14px;background:var(--wash);border-radius:14px}
+.typing i{width:6px;height:6px;border-radius:50%;background:var(--deep);opacity:.4;animation:dot 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes dot{50%{opacity:1}}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.steps li{display:grid;grid-template-columns:28px 1fr;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:15px;transition:border-color .3s,background .3s}
+.tick{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:12px;font-weight:600;color:var(--muted);transition:all .3s}
+.steps li.done{border-color:var(--ok);background:var(--ok-bg)}
+.steps li.done .tick{background:var(--ok);border-color:var(--ok);color:#fff}
+
+/* Calculator */
+.calc{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(24px,4vw,64px);align-items:center;margin-top:36px}
+.ctl{display:grid;gap:24px}
+.ctl label{display:flex;justify-content:space-between;align-items:baseline;font-weight:600}
+.ctl output{font-family:var(--display);font-size:30px;font-weight:500;font-variant-numeric:tabular-nums}
+.ctl input[type=range]{width:100%;accent-color:var(--blue);height:44px;margin:0}
+.hint{font-size:13px;color:var(--muted);margin-top:-12px}
+.out{display:grid;gap:12px}
+.out .card{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;padding:18px 22px}
+.out .card span{font-size:14px;color:var(--muted);font-weight:500}
+.out .card b{font-family:var(--display);font-weight:500;font-size:clamp(30px,3.2vw,44px);letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums}
+.out .cp{border-color:var(--blue);background:var(--wash)}
+.out .cp b{color:var(--blue)}
+.plus{font-size:14px;font-weight:600;color:var(--ok-ink);padding-left:4px}
+
+/* Roadmap */
+.road{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:40px}
+.road .bar{position:absolute;left:22px;right:calc(25% - 10px);top:21px;height:2px;background:var(--line)}
+.road .bar i{display:block;height:100%;width:0;background:var(--blue);transition:width .45s ease,height .45s ease}
+.stp{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;background:none;border:0;padding:0 8px 0 0;font:inherit;color:inherit}
+.stp .dot{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--surface);border:1.5px solid var(--line);font-weight:600;color:var(--muted);margin-bottom:12px;transition:all .3s;position:relative;z-index:1}
+.stp b{font-family:var(--display);font-weight:500;font-size:clamp(22px,2vw,29px);line-height:1.1;color:var(--muted);transition:color .3s}
+.stp .sub{font-size:15px;color:var(--muted)}
+.stp .det{margin-top:10px;font-size:14px;line-height:1.45;color:var(--deep);background:var(--wash);border-radius:8px;padding:10px 12px;opacity:.35;transition:opacity .35s}
+.stp.on .dot{background:var(--blue);border-color:var(--blue);color:#fff}
+.stp.done .dot{background:var(--ok);border-color:var(--ok);color:#fff}
+.stp.on b,.stp.done b{color:var(--ink)}
+.stp.on .det,.stp.done .det{opacity:1}
+.wins{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:44px;border-top:1px solid var(--line)}
+.wins div{padding:16px 18px 0 0;display:flex;flex-direction:column;gap:2px}
+.wins b{font-weight:600;color:var(--deep)}
+.wins span{font-family:var(--display);font-size:clamp(18px,1.6vw,22px)}
+
+/* FAQ */
+.faq{max-width:860px;margin:0 auto}
+details{border-top:1px solid var(--line);padding:18px 4px}
+details:last-of-type{border-bottom:1px solid var(--line)}
+summary{cursor:pointer;font-weight:600;display:flex;justify-content:space-between;gap:16px;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font-size:22px;font-weight:400;color:var(--blue);line-height:1}
+details[open] summary::after{content:"−"}
+details p{color:var(--muted);margin-top:12px;max-width:72ch}
+
+/* Contact */
+.cta .wrap{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:clamp(28px,5vw,72px);align-items:center}
+.cta h2{font-size:clamp(40px,5.4vw,76px);max-width:13ch}
+.contact{border-left:2px solid var(--blue);padding-left:20px;line-height:1.8;color:var(--night-muted)}
+.contact strong{color:var(--night-ink);font-weight:600;font-size:18px}
+.copyrow{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:6px}
+.copyrow span{color:var(--night-ink);user-select:all}
+.copy{border:1px solid var(--night-line);background:transparent;color:var(--night-accent);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;min-height:32px}
+.copied{font-size:12px;color:var(--night-accent);min-height:18px}
+footer{border-top:1px solid var(--line)}
+footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;padding-block:28px;font-size:13px;color:var(--muted)}
+
+/* Responsive */
+@media (max-width:1000px){
+  .links{display:none}.menu{display:inline-grid;place-items:center}
+  .codes,.love,.story{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .story{row-gap:22px}
+  .choices{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:760px){
+  .hero .wrap,.bigrow,.pair,.trio,.rows div,.why,.roles,.demo,.calc,.codes,.love,.story,.split2,.wins,.cta .wrap{grid-template-columns:minmax(0,1fr)}
+  .rows div{gap:2px}
+  .orbit{max-width:300px}
+  .navr .btn{display:none}
+  .chat{height:400px}
+  .road{grid-template-columns:minmax(0,1fr);gap:18px}
+  .road .bar{left:21px;right:auto;width:2px;top:22px;bottom:22px;height:auto}
+  .road .bar i{width:100%!important;height:0}
+  .stp{display:grid;grid-template-columns:44px 1fr;column-gap:14px}
+  .stp .dot{grid-row:span 3;margin:0}
+  .stp .det{grid-column:2}
+  .wins div{padding-bottom:12px}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+</style>
+
+<header class="nav">
+  <div class="wrap">
+    <a href="#top" class="logo" aria-label="Carepak Pharmacy home"><span class="word"><span class="par">(</span>Carepak<span class="par">)</span></span><span class="ph">Pharmacy</span></a>
+    <nav class="links" aria-label="Sections">
+      <a href="#problem">The problem</a><a href="#care">What we do</a><a href="#model">Care management</a><a href="#math">The math</a><a href="#plan">The plan</a><a href="#faq">FAQ</a>
+    </nav>
+    <div class="navr">
+      <a class="btn" href="#contact">Start a pilot <span aria-hidden="true">→</span></a>
+      <button class="menu" id="menuBtn" aria-expanded="false" aria-controls="mnav" aria-label="Open menu">☰</button>
+    </div>
+  </div>
+</header>
+<nav id="mnav" hidden aria-label="Sections"><div class="wrap">
+  <a href="#problem">The problem</a><a href="#care">What we do</a><a href="#model">Care management</a><a href="#math">The math</a><a href="#plan">The plan</a><a href="#faq">FAQ</a><a href="#contact">Start a pilot</a>
+</div></nav>
+
+<main id="top">
+
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <p class="eyebrow">Carepak Pharmacy</p>
+      <h1>Pharmacy, built for outcomes. <em>Health and savings.</em></h1>
+      <p class="lead">Medication packaged by the dose and reconciled across every prescriber, for medically complex patients. Built for hospitals, doctors and health plans.</p>
+      <div class="btns"><a class="btn" href="#contact">Start a 90-day pilot <span aria-hidden="true">→</span></a><a class="btn ghost" href="#care">See how it works <span aria-hidden="true">↓</span></a></div>
+    </div>
+    <div class="orbit" role="img" aria-label="The patient at the center, with hospital, doctor, health plan and Carepak around them">
+      <svg viewBox="0 0 460 460" aria-hidden="true">
+        <circle cx="230" cy="230" r="200" fill="none" class="k-line"/>
+        <circle cx="230" cy="230" r="135" fill="none" class="k-line" stroke-dasharray="2 6"/>
+        <g class="spin"><circle cx="230" cy="30" r="5" class="s-blue"/><circle cx="430" cy="230" r="3.5" class="s-blue" opacity=".5"/></g>
+        <g class="spin rev"><circle cx="230" cy="365" r="4" class="s-blue" opacity=".7"/></g>
+        <circle cx="230" cy="230" r="72" class="s-wash k-blue" stroke-width="1.5"/>
+        <g fill="none" class="k-blue" stroke-width="1.6" stroke-linecap="round"><circle cx="230" cy="210" r="13"/><path d="M204 252c4-14 15-21 26-21s22 7 26 21"/></g>
+        <text x="230" y="276" text-anchor="middle" font-size="13" font-weight="600" class="s-ink">Patient</text>
+        <g font-size="12.5" font-weight="500" text-anchor="middle">
+          <rect x="170" y="16" width="120" height="34" rx="17" class="s-surf k-line"/><text x="230" y="38" class="s-ink">Hospital</text>
+          <rect x="334" y="213" width="120" height="34" rx="17" class="s-surf k-line"/><text x="394" y="235" class="s-ink">Doctor</text>
+          <rect x="160" y="410" width="140" height="34" rx="17" class="s-surf k-line"/><text x="230" y="432" class="s-ink">Health plan</text>
+          <rect x="6" y="213" width="124" height="34" rx="17" class="s-surf k-blue"/><text x="68" y="235" font-weight="600" class="s-deep">Carepak</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<div class="trust"><div class="wrap">
+  <span>Strip-packaged by dose time</span><span>Reconciled across every prescriber</span><span>Weekly fill and ship</span><span>Serving NJ · NY · CT · PA</span>
+</div></div>
+
+<section id="problem">
+  <div class="wrap">
+    <p class="eyebrow">The problem</p>
+    <h2>After discharge, <em>who owns the patient?</em></h2>
+    <div class="choices" id="poll" role="group" aria-label="Pick an answer">
+      <button class="choice" aria-pressed="false">Hospital</button>
+      <button class="choice" aria-pressed="false">Doctor</button>
+      <button class="choice" aria-pressed="false">Insurance</button>
+      <button class="choice" aria-pressed="false">Pharmacy</button>
+    </div>
+    <p class="prompt" id="pollPrompt">Pick an answer.</p>
+    <p class="nobody" id="nobody" hidden>Nobody.<small>Everyone touches the patient. No one owns the meds.</small></p>
+
+    <div style="margin-top:88px">
+      <p class="eyebrow">Medically complex · Medicare</p>
+      <h2>Back in the hospital. <em>Within 30 days.</em></h2>
+      <div class="bigrow">
+        <div class="big">20<small>%</small></div>
+        <div class="side">
+          <p><b>1 in 5</b> <span>medically complex patients readmitted</span></p>
+          <p><b>9% of patients</b> <span>(10+ conditions)</span><br><b>50% of readmissions</b></p>
+        </div>
+      </div>
+      <div class="pair">
+        <div class="card"><span class="who">Hospitals</span><div class="n">2,334</div><p>Penalized for readmissions · FY2027</p></div>
+        <div class="card"><span class="who">Insurance</span><div class="n blue">$15,200</div><p>Average cost per readmission</p></div>
+      </div>
+      <p class="fine">Medicare fee-for-service studies · CMS HRRP · AHRQ HCUP (2018). Full sources in the FAQ.</p>
+    </div>
+  </div>
+</section>
+
+<section id="care" class="band">
+  <div class="wrap">
+    <div class="head">
+      <div><p class="eyebrow">What we do</p><h2>One reconciled list. <em>Packaged by the dose.</em></h2></div>
+      <p class="lead">What we do every day for patients on many medications from many prescribers.</p>
+    </div>
+    <div class="trio">
+      <div class="it">
+        <svg viewBox="0 0 240 150" aria-hidden="true">
+          <rect x="6" y="40" width="228" height="70" rx="10" class="s-wash"/>
+          <g class="k-blue s-surf" stroke-width="1.5"><rect x="14" y="48" width="66" height="54" rx="6"/><rect x="87" y="48" width="66" height="54" rx="6"/><rect x="160" y="48" width="66" height="54" rx="6"/></g>
+          <g font-size="9" font-weight="600" text-anchor="middle" class="s-ink"><text x="47" y="62">MON 8 AM</text><text x="120" y="62">MON 1 PM</text><text x="193" y="62">MON 8 PM</text></g>
+          <g class="s-blue"><circle cx="38" cy="82" r="6"/><ellipse cx="56" cy="84" rx="8" ry="4.5"/><circle cx="112" cy="83" r="6"/><circle cx="185" cy="82" r="6"/><ellipse cx="203" cy="85" rx="8" ry="4.5" opacity=".6"/></g>
+        </svg>
+        <h3>Packaged</h3><p>Strip packets by dose time</p>
+      </div>
+      <div class="it">
+        <svg viewBox="0 0 240 150" aria-hidden="true">
+          <rect x="62" y="8" width="116" height="136" rx="8" class="s-surf k-line"/>
+          <rect x="62" y="8" width="116" height="26" rx="8" class="s-wash"/>
+          <text x="120" y="25" text-anchor="middle" font-size="9.5" font-weight="600" class="s-deep">MEDICATION LIST</text>
+          <g class="k-line" stroke-width="5" stroke-linecap="round"><path d="M96 54h66M96 76h58M96 98h66M96 120h50"/></g>
+          <g fill="none" class="k-ok" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M76 54l4 4 7-8M76 76l4 4 7-8M76 98l4 4 7-8M76 120l4 4 7-8"/></g>
+        </svg>
+        <h3>Reconciled</h3><p>Every prescriber. One list.</p>
+      </div>
+      <div class="it">
+        <svg viewBox="0 0 240 150" aria-hidden="true">
+          <rect x="18" y="44" width="70" height="86" rx="7" class="s-surf k-line"/>
+          <g class="k-line" stroke-width="4" stroke-linecap="round"><path d="M32 66h42M32 82h34M32 98h42M32 114h28"/></g>
+          <path d="M98 87h46" class="k-blue" stroke-width="2" stroke-dasharray="4 4"/><path d="M140 80l9 7-9 7" fill="none" class="k-blue" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="190" cy="87" r="38" class="s-wash k-blue" stroke-width="1.5"/>
+          <g fill="none" class="k-blue" stroke-width="1.8" stroke-linecap="round"><circle cx="190" cy="76" r="9"/><path d="M172 106c3-10 10-15 18-15s15 5 18 15"/><path d="M183 92v6a7 7 0 0 0 14 0v-6"/></g>
+          <text x="190" y="144" text-anchor="middle" font-size="11" font-weight="600" class="s-ink">PCP</text>
+        </svg>
+        <h3>Sent to the PCP</h3><p>The doctor sees the true list</p>
+      </div>
+    </div>
+
+    <div class="rows" aria-label="Why it works">
+      <div><span class="num">01</span><b>Medically complex only</b><span>Chronic, multi-med patients. Nothing else.</span></div>
+      <div><span class="num">02</span><b>Weekly cycle</b><span>Fill weekly. Ship weekly. No gaps.</span></div>
+      <div><span class="num">03</span><b>No wasted inventory</b><span>Stock what's dispensed. Nothing sits.</span></div>
+      <div><span class="num">04</span><b>No workflow breaks</b><span>Predictable for patients and offices.</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="story">
+  <div class="wrap">
+    <p class="eyebrow">Why I started</p>
+    <h2>Hi, I’m Joe. <em>Pharmacist.</em></h2>
+    <div class="story">
+      <div class="st"><span class="num">01</span><h3>Pharmacy school</h3><p>Trained to dispense</p></div>
+      <div class="st"><span class="num">02</span><h3>CVS counter</h3><p>Elderly patients. Bags of bottles.</p></div>
+      <div class="st"><span class="num">03</span><h3>Carepak</h3><p>Packaged. Reconciled. Organized.</p></div>
+      <div class="st"><span class="num">04</span><h3>10 years in</h3><p>A second opportunity</p></div>
+    </div>
+    <div class="love">
+      <div class="card"><span class="heart" aria-hidden="true">♥</span><h3>Patients</h3><p>Right med. Right time.</p></div>
+      <div class="card"><span class="heart" aria-hidden="true">♥</span><h3>Doctors</h3><p>One true list. Fewer calls.</p></div>
+      <div class="card"><span class="heart" aria-hidden="true">♥</span><h3>Hospitals</h3><p>Safer discharges.</p></div>
+      <div class="card"><span class="heart" aria-hidden="true">♥</span><h3>Plans</h3><p>Fewer costly returns.</p></div>
+    </div>
+    <p class="badge">Organic growth. Word of mouth.</p>
+  </div>
+</section>
+
+<section id="model" class="night">
+  <div class="wrap">
+    <p class="eyebrow">The opportunity</p>
+    <h2>Pharmacists counsel daily. <em>Paid $0.</em></h2>
+    <div class="tags"><span class="chip">Side effects</span><span class="chip">Refills</span><span class="chip">Symptoms</span><span class="chip">Caregivers</span><span class="chip">Adherence</span></div>
+
+    <div style="margin-top:80px">
+      <p class="eyebrow">Medicare · 2026 national rates</p>
+      <h2>The work already has a code. <em>CCM and BHI.</em></h2>
+      <div class="codes">
+        <div class="card"><span class="c">CCM · 99490</span><div class="amt">$66<span>/mo</span></div><h3>First 20 min</h3><p>Care plan · meds · coordination</p></div>
+        <div class="card"><span class="c">CCM · 99439</span><div class="amt">+$50<span>/mo</span></div><h3>Each extra 20 min</h3><p>Up to 2× per month</p></div>
+        <div class="card"><span class="c">Complex CCM · 99487</span><div class="amt">$144<span>/mo</span></div><h3>First 60 min</h3><p>Higher-complexity patients</p></div>
+        <div class="card"><span class="c">BHI · 99484</span><div class="amt">$57<span>/mo</span></div><h3>20 min</h3><p>Behavioral health check-ins</p></div>
+      </div>
+      <p class="fine">Per patient per month · Rates vary by locality · Includes patient coinsurance</p>
+    </div>
+
+    <div class="split2">
+      <div>
+        <p class="eyebrow">Utilization</p>
+        <h2>The money is there. <em>Almost no one uses it.</em></h2>
+      </div>
+      <div class="bigrow" style="margin-top:0">
+        <div class="big">3.4<small>%</small></div>
+        <div class="side">
+          <p><b>Eligible patients</b> <span>who got CCM</span></p>
+          <p><b>~12,000 doctors</b> <span>billed CCM, out of ~1 million in Medicare</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow">Why</p>
+    <h2>Why don’t doctors <em>use it?</em></h2>
+    <div class="why" id="why">
+      <button class="card" aria-pressed="false"><span class="q">Reason 1 · tap to reveal</span><span class="a">No time.</span></button>
+      <button class="card" aria-pressed="false"><span class="q">Reason 2 · tap to reveal</span><span class="a">Not much money.</span></button>
+    </div>
+    <p class="turn" id="turn" hidden>What if the practice didn’t carry the work? <em>And the pharmacist did what we already do?</em></p>
+
+    <div style="margin-top:88px">
+      <p class="eyebrow">The model</p>
+      <h2>Doctor directs. <em>Pharmacist does the work.</em></h2>
+      <div class="roles">
+        <div class="card"><span class="num">Doctor’s office</span><h3 style="margin-top:6px">Minutes a month</h3>
+          <ul><li>Consent at a visit</li><li>Approves care plan</li><li>Oversight</li></ul>
+          <p class="pay">Practice bills Medicare</p></div>
+        <div class="card cp"><span class="num">Carepak pharmacist</span><h3 style="margin-top:6px">The monthly work</h3>
+          <ul><li>Patient calls</li><li>Care plan drafts</li><li>Time logs and notes</li></ul>
+          <p class="pay">Carepak: contracted service fee</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="month">
+  <div class="wrap">
+    <div class="head">
+      <div><p class="eyebrow">One month of CCM</p><h2>Care, connected. <em>Paid.</em></h2></div>
+      <p class="lead">Press play to watch one month between Carepak and a doctor’s office, from consent to a billable month.</p>
+    </div>
+    <div class="demo">
+      <div class="chat">
+        <div class="chat-head"><div><b>Carepak × Dr. Kim’s office</b><small>Illustrative · Fictional patient and doctor</small></div><span class="chip ok"><span class="d"></span>Secure</span></div>
+        <div class="chat-body" id="chatBody" aria-live="polite"></div>
+      </div>
+      <div>
+        <ol class="steps" id="steps">
+          <li><span class="tick">1</span><span>Consent at visit</span></li>
+          <li><span class="tick">2</span><span>Care plan approved</span></li>
+          <li><span class="tick">3</span><span>Monthly call logged</span></li>
+          <li><span class="tick">4</span><span>Practice bills · Carepak paid</span></li>
+        </ol>
+        <div class="btns" style="margin-top:16px"><button class="btn" id="playChat">Play <span aria-hidden="true">▶</span></button><button class="btn ghost" id="resetChat">Replay <span aria-hidden="true">↺</span></button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="math">
+  <div class="wrap">
+    <p class="eyebrow">Illustrative math</p>
+    <h2>On top of medicine revenue. <em>Every month.</em></h2>
+    <div class="calc">
+      <div class="ctl">
+        <div><label for="pts">Enrolled patients <output id="ptsOut" for="pts">300</output></label><input id="pts" type="range" min="50" max="1000" step="50" value="300"></div>
+        <div><label for="fee">Carepak fee / patient / mo <output id="feeOut" for="fee">$35</output></label><input id="fee" type="range" min="20" max="50" step="5" value="35"></div>
+        <p class="hint">Example fee. The real fee is set by contract at fair market value.</p>
+      </div>
+      <div class="out">
+        <div class="card"><span>Practice bills / year</span><b id="o1">$238,068</b></div>
+        <div class="card cp"><span>Carepak / year</span><b id="o2">$126,000</b></div>
+        <div class="card"><span>Practice keeps / year</span><b id="o3">$112,068</b></div>
+        <p class="plus">+ dispensing revenue, unchanged</p>
+      </div>
+    </div>
+    <p class="fine">99490 only · $66.13 national rate · Excludes 99439, complex CCM and BHI · Not a guarantee</p>
+  </div>
+</section>
+
+<section id="plan" class="band">
+  <div class="wrap">
+    <p class="eyebrow">The plan</p>
+    <h2>One clinic first. <em>Then scale.</em></h2>
+    <div class="road" id="road">
+      <div class="bar"><i id="roadFill"></i></div>
+      <button class="stp on" aria-pressed="true"><span class="dot">1</span><b>Pilot</b><span class="sub">1 mental health clinic</span><span class="det">BHI + CCM · Packaging · 90 days</span></button>
+      <button class="stp" aria-pressed="false"><span class="dot">2</span><b>Prove</b><span class="sub">Measure results</span><span class="det">Adherence · ER visits · Readmits · Revenue</span></button>
+      <button class="stp" aria-pressed="false"><span class="dot">3</span><b>Expand</b><span class="sub">More clinics</span><span class="det">Mental health → Primary care → Specialists</span></button>
+      <button class="stp" aria-pressed="false"><span class="dot">4</span><b>Add DME</b><span class="sub">2027</span><span class="det">Meds, supplies and equipment. One pharmacy.</span></button>
+    </div>
+    <div class="wins">
+      <div><b>Patients</b><span>Better care. One pharmacy.</span></div>
+      <div><b>Doctors</b><span>New revenue. Less work.</span></div>
+      <div><b>Carepak</b><span>New revenue. Every service.</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap faq">
+    <p class="eyebrow">Questions</p>
+    <h2 style="margin-bottom:32px">Guardrails and <em>sources.</em></h2>
+    <details><summary>Who bills Medicare, and who directs care?</summary><p>The billing practitioner directs care and bills. The doctor obtains consent at an initiating visit, approves the care plan, and provides general supervision. Carepak pharmacists do the monthly work as contracted clinical staff.</p></details>
+    <details><summary>How is Carepak paid?</summary><p>Through a contracted service fee set at fair market value. The fee is not tied to prescriptions, and it is separate from dispensing revenue.</p></details>
+    <details><summary>What has to be documented?</summary><p>A care plan is required, and every month needs real, documented clinical minutes. Our time logs and notes go into the chart.</p></details>
+    <details><summary>What compliance review happens before launch?</summary><p>Anti-Kickback and state rules apply. Every arrangement gets legal review before it starts.</p></details>
+    <details><summary>Where do the numbers come from?</summary><p>20.3% readmission: Medicare multiple-chronic-condition cohort, ACG definition (PMC5397355). 10+ conditions = 8.9% of patients and 50.2% of readmissions: Berkowitz &amp; Anderson, J Hosp Med 2013. 2,334 hospitals: CMS HRRP FY2027. $15,200: AHRQ HCUP Statistical Brief #278 (2018). 2026 rates: CMS Physician Fee Schedule, national non-facility. 3.4%: J Am Geriatr Soc 2024 (2019 data). ~12,000 doctors: KFF Health News, 2021 data.</p></details>
+    <p class="fine">All patients and doctors shown in examples are fictional.</p>
+  </div>
+</section>
+
+<section id="contact" class="night cta">
+  <div class="wrap">
+    <div>
+      <p class="eyebrow">Let’s start</p>
+      <h2>Your patients. Your goals. <em>Our support.</em></h2>
+      <p class="lead">One clinic. 90 days. Then scale.</p>
+    </div>
+    <div class="contact">
+      <strong>Carepak Pharmacy</strong><br>
+      105 Challenger Road, Suite 401<br>Ridgefield Park, NJ 07660
+      <div class="copyrow"><span id="phone">1.800.601.7092</span><button class="copy" data-copy="phone">Copy</button></div>
+      <div class="copyrow"><span id="email">contact@carepakpharmacy.com</span><button class="copy" data-copy="email">Copy</button></div>
+      <div class="copyrow"><a href="https://carepakpharmacy.com" style="color:var(--night-accent)">carepakpharmacy.com</a></div>
+      <p class="copied" id="copied" aria-live="polite"></p>
+    </div>
+  </div>
+</section>
+
+</main>
+<footer><div class="wrap"><span><b>Carepak Pharmacy</b> · Serving NJ · NY · CT · PA</span><span>Pharmacy, built for outcomes.</span></div></footer>
+
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Mobile menu
+  $('menuBtn').addEventListener('click',()=>{const m=$('mnav');m.hidden=!m.hidden;$('menuBtn').setAttribute('aria-expanded',String(!m.hidden))});
+  document.querySelectorAll('#mnav a').forEach(a=>a.addEventListener('click',()=>{$('mnav').hidden=true;$('menuBtn').setAttribute('aria-expanded','false')}));
+
+  // Poll
+  const pb=[...$('poll').querySelectorAll('.choice')];
+  pb.forEach(b=>b.addEventListener('click',()=>{pb.forEach(x=>x.setAttribute('aria-pressed',String(x===b)));$('nobody').hidden=false;$('pollPrompt').hidden=true}));
+
+  // Why cards
+  const wc=[...$('why').children];
+  wc.forEach(c=>c.addEventListener('click',()=>{c.classList.add('on');c.setAttribute('aria-pressed','true');if(wc.every(x=>x.classList.contains('on')))$('turn').hidden=false}));
+
+  // Chat demo
+  const lines=[
+    ['ph','Carepak · Pharmacist','Rosa, 87. CHF + diabetes. 11 meds. Eligible for CCM. Consent at Tuesday visit?',0],
+    ['dr','Dr. Kim','Yes. I’ll discuss it with her Tuesday.',0],
+    ['sys','','✓ Consent documented at visit',1],
+    ['ph','Carepak · Pharmacist','Care plan draft sent. Goals, meds, red flags.',0],
+    ['dr','Dr. Kim','Reviewed. Approved.',2],
+    ['ph','Carepak · Pharmacist','Monthly call done. 24 min. Mild ankle swelling. Notes in chart.',0],
+    ['dr','Dr. Kim','Thanks. I’ll adjust her diuretic. Please reinforce.',3],
+    ['sys','','✓ Month closed · 24 min documented',0],
+    ['pay','','99490 billed by practice · Carepak fee per contract',4]
+  ];
+  const stepEls=[...$('steps').children],body=$('chatBody');
+  let token=0;const wait=ms=>new Promise(r=>setTimeout(r,ms));
+  function clearSteps(){stepEls.forEach((s,i)=>{s.classList.remove('done');s.querySelector('.tick').textContent=i+1})}
+  function markStep(n){for(let i=0;i<n;i++){stepEls[i].classList.add('done');stepEls[i].querySelector('.tick').textContent='✓'}}
+  function bubble(l){const d=document.createElement('div');d.className='msg '+l[0];if(l[1]){const s=document.createElement('small');s.textContent=l[1];d.append(s)}d.append(document.createTextNode(l[2]));return d}
+  function showAll(){body.innerHTML='';lines.forEach(l=>body.append(bubble(l)));clearSteps();markStep(4)}
+  async function play(){
+    const t=++token;body.innerHTML='';$('playChat').disabled=true;clearSteps();
+    for(const l of lines){
+      if(t!==token)return;
+      if(!reduce){const ty=document.createElement('div');ty.className='typing';if(l[0]==='dr')ty.style.alignSelf='flex-end';ty.innerHTML='<i></i><i></i><i></i>';body.append(ty);body.scrollTop=body.scrollHeight;await wait(l[0]==='sys'||l[0]==='pay'?400:650);if(t!==token)return;ty.remove()}
+      body.append(bubble(l));body.scrollTop=body.scrollHeight;if(l[3])markStep(l[3]);
+      if(!reduce)await wait(Math.min(1500,450+l[2].length*13));
+    }
+    if(t===token)$('playChat').disabled=false;
+  }
+  $('playChat').addEventListener('click',play);
+  $('resetChat').addEventListener('click',()=>{$('playChat').disabled=false;play()});
+  showAll(); // complete at rest; Play animates it
+
+  // Calculator
+  const RATE=66.13,fmt=n=>'$'+Math.round(n).toLocaleString('en-US');
+  function calc(){const p=+$('pts').value,f=+$('fee').value,bill=p*RATE*12,cp=p*f*12;
+    $('ptsOut').textContent=p;$('feeOut').textContent='$'+f;$('o1').textContent=fmt(bill);$('o2').textContent=fmt(cp);$('o3').textContent=fmt(bill-cp)}
+  $('pts').addEventListener('input',calc);$('fee').addEventListener('input',calc);calc();
+
+  // Roadmap
+  const stps=[...$('road').querySelectorAll('.stp')],mq=matchMedia('(max-width:760px)');
+  let cur=0;
+  function setStep(n){cur=n;stps.forEach((s,i)=>{s.classList.toggle('done',i<n);s.classList.toggle('on',i===n);s.setAttribute('aria-pressed',String(i===n))});
+    const pct=n/(stps.length-1)*100,f=$('roadFill');if(mq.matches){f.style.height=pct+'%';f.style.width=''}else{f.style.width=pct+'%';f.style.height=''}}
+  stps.forEach((s,i)=>s.addEventListener('click',()=>setStep(i)));
+  mq.addEventListener&&mq.addEventListener('change',()=>setStep(cur));setStep(0);
+
+  // Copy contact
+  document.querySelectorAll('[data-copy]').forEach(b=>b.addEventListener('click',()=>{
+    const el=$(b.dataset.copy),txt=el.textContent;
+    const sel=()=>{const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);$('copied').textContent='Selected. Press Ctrl+C or ⌘C to copy.'};
+    try{navigator.clipboard.writeText(txt).then(()=>{$('copied').textContent='Copied '+txt},sel)}catch(e){sel()}
+  }));
+})();
+</script>
