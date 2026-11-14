@@ -334,7 +334,7 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
 .codes .card h3{font-size:17px;margin-top:10px}
 .codes .tag{display:inline-block;margin-top:10px}
 
-.why{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:28px;max-width:980px}
+.why{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:28px;max-width:1100px}
 .why .card{min-height:150px;display:flex;flex-direction:column;justify-content:center;cursor:pointer;text-align:left;font:inherit;color:inherit}
 .why .card .q{font-size:13px;font-weight:600;color:var(--muted)}
 .why .card .a{font-family:var(--display);font-weight:500;font-size:clamp(28px,3vw,44px);letter-spacing:-1px;line-height:1.05;margin-top:8px;opacity:0;transition:opacity .35s ease}
@@ -446,6 +446,15 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
 .grow .cnt .big{font-size:clamp(90px,10vw,150px);font-variant-numeric:tabular-nums}
 .grow .cnt p{font-size:16px;color:var(--muted);margin:6px 0 0}
 @media (max-width:760px){.grow{grid-template-columns:minmax(0,1fr)}}
+
+.gchart{width:100%;height:auto;max-height:50vh;display:block;overflow:visible}
+.gchart text{font-family:var(--body)}
+.gb{transform-box:fill-box;transform-origin:bottom;transform:scaleY(0)}
+.active .gb{animation:gb .7s cubic-bezier(.2,.7,.2,1) both}
+@keyframes gb{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@media (prefers-reduced-motion:reduce){.gb{transform:none}}
+@media print{.gb{transform:none}}
+@media (max-width:760px){.why{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
 <body>
@@ -543,15 +552,17 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
     <div class="trio r">
       <div class="it">
         <svg viewBox="0 0 240 150" aria-hidden="true">
-          <rect x="6" y="40" width="228" height="70" rx="10" fill="#EAF6FC"/>
+          <rect x="6" y="26" width="228" height="106" rx="10" fill="#EAF6FC"/>
           <g stroke="#039EDC" stroke-width="1.5" fill="#fff">
-            <rect x="14" y="48" width="66" height="54" rx="6"/><rect x="87" y="48" width="66" height="54" rx="6"/><rect x="160" y="48" width="66" height="54" rx="6"/>
+            <rect x="14" y="34" width="66" height="90" rx="6"/><rect x="87" y="34" width="66" height="90" rx="6"/><rect x="160" y="34" width="66" height="90" rx="6"/>
           </g>
-          <g stroke="#039EDC" stroke-width="1" stroke-dasharray="3 3"><path d="M83.5 46v58M156.5 46v58"/></g>
-          <g fill="#14232D" font-size="9" font-weight="600" text-anchor="middle" font-family="Inter,Arial"><text x="47" y="62">MON 8 AM</text><text x="120" y="62">MON 1 PM</text><text x="193" y="62">MON 8 PM</text></g>
-          <g fill="#039EDC"><circle cx="38" cy="82" r="6"/><ellipse cx="56" cy="84" rx="8" ry="4.5"/><circle cx="112" cy="83" r="6"/><circle cx="185" cy="82" r="6"/><ellipse cx="203" cy="85" rx="8" ry="4.5" opacity=".6"/></g>
+          <g stroke="#039EDC" stroke-width="1" stroke-dasharray="3 3"><path d="M83.5 32v94M156.5 32v94"/></g>
+          <g text-anchor="middle" font-family="Inter,Arial"><g fill="#63717B" font-size="6.5" font-weight="600" letter-spacing=".6"><text x="47" y="47">MONDAY</text><text x="120" y="47">MONDAY</text><text x="193" y="47">MONDAY</text></g>
+          <g fill="#14232D" font-size="8.5" font-weight="600"><text x="47" y="58">Breakfast</text><text x="120" y="58">Lunch</text><text x="193" y="58">Dinner</text></g>
+          <g fill="#087FAA" font-size="7.5" font-weight="600"><text x="47" y="116">8 meds</text><text x="120" y="116">3 meds</text><text x="193" y="116">5 meds</text></g></g>
+          <g><circle cx="27" cy="80" r="4.6" fill="#039EDC"/><ellipse cx="39" cy="80" rx="5.5" ry="3.4" fill="#F3B547"/><circle cx="51" cy="80" r="4.6" fill="#087FAA"/><ellipse cx="63" cy="80" rx="5.5" ry="3.4" fill="#E58A7B"/><circle cx="27" cy="96" r="4.6" fill="#7FCDEE"/><ellipse cx="39" cy="96" rx="5.5" ry="3.4" fill="#FFFFFF" stroke="#9CCFE6"/><circle cx="51" cy="96" r="4.6" fill="#2FA36B"/><ellipse cx="63" cy="96" rx="5.5" ry="3.4" fill="#B9A6E0"/><circle cx="106" cy="88" r="4.6" fill="#087FAA"/><ellipse cx="120" cy="88" rx="5.5" ry="3.4" fill="#E58A7B"/><circle cx="134" cy="88" r="4.6" fill="#7FCDEE"/><ellipse cx="181" cy="80" rx="5.5" ry="3.4" fill="#FFFFFF" stroke="#9CCFE6"/><circle cx="193" cy="80" r="4.6" fill="#2FA36B"/><ellipse cx="205" cy="80" rx="5.5" ry="3.4" fill="#B9A6E0"/><circle cx="187" cy="96" r="4.6" fill="#039EDC"/><ellipse cx="199" cy="96" rx="5.5" ry="3.4" fill="#F3B547"/></g>
         </svg>
-        <h3>Packaged</h3><p>Strip packets by dose time</p>
+        <h3>Packaged by the dose</h3><p>Monday breakfast: 8 meds in one packet. Then lunch, then dinner.</p>
       </div>
       <div class="it">
         <svg viewBox="0 0 240 150" aria-hidden="true">
@@ -572,7 +583,7 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
           <g fill="none" stroke="#039EDC" stroke-width="1.8" stroke-linecap="round"><circle cx="190" cy="76" r="9"/><path d="M172 106c3-10 10-15 18-15s15 5 18 15"/><path d="M183 92v6a7 7 0 0 0 14 0v-6"/></g>
           <text x="190" y="144" text-anchor="middle" font-size="11" font-weight="600" fill="#14232D" font-family="Inter,Arial">PCP</text>
         </svg>
-        <h3>Sent to PCP</h3><p>Doctor sees the truth</p>
+        <h3>Sent to the PCP</h3><p>Primary care physicians love it. One true list.</p>
       </div>
     </div>
   </div>
@@ -590,6 +601,24 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
       <div class="st"><span class="num">03</span><h3>Carepak</h3><p>Packaged. Reconciled. Organized.</p></div>
       <div class="st"><span class="num">04</span><h3>10 years in</h3><p>A second opportunity</p></div>
     </div>
+  </div>
+</section>
+
+<!-- 8b Growth -->
+<section class="slide" data-title="Carepak growth" data-notes="Ten years of growth, 2016 to 2026, all organic, by word of mouth. SAMPLE NUMBERS: replace with real patients served per year before presenting.">
+  <header class="s-head"><div class="logo" aria-label="Carepak Pharmacy"><span class="word"><span class="par">(</span>Carepak<span class="par">)</span></span><span class="ph">Pharmacy</span></div></header>
+  <div class="s-body">
+    <p class="eyebrow r">Carepak growth · 2016 – 2026</p>
+    <h2 class="r">Ten years. <em>Organic growth.</em></h2>
+    <div class="r" style="margin-top:22px;max-width:900px">
+      <svg class="gchart" viewBox="0 0 640 280" role="img" aria-label="Bar chart of patients served per year, 2016 to 2026, rising every year">
+        <line x1="50" x2="636" y1="250.0" y2="250.0" stroke="#E6EDF0"/><text x="44" y="254.0" text-anchor="end" font-size="10" fill="#9AA8B1">0</text><line x1="50" x2="636" y1="208.0" y2="208.0" stroke="#E6EDF0"/><text x="44" y="212.0" text-anchor="end" font-size="10" fill="#9AA8B1">500</text><line x1="50" x2="636" y1="166.0" y2="166.0" stroke="#E6EDF0"/><text x="44" y="170.0" text-anchor="end" font-size="10" fill="#9AA8B1">1,000</text><line x1="50" x2="636" y1="124.0" y2="124.0" stroke="#E6EDF0"/><text x="44" y="128.0" text-anchor="end" font-size="10" fill="#9AA8B1">1,500</text><line x1="50" x2="636" y1="82.0" y2="82.0" stroke="#E6EDF0"/><text x="44" y="86.0" text-anchor="end" font-size="10" fill="#9AA8B1">2,000</text><line x1="50" x2="636" y1="40.0" y2="40.0" stroke="#E6EDF0"/><text x="44" y="44.0" text-anchor="end" font-size="10" fill="#9AA8B1">2,500</text>
+        <rect class="gb" style="animation-delay:0.00s" x="58" y="245.8" width="40" height="4.2" rx="4" fill="#9CCFE6"/><rect class="gb" style="animation-delay:0.08s" x="111" y="239.9" width="40" height="10.1" rx="4" fill="#9CCFE6"/><rect class="gb" style="animation-delay:0.16s" x="164" y="230.7" width="40" height="19.3" rx="4" fill="#9CCFE6"/><rect class="gb" style="animation-delay:0.24s" x="217" y="218.1" width="40" height="31.9" rx="4" fill="#9CCFE6"/><rect class="gb" style="animation-delay:0.32s" x="270" y="203.0" width="40" height="47.0" rx="4" fill="#9CCFE6"/><rect class="gb" style="animation-delay:0.40s" x="323" y="184.5" width="40" height="65.5" rx="4" fill="#9CCFE6"/><rect class="gb" style="animation-delay:0.48s" x="376" y="166.0" width="40" height="84.0" rx="4" fill="#9CCFE6"/><rect class="gb" style="animation-delay:0.56s" x="429" y="145.0" width="40" height="105.0" rx="4" fill="#9CCFE6"/><rect class="gb" style="animation-delay:0.64s" x="482" y="124.0" width="40" height="126.0" rx="4" fill="#9CCFE6"/><rect class="gb" style="animation-delay:0.72s" x="535" y="98.8" width="40" height="151.2" rx="4" fill="#9CCFE6"/><rect class="gb" style="animation-delay:0.80s" x="588" y="73.6" width="40" height="176.4" rx="4" fill="#039EDC"/>
+        <text x="78.0" y="238.8" text-anchor="middle" font-size="11" font-weight="600" fill="#63717B">50</text><text x="78.0" y="268" text-anchor="middle" font-size="11" fill="#63717B">2016</text><text x="131.0" y="232.9" text-anchor="middle" font-size="11" font-weight="600" fill="#63717B">120</text><text x="131.0" y="268" text-anchor="middle" font-size="11" fill="#63717B">2017</text><text x="184.0" y="223.7" text-anchor="middle" font-size="11" font-weight="600" fill="#63717B">230</text><text x="184.0" y="268" text-anchor="middle" font-size="11" fill="#63717B">2018</text><text x="237.0" y="211.1" text-anchor="middle" font-size="11" font-weight="600" fill="#63717B">380</text><text x="237.0" y="268" text-anchor="middle" font-size="11" fill="#63717B">2019</text><text x="290.0" y="196.0" text-anchor="middle" font-size="11" font-weight="600" fill="#63717B">560</text><text x="290.0" y="268" text-anchor="middle" font-size="11" fill="#63717B">2020</text><text x="343.0" y="177.5" text-anchor="middle" font-size="11" font-weight="600" fill="#63717B">780</text><text x="343.0" y="268" text-anchor="middle" font-size="11" fill="#63717B">2021</text><text x="396.0" y="159.0" text-anchor="middle" font-size="11" font-weight="600" fill="#63717B">1,000</text><text x="396.0" y="268" text-anchor="middle" font-size="11" fill="#63717B">2022</text><text x="449.0" y="138.0" text-anchor="middle" font-size="11" font-weight="600" fill="#63717B">1,250</text><text x="449.0" y="268" text-anchor="middle" font-size="11" fill="#63717B">2023</text><text x="502.0" y="117.0" text-anchor="middle" font-size="11" font-weight="600" fill="#63717B">1,500</text><text x="502.0" y="268" text-anchor="middle" font-size="11" fill="#63717B">2024</text><text x="555.0" y="91.8" text-anchor="middle" font-size="11" font-weight="600" fill="#63717B">1,800</text><text x="555.0" y="268" text-anchor="middle" font-size="11" fill="#63717B">2025</text><text x="608.0" y="66.6" text-anchor="middle" font-size="11" font-weight="600" fill="#087FAA">2,100</text><text x="608.0" y="268" text-anchor="middle" font-size="11" fill="#63717B">2026</text>
+        <text x="50" y="22" font-size="11" font-weight="600" fill="#63717B">Patients served per year</text>
+      </svg>
+    </div>
+    <p class="r" style="margin-top:8px"><span class="label-ill">Sample numbers · replace with real data</span></p>
   </div>
 </section>
 
@@ -689,6 +718,7 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
     <div class="why r" id="why">
       <button class="card"><span class="q">Reason 1</span><span class="a">No time.</span></button>
       <button class="card"><span class="q">Reason 2</span><span class="a">Not much money.</span></button>
+      <button class="card"><span class="q">Reason 3</span><span class="a">Not enough patients.</span></button>
     </div>
     <p class="turn" id="turn">Pharmacists are already doing the work. Every day. Unpaid. <em>Let the pharmacist carry it, and the practice gets paid.</em></p>
   </div>
@@ -699,7 +729,7 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
   <header class="s-head"><div class="logo" aria-label="Carepak Pharmacy"><span class="word"><span class="par">(</span>Carepak<span class="par">)</span></span><span class="ph">Pharmacy</span></div></header>
   <div class="s-body">
     <p class="eyebrow r">The model</p>
-    <h2 class="r">Doctor directs. <em>Pharmacist does the work.</em></h2>
+    <h2 class="r">Doctor does nothing. <em>Pharmacist does the work.</em></h2>
     <div class="roles r">
       <div class="card"><span class="num">Doctor’s office</span><h3>Minutes a month</h3>
         <ul><li>Consent at a visit</li><li>Approves care plan</li><li>Oversight</li></ul>
