@@ -433,27 +433,19 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
 @media print{.spiral .nd rect{animation:none}}
 
 /* Growth map */
-.grow{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:clamp(20px,4vw,56px);align-items:center;margin-top:18px}
-.grow svg{width:100%;max-height:52vh;display:block}
-.grow .t rect{fill:#F3F6F8;stroke:#E2EAEE;transition:fill .35s,stroke .35s}
-.grow .t text{font-size:10px;font-weight:600;fill:#9AA8B1;transition:fill .35s}
-.grow .t circle{fill:#D3DDE2;transition:fill .35s,r .35s}
+.grow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:clamp(20px,4vw,56px);align-items:center;margin-top:18px}
+.grow svg{width:100%;max-height:56vh;display:block}
+.grow .t rect{fill:transparent;stroke:#EDF2F5;transition:fill .3s,stroke .3s}
+.grow .t text{font-size:10px;font-weight:600;fill:#D0D9DE;transition:fill .3s}
+.grow .t circle{fill:#039EDC;r:0;transition:r .25s ease}
 .grow .t.on rect{fill:#EAF6FC;stroke:#9CCFE6}
 .grow .t.on text{fill:#087FAA}
-.grow .t.on circle{fill:#039EDC}
-.grow .t.now circle{animation:pulse 1.4s ease-in-out infinite}
-.grow .t.home rect{fill:#039EDC;stroke:#039EDC}.grow .t.home text{fill:#fff}.grow .t.home circle{fill:#fff}
-@keyframes pulse{50%{opacity:.35}}
-.phases{display:grid;gap:8px}
-.phz{display:grid;grid-template-columns:72px 1fr auto;gap:12px;align-items:center;text-align:left;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#fff;font:inherit;color:inherit;cursor:pointer;transition:border-color .2s,background .2s}
-.phz:hover{border-color:var(--blue)}
-.phz[aria-pressed="true"]{border-color:var(--blue);background:var(--wash2)}
-.phz .yr{font-family:var(--display);font-weight:500;font-size:22px;letter-spacing:-.4px}
-.phz .lbl{font-size:14px;line-height:1.35}.phz .lbl small{display:block;color:var(--muted);font-size:12.5px}
-.phz .ct{font-family:var(--display);font-weight:500;font-size:26px;color:var(--blue);font-variant-numeric:tabular-nums}
-.phz .ct small{font-family:var(--body);font-size:11px;color:var(--muted);font-weight:500;margin-left:3px}
+.grow .t.on circle{r:4.5px}
+.grow .t.home rect{fill:#039EDC;stroke:#039EDC}.grow .t.home text{fill:#fff}.grow .t.home circle{fill:#fff;r:4.5px}
+.grow .cnt{text-align:left;min-width:180px}
+.grow .cnt .big{font-size:clamp(90px,10vw,150px);font-variant-numeric:tabular-nums}
+.grow .cnt p{font-size:16px;color:var(--muted);margin:6px 0 0}
 @media (max-width:760px){.grow{grid-template-columns:minmax(0,1fr)}}
-@media print{.grow .t.now circle{animation:none}}
 </style>
 </head>
 <body>
@@ -790,21 +782,15 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
 </section>
 
 <!-- 16b Growth map -->
-<section class="slide" data-title="Where we grow" data-notes="Illustrative growth path. Today we serve NJ, NY, CT and PA. Click each phase. The model is the same in every state: packaged, reconciled medication plus pharmacist-led CCM and BHI. Replace phases and years with your real plan.">
+<section class="slide" data-title="Where we grow" data-notes="Today we serve NJ, NY, CT and PA. Watch the dots fill in state by state. The model is the same in every state: packaged, reconciled medication plus pharmacist-led CCM and BHI. Replace phases and years with your real plan.">
   <header class="s-head"><div class="logo" aria-label="Carepak Pharmacy"><span class="word"><span class="par">(</span>Carepak<span class="par">)</span></span><span class="ph">Pharmacy</span></div></header>
   <div class="s-body">
-    <p class="eyebrow r">How Carepak could grow</p>
+    <p class="eyebrow r">How Carepak grows</p>
     <h2 class="r">Not bound by geography. <em>Same model, every state.</em></h2>
     <div class="grow r">
-      <svg id="usmap" viewBox="0 0 488 356" role="img" aria-label="Map of US states, each with a dot. Lit dots show states Carepak serves in the selected phase."></svg>
-      <div class="phases" id="phases">
-        <button class="phz" data-p="0" aria-pressed="true"><span class="yr">Today</span><span class="lbl">NJ · NY · CT · PA<small>Home base</small></span><span class="ct">4<small>states</small></span></button>
-        <button class="phz" data-p="1" aria-pressed="false"><span class="yr">2027</span><span class="lbl">Northeast + Mid-Atlantic<small>Neighboring states</small></span><span class="ct">13<small>states</small></span></button>
-        <button class="phz" data-p="2" aria-pressed="false"><span class="yr">2028</span><span class="lbl">East Coast + Midwest<small>Clinic partners</small></span><span class="ct">24<small>states</small></span></button>
-        <button class="phz" data-p="3" aria-pressed="false"><span class="yr">2030</span><span class="lbl">National<small>Every state</small></span><span class="ct">51<small>incl. DC</small></span></button>
-      </div>
+      <svg id="usmap" viewBox="0 0 488 356" role="img" aria-label="Map of US states. Carepak starts in NJ, NY, CT and PA, then a dot appears in each state until all are covered."></svg>
+      <div class="cnt"><div class="big" id="stateCount">4</div><p id="stateLbl">states today</p></div>
     </div>
-    <p class="fine r">Illustrative growth path · Expansion subject to state pharmacy licensure</p>
   </div>
 </section>
 
@@ -814,8 +800,7 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
   <div class="s-body">
     <div class="split">
       <div>
-        <p class="eyebrow r">Let’s start</p>
-        <h1 class="r" style="max-width:13ch">Your patients. Your goals. <em>Our support.</em></h1>
+        <h1 class="r" style="max-width:13ch">Who would like to <em>do it together?</em></h1>
         <p class="lead r">One clinic. 90 days. Then scale.</p>
       </div>
       <div class="r">
@@ -911,18 +896,23 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
     ['CA',0,4],['UT',1,4],['CO',2,4],['NE',3,4],['MO',4,4],['KY',5,4],['WV',6,4],['VA',7,4],['MD',8,4],['DE',9,4],
     ['AZ',1,5],['NM',2,5],['KS',3,5],['AR',4,5],['TN',5,5],['NC',6,5],['SC',7,5],['DC',8,5],
     ['OK',3,6],['LA',4,6],['MS',5,6],['AL',6,6],['GA',7,6],['HI',0,7],['TX',3,7],['FL',8,7]];
-  const PH=[['NJ','NY','CT','PA'],['MA','RI','NH','VT','ME','DE','MD','DC','VA'],['OH','MI','IL','IN','WV','NC','SC','GA','FL','KY','TN']];
-  const phaseOf={};PH.forEach((l,i)=>l.forEach(st=>phaseOf[st]=i));
+  const HOME=['NJ','NY','CT','PA'];
   const map=$('usmap'),NS='http://www.w3.org/2000/svg',tiles={};
   T.forEach(([st,c,r])=>{const g=document.createElementNS(NS,'g');g.setAttribute('class','t');const x=c*44+2,y=r*44+2;
     const rc=document.createElementNS(NS,'rect');rc.setAttribute('x',x);rc.setAttribute('y',y);rc.setAttribute('width',40);rc.setAttribute('height',40);rc.setAttribute('rx',7);
     const tx=document.createElementNS(NS,'text');tx.setAttribute('x',x+20);tx.setAttribute('y',y+17);tx.setAttribute('text-anchor','middle');tx.textContent=st;
-    const ci=document.createElementNS(NS,'circle');ci.setAttribute('cx',x+20);ci.setAttribute('cy',y+29);ci.setAttribute('r',4.5);
+    const ci=document.createElementNS(NS,'circle');ci.setAttribute('cx',x+20);ci.setAttribute('cy',y+29);
     g.append(rc,tx,ci);map.append(g);tiles[st]=g});
-  const phb=[...$('phases').querySelectorAll('.phz')];
-  function setPhase(k){phb.forEach((b,i)=>b.setAttribute('aria-pressed',String(i===k)));
-    T.forEach(([st])=>{const ph=st in phaseOf?phaseOf[st]:3,g=tiles[st];g.classList.toggle('on',ph<=k);g.classList.toggle('now',ph===k&&k>0);g.classList.toggle('home',ph===0)})}
-  phb.forEach((b,i)=>b.addEventListener('click',()=>setPhase(i)));setPhase(0);
+  const order=T.filter(t=>!HOME.includes(t[0])).sort((p,q)=>Math.hypot(p[1]-8,p[2]-3)-Math.hypot(q[1]-8,q[2]-3)).map(t=>t[0]);
+  let gtok=0;const gw=ms=>new Promise(r=>setTimeout(r,ms));
+  function resetMap(){T.forEach(([st])=>{tiles[st].classList.remove('on');tiles[st].classList.toggle('home',HOME.includes(st))});$('stateCount').textContent='4';$('stateLbl').textContent='states today'}
+  async function growMap(){const t=++gtok;resetMap();
+    if(reduce){order.forEach(st=>tiles[st].classList.add('on'));$('stateCount').textContent=T.length;$('stateLbl').textContent='states, incl. DC';return}
+    await gw(1200);let n=4;
+    for(const st of order){if(t!==gtok)return;tiles[st].classList.add('on');n++;$('stateCount').textContent=n;$('stateLbl').textContent=n===T.length?'states, incl. DC':'states';await gw(110)}}
+  const gslide=map.closest('.slide');
+  new MutationObserver(()=>{if(gslide.classList.contains('active'))growMap();else{gtok++;resetMap()}}).observe(gslide,{attributes:true,attributeFilter:['class']});
+  resetMap();if(gslide.classList.contains('active'))growMap();
 
   // Why cards
   const wc=[...$('why').children];
