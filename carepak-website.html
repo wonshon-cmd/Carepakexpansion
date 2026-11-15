@@ -579,7 +579,8 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
 /* Unit economics v2 */
 .ue2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,.75fr);gap:14px;margin-top:18px;align-items:stretch}
 .ue2 .ctl label{font-size:13px}.ue2 .ctl label output{font-size:20px}.ue2 .ctl input[type=range]{height:28px}
-.ue2 .uerows div{padding:7px 0}
+.ue2 .uerows div{padding:6px 0}
+.ue2 .card{padding:16px 18px}
 .ue2 .who{font-size:12px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;color:var(--deep)}
 .ue2 .uerows{margin-top:8px}
 .ue2 .bl{color:var(--blue);font-size:18px}
@@ -1013,7 +1014,7 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
 </section>
 
 <!-- 15d Unit economics -->
-<section class="slide" data-title="Unit economics" data-notes="Per patient per month. Care management: CCM and RPM for every patient plus BHI for about half bill about $144, billed by the doctor. Labor, mostly pharmacy technicians, is about $26. That leaves about $117 per patient. Today we charge near cost to get in. Later our share goes up. The profit is the medications, 15 to 20 per patient, and DME. Code amounts are approximate 2026 national rates; profit inputs are illustrative.">
+<section class="slide" data-title="Unit economics" data-notes="Per patient per month. Care management: CCM and RPM for every patient plus BHI for about half bill about $144, billed by the doctor. Labor, mostly pharmacy technicians, is about $26. That leaves about $117 per patient. Today we charge near cost to get in. Later our share goes up. The extra profit is the medications, about $380 a month on 17 meds, and DME, about $150 a month for the 70% who need it. Code amounts are approximate 2026 national rates; profit inputs are illustrative.">
   <header class="s-head"><div class="logo" aria-label="Carepak Pharmacy"><span class="word"><span class="par">(</span>Carepak<span class="par">)</span></span><span class="ph">Pharmacy</span></div></header>
   <div class="s-body" style="justify-content:flex-start">
     <p class="eyebrow r">Per patient per month</p>
@@ -1035,19 +1036,21 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
       <div class="card cpc">
         <span class="who">The profit · Carepak pharmacy</span>
         <div class="uerows">
-          <div><span>Medications</span><b id="u2meds">$255</b></div>
-          <div><span>DME</span><b id="u2dme">$35</b></div>
-          <div><span>Care management margin</span><b id="u2cm">$0</b></div>
+          <div><span>Medications · 17 per patient</span><b id="u2meds">$380</b></div>
+          <div><span>DME · 70% × $150</span><b id="u2dme">$105</b></div>
+          <div><span>OTC</span><b id="u2otc">$20</b></div>
+          <div><span>Care management margin · CCM + BHI + RPM</span><b id="u2cm">$0</b></div>
           <div class="tot"><span>Profit per patient / month</span><b class="bl" id="u2tot">$290</b></div>
         </div>
         <div class="ctl" style="margin-top:12px;gap:2px">
-          <div><label for="u2rx">Profit per med (17 meds) <output id="u2rxO">$15</output></label><input id="u2rx" type="range" min="5" max="50" step="1" value="15"></div>
-          <div><label for="u2d">DME profit (70% of patients) <output id="u2dO">$50</output></label><input id="u2d" type="range" min="10" max="150" step="5" value="50"></div>
+          <div><label for="u2rx">Medication profit (17 meds) <output id="u2rxO">$380</output></label><input id="u2rx" type="range" min="100" max="800" step="10" value="380"></div>
+          <div><label for="u2d">DME profit (70% of patients) <output id="u2dO">$150</output></label><input id="u2d" type="range" min="10" max="300" step="10" value="150"></div>
+          <div><label for="u2o">OTC profit / patient <output id="u2oO">$20</output></label><input id="u2o" type="range" min="0" max="100" step="5" value="20"></div>
         </div>
       </div>
       <div class="card yr">
         <div><label for="uePts" style="display:flex;justify-content:space-between;font-weight:600;font-size:14px">Patients <output id="uePtsO" style="font-family:var(--display);font-size:22px;font-weight:500">1,000</output></label><input id="uePts" type="range" min="0" max="10" step="1" value="3" style="width:100%;accent-color:var(--blue)"><div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted)"><span>Pilot</span><span>Regional</span><span>Nationwide</span></div></div>
-        <div class="yrout"><span>Carepak profit per year</span><b id="ueY">$3.5M</b><small id="ueS"></small></div>
+        <div class="yrout"><span>Carepak profit per year<br><small style="display:inline;margin:0">CCM + BHI + RPM + meds + DME + OTC</small></span><b id="ueY">$3.5M</b><small id="ueS"></small></div>
       </div>
     </div>
     <p class="fine r">Code amounts: approximate 2026 Medicare national rates, billed by the practice · Labor: tech $20/hr, pharmacist $66/hr · Profit inputs illustrative</p>
@@ -1097,7 +1100,7 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
         <div class="facts"><span class="chip">Diabetes</span><span class="chip">Heart failure</span><span class="chip">High blood pressure</span><span class="chip">Depression</span><span class="chip">5 prescribers</span></div>
         <div class="medgrid"><b>15 medications · example</b><span>Metformin</span><span>Insulin glargine</span><span>Furosemide</span><span>Lisinopril</span><span>Carvedilol</span><span>Atorvastatin</span><span>Aspirin</span><span>Potassium chloride</span><span>Sertraline</span><span>Gabapentin</span><span>Omeprazole</span><span>Levothyroxine</span><span>Vitamin D</span><span>Acetaminophen</span><span>Docusate</span></div>
       </div>
-      <div class="svcs"><div class="sv core"><h3>Packaged meds</h3><p>15 meds in dose packets, synced, delivered monthly</p><span class="st now">Today</span></div><div class="sv "><h3>Med reconciliation</h3><p>5 prescribers, one true list to her PCP</p><span class="st now">Today</span></div><div class="sv "><h3>Spanish-speaking pharmacist</h3><p>Counseling in her language</p><span class="st now">Today</span></div><div class="sv core"><h3>CCM</h3><p>Monthly check-in: diabetes, heart, blood pressure</p><span class="st pilot">Pilot</span></div><div class="sv core"><h3>BHI</h3><p>Monthly depression check-ins and screening</p><span class="st pilot">Pilot</span></div><div class="sv "><h3>Diabetic supplies + CGM</h3><p>Glucose sensors, strips, lancets</p><span class="st later">Next</span></div><div class="sv "><h3>DME</h3><p>Walker, shower chair, BP cuff, scale</p><span class="st later">2027</span></div><div class="sv "><h3>OTC card</h3><p>Plan-funded OTC items, delivered</p><span class="st later">2027</span></div><div class="sv "><h3>RPM</h3><p>Daily weight and blood pressure from home</p><span class="st later">Later</span></div><div class="sv "><h3>TCM</h3><p>After every discharge, so she isn’t readmitted</p><span class="st later">Later</span></div><div class="sv "><h3>MTM + vaccines</h3><p>Annual med review, flu and shingles shots at home</p><span class="st later">Later</span></div><div class="sv "><h3>Caregiver support</h3><p>Training her daughter on meds and devices</p><span class="st later">Later</span></div></div>
+      <div class="svcs"><div class="sv core" style="grid-column:1/-1"><h3>Packaged meds</h3><p>15 meds in dose packets, synced, delivered monthly</p><span class="st now">Today</span></div><div class="sv core"><h3>CCM</h3><p>Monthly check-in: diabetes, heart, blood pressure</p><span class="st pilot">Pilot</span></div><div class="sv core"><h3>BHI</h3><p>Monthly depression check-ins and screening</p><span class="st pilot">Pilot</span></div><div class="sv "><h3>Diabetic supplies + CGM</h3><p>Glucose sensors, strips, lancets</p><span class="st later">Next</span></div><div class="sv "><h3>DME</h3><p>Walker, shower chair, BP cuff, scale</p><span class="st later">2027</span></div><div class="sv "><h3>OTC card</h3><p>Plan-funded OTC items, delivered</p><span class="st later">2027</span></div><div class="sv "><h3>RPM</h3><p>Daily weight and blood pressure from home</p><span class="st later">Later</span></div><div class="sv "><h3>TCM</h3><p>After every discharge, so she isn’t readmitted</p><span class="st later">Later</span></div><div class="sv "><h3>MTM + vaccines</h3><p>Annual med review, flu and shingles shots at home</p><span class="st later">Later</span></div><div class="sv "><h3>Caregiver support</h3><p>Training her daughter on meds and devices</p><span class="st later">Later</span></div></div>
     </div>
     <p class="fine r">Fictional patient · typical Carepak profile · Today = in place · Pilot = started Nov 2026 · Next and later = planned</p>
   </div>
@@ -1130,7 +1133,7 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
   <header class="s-head"><div class="logo" aria-label="Carepak Pharmacy"><span class="word"><span class="par">(</span>Carepak<span class="par">)</span></span><span class="ph">Pharmacy</span></div></header>
   <div class="s-body">
     <p class="eyebrow r">How Carepak grows</p>
-    <h2 class="r">Not bound by geography. <em>Same model, every state.</em></h2>
+    <h2 class="r">Not bound by geography. <em>Could easily expand to every state.</em></h2>
     <div class="grow r">
       <svg id="usmap" viewBox="0 0 488 356" role="img" aria-label="Map of US states. Carepak starts from one location in New Jersey, then a dot appears in each state until all are covered."></svg>
       <div class="cnt"><div class="big" id="stateCount">1</div><p id="stateLbl">location today · NJ</p></div>
@@ -1144,7 +1147,7 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
   <div class="s-body">
     <div class="split">
       <div>
-        <h1 class="r" style="max-width:13ch">Who would like to <em>do it together?</em></h1>
+        <h1 class="r" style="max-width:13ch"><em>Questions?</em></h1>
         <p class="lead r">Pilot live since Nov 9, 2026. 1 of 9 clinics. Then all 9. Then nationwide.</p>
       </div>
       <div class="r">
@@ -1275,12 +1278,12 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
   const shb=[...document.querySelectorAll('[data-ph2]')];
   shb.forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();share=+b.dataset.ph2;shb.forEach(x=>x.setAttribute('aria-pressed',String(x===b)));ueCalc()}));
   function ueCalc(){const N=PTS[+$('uePts').value],rx=+$('u2rx').value,dp=+$('u2d').value;
-    const meds=17*rx,dme=.7*dp,cm=share?(143.5*.7-26.25):0,tot=meds+dme+cm;
-    $('u2rxO').textContent='$'+rx;$('u2dO').textContent='$'+dp;$('u2meds').textContent=money(meds);$('u2dme').textContent=money(dme);$('u2cm').textContent=cm?('$'+cm.toFixed(2)):'$0';$('u2tot').textContent=money(tot);
+    const otc=+$('u2o').value,meds=rx,dme=.7*dp,cm=share?(143.5*.7-26.25):0,tot=meds+dme+otc+cm;
+    $('u2rxO').textContent='$'+rx;$('u2oO').textContent='$'+otc;$('u2otc').textContent=money(otc);$('u2dO').textContent='$'+dp;$('u2meds').textContent=money(meds);$('u2dme').textContent=money(dme);$('u2dme').previousElementSibling.textContent='DME · 70% × $'+dp;$('u2cm').textContent=cm?('$'+cm.toFixed(2)):'$0';$('u2tot').textContent=money(tot);
     $('shareNote').textContent=share?'Patients are engaged and hard to move. Carepak takes 70% of billing: $100.45, minus $26.25 labor.':'Carepak charges labor cost only. Margin $0. We get in the door.';
     $('uePtsO').textContent=N.toLocaleString('en-US');$('ueY').textContent=big(tot*N*12);
-    const hrs=N*60/60,f=x=>x>=10?Math.round(x).toLocaleString('en-US'):x.toFixed(1);$('ueS').textContent='Staff for 60 min / patient / month: '+f(hrs*.75/150)+' techs + '+f(hrs*.25/150)+' pharmacists'}
-  ['uePts','u2rx','u2d'].forEach(id=>$(id).addEventListener('input',ueCalc));ueCalc();
+    const hrs=N*60/60,f=x=>x>=10?Math.round(x).toLocaleString('en-US'):x.toFixed(1);$('ueS').textContent='Call staff (about 60 min / patient / month): '+f(hrs*.75/150)+' techs + '+f(hrs*.25/150)+' pharmacists'}
+  ['uePts','u2rx','u2d','u2o'].forEach(id=>$(id).addEventListener('input',ueCalc));ueCalc();
 
   // Why cards
   const wc=[...$('why').children];
