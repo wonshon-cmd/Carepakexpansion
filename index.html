@@ -604,6 +604,13 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
 .noreason span{font-size:14px;color:var(--muted);line-height:1.45}
 @media (max-width:760px){.noreason{grid-template-columns:minmax(0,1fr)}}
 .studies{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.studies span{border:1px solid var(--line);border-radius:99px;padding:7px 14px;font-size:14px;font-weight:500;background:#fff}
+.prove{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin-top:14px}
+.prove .who{font-size:12px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;color:var(--deep)}
+.prove h3{margin-top:6px}
+.prove .cp{border-color:var(--blue);background:var(--wash2)}
+.ctr{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.ctr span{font-family:var(--display);font-weight:500;font-size:clamp(20px,1.9vw,28px);background:#fff;border:1px solid var(--blue);color:var(--deep);border-radius:12px;padding:10px 18px}
+@media (max-width:760px){.prove{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
 <body>
@@ -1051,6 +1058,20 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
       </div>
     </div>
     <p class="fine r">Approximate 2026 Medicare national rates, billed by the practice · Carepak paid as a contractor · Labor: tech $20/hr, pharmacist $66/hr · Profit inputs from Carepak estimates · Revenue estimate per patient / month: meds $3,000, DME $600 (70% of patients), OTC $150 · replace with actuals</p>
+  </div>
+</section>
+
+<!-- 15f Prove it -->
+<section class="slide" data-title="Prove it" data-notes="What if we measure, document and follow up every patient, then run a study that proves we save money and improve clinical and economic outcomes? Then we can contract directly with states, Medicare and health plans.">
+  <header class="s-head"><div class="logo" aria-label="Carepak Pharmacy"><span class="word"><span class="par">(</span>Carepak<span class="par">)</span></span><span class="ph">Pharmacy</span></div></header>
+  <div class="s-body">
+    <p class="eyebrow r">What if</p>
+    <h2 class="r" style="max-width:26ch">What if we could prove it <em>saves money and improves outcomes?</em></h2>
+    <div class="flow5 r" style="grid-template-columns:repeat(4,minmax(0,1fr))"><div class="fstep"><span class="fn">1</span><b>Measure</b><span>Every patient, every month</span></div><div class="fstep"><span class="fn">2</span><b>Document</b><span>Already recorded in every call</span></div><div class="fstep"><span class="fn">3</span><b>Follow up</b><span>Monthly, for years</span></div><div class="fstep"><span class="fn">4</span><b>Study</b><span>Prove it saves money</span></div></div>
+    <div class="prove r">
+      <div class="card"><span class="who">Proven</span><h3>Clinical + economic outcomes</h3><p>Fewer readmissions and ER visits. Better adherence. Lower total cost of care.</p></div>
+      <div class="card cp"><span class="who">Then contract with</span><div class="ctr"><span>States</span><span>Medicare</span><span>Health plans</span></div></div>
+    </div>
   </div>
 </section>
 
