@@ -603,6 +603,7 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
 .noreason b{font-weight:600;color:var(--deep)}
 .noreason span{font-size:14px;color:var(--muted);line-height:1.45}
 @media (max-width:760px){.noreason{grid-template-columns:minmax(0,1fr)}}
+.studies{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.studies span{border:1px solid var(--line);border-radius:99px;padding:7px 14px;font-size:14px;font-weight:500;background:#fff}
 </style>
 </head>
 <body>
@@ -989,14 +990,15 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
 </section>
 
 <!-- 14 How it runs -->
-<section class="slide" data-title="How it runs" data-notes="How it runs. Carepak contracts with the clinic. Each month the AI looks at the patient's medications, refills and last call and tells the pharmacist what to talk about. A pharmacy technician makes the call and the pharmacist wraps up the clinical part. Everything is documented and recorded: note, care plan update, time log. The doctor bills Medicare and pays Carepak for the pharmacist's time. On the left, the patient's progress over six months. Fictional patient.">
+<section class="slide" data-title="How it runs" data-notes="How it runs. Carepak contracts with the clinic. Each month the AI looks at the patient's medications, refills and last call and tells the pharmacist what to talk about. A pharmacy technician makes the call and the pharmacist wraps up the clinical part. Everything is documented and recorded: note, care plan update, time log. The doctor bills Medicare and pays Carepak for the pharmacist's time. On the left, the outcomes we plan to study later: blood sugar, missed doses, ER visits, readmissions, appointments kept, provider visits and total cost of care.">
   <header class="s-head"><div class="logo" aria-label="Carepak Pharmacy"><span class="word"><span class="par">(</span>Carepak<span class="par">)</span></span><span class="ph">Pharmacy</span></div></header>
   <div class="s-body">
     <p class="eyebrow r">How it runs · contracted with the clinic</p>
     <h2 class="r" style="font-size:clamp(28px,min(3.6vw,6.5vh),50px);max-width:28ch">AI prepares. Pharmacy technician talks, pharmacist wraps up. <em>Everything documented.</em></h2>
     <div class="flow5 r"><div class="fstep"><span class="fn">1</span><b>Contract</b><span>Carepak contracts with the clinic</span></div><div class="fstep"><span class="fn">2</span><b>AI picks topics</b><span>From her meds, refills and last call</span></div><div class="fstep"><span class="fn">3</span><b>Tech talks, pharmacist wraps up</b><span>Monthly call, in Spanish</span></div><div class="fstep"><span class="fn">4</span><b>Documented</b><span>Note, care plan, time log. Recorded.</span></div><div class="fstep"><span class="fn">5</span><b>MD bills</b><span>Pays Carepak for pharmacist time</span></div></div>
     <div class="hr2 r">
-      <div class="card prog"><div class="ph2"><b>Rosa’s progress</b><span>6 months of monthly calls · fictional</span></div><div class="pms"><div class="pm"><span>Average blood sugar</span><div class="pv"><s>212</s> → <b>148</b></div><svg viewBox="-4 -4 158 48" width="100%" height="48" aria-hidden="true"><polyline points="0.0,1.6 30.0,9.1 60.0,18.1 90.0,24.0 120.0,30.4 150.0,35.7" fill="none" stroke="#039EDC" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="150.0" cy="35.7" r="3.5" fill="#039EDC"/></svg></div><div class="pm"><span>Missed doses / month</span><div class="pv"><s>9</s> → <b>1</b></div><svg viewBox="-4 -4 158 48" width="100%" height="48" aria-hidden="true"><polyline points="0.0,4.0 30.0,16.0 60.0,24.0 90.0,28.0 120.0,32.0 150.0,36.0" fill="none" stroke="#039EDC" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="150.0" cy="36.0" r="3.5" fill="#039EDC"/></svg></div><div class="pm"><span>ER visits</span><div class="pv"><s>2 in 6 mo</s> → <b>0</b></div><svg viewBox="-4 -4 158 48" width="100%" height="48" aria-hidden="true"><polyline points="0.0,3.6 30.0,21.8 60.0,21.8 90.0,40.0 120.0,40.0 150.0,40.0" fill="none" stroke="#039EDC" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="150.0" cy="40.0" r="3.5" fill="#039EDC"/></svg></div></div></div>
+      <div class="card prog"><div class="ph2"><b>Studies we could conduct</b><span>Later · measured with every quality metric</span></div>
+        <div class="studies"><span>Blood sugar control</span><span>Missed doses</span><span>ER visits</span><span>Readmissions</span><span>Appointments kept</span><span>Provider visits</span><span>Total cost of care</span></div></div>
       <div class="card done2">
         <p class="dl">All documented.<br>Time saved.<br><em>Efficient.</em></p>
         <div class="dchips"><span class="chip ok"><span class="d"></span>24 min logged</span><span class="chip ok"><span class="d"></span>Care plan updated</span><span class="chip ok"><span class="d"></span>Note in chart</span></div>
@@ -1041,7 +1043,7 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
         </div>
       </div>
       <div class="card yr">
-        <div><label for="uePts" style="display:flex;justify-content:space-between;font-weight:600;font-size:14px">Patients <output id="uePtsO" style="font-family:var(--display);font-size:22px;font-weight:500">1,000</output></label><input id="uePts" type="range" min="0" max="10" step="1" value="3" style="width:100%;accent-color:var(--blue)"><div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted)"><span>Pilot</span><span>Regional</span><span>Nationwide</span></div></div>
+        <div><label for="uePts" style="display:flex;justify-content:space-between;font-weight:600;font-size:14px">Patients <output id="uePtsO" style="font-family:var(--display);font-size:22px;font-weight:500">1,000</output></label><input id="uePts" type="range" min="0" max="10" step="1" value="3" style="width:100%;accent-color:var(--blue)"><div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted)"><span>Pilot</span><span>State</span><span>Regional</span><span>Nationwide</span></div></div>
         <div class="uerows" style="margin-top:0">
           <div><span>Profit / patient / month</span><b class="bl" id="u2tot">$920</b></div>
           <div><span>Care mgmt revenue / year</span><b id="revY">$315,000</b></div>
