@@ -978,25 +978,26 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
 </section>
 
 <!-- 15 Math -->
-<section class="slide" data-title="The math" data-notes="Drag the sliders. Practice billing uses 99490 at $66.13 per month, once per patient. Carepak's fee is an example only; the real fee is contracted at fair market value. All of this is separate from dispensing revenue.">
+<section class="slide" data-title="The math" data-notes="Drag the sliders. Per patient per month the practice bills CCM ($66) and RPM ($49) for every patient, plus BHI ($57) for patients who also have a mental health condition. At 50% that is about $144 per patient per month. Carepak is paid about 70% as the contractor doing the work; the practice keeps the rest for minutes of oversight. All of this is on top of dispensing revenue. Approximate 2026 national rates; the real fee is set by contract.">
   <header class="s-head"><div class="logo" aria-label="Carepak Pharmacy"><span class="word"><span class="par">(</span>Carepak<span class="par">)</span></span><span class="ph">Pharmacy</span></div></header>
   <div class="s-body">
-    <p class="eyebrow r">Illustrative math</p>
+    <p class="eyebrow r">Illustrative math · per year</p>
     <h2 class="r">On top of medicine revenue. <em>Every month.</em></h2>
     <div class="calc r">
       <div class="ctl">
-        <div><label for="pts">Enrolled patients <output id="ptsOut">300</output></label><input id="pts" type="range" min="50" max="1000" step="50" value="300"></div>
-        <div><label for="fee">Carepak fee / patient / mo <output id="feeOut">$35</output></label><input id="fee" type="range" min="20" max="50" step="5" value="35"></div>
-        <p class="hint2">Example fee · Real fee set by contract</p>
+        <div><label for="pts">Enrolled patients <output id="ptsOut">1,000</output></label><input id="pts" type="range" min="100" max="5000" step="100" value="1000"></div>
+        <div><label for="mh">Also have a mental health condition <output id="mhOut">50%</output></label><input id="mh" type="range" min="0" max="100" step="5" value="50"></div>
+        <div><label for="fee">Carepak share of billing <output id="feeOut">70%</output></label><input id="fee" type="range" min="40" max="90" step="5" value="70"></div>
+        <p class="hint2" id="perPt">Billed per patient / month: CCM $66 + RPM $49 + BHI $57 × 50% = $144</p>
       </div>
       <div class="out">
-        <div class="card"><span>Practice bills / year</span><b id="o1">$238,068</b></div>
-        <div class="card cp"><span>Carepak / year</span><b id="o2">$126,000</b></div>
-        <div class="card"><span>Practice keeps / year</span><b id="o3">$112,068</b></div>
+        <div class="card"><span>Practice bills / year</span><b id="o1"></b></div>
+        <div class="card cp"><span>Carepak / year · contractor</span><b id="o2"></b></div>
+        <div class="card"><span>Practice keeps / year</span><b id="o3"></b></div>
         <p class="plus">+ dispensing revenue, unchanged</p>
       </div>
     </div>
-    <p class="fine r">99490 only · $66.13 national · Excludes 99439, complex CCM, BHI · Not a guarantee</p>
+    <p class="fine r">CCM 99490 · RPM · BHI 99484 · approximate 2026 Medicare national rates · Mental health share is an estimate: set it to the clinic’s patient mix · Real fee set by contract · Not a guarantee</p>
   </div>
 </section>
 
@@ -1012,23 +1013,23 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
 </section>
 
 <!-- 15d Unit economics -->
-<section class="slide" data-title="Unit economics" data-notes="Per patient per month. Care management: CCM, BHI and RTM together bill about $172, billed by the doctor. Labor for three 20-minute blocks, mostly pharmacy technicians, is about $31.50. That leaves about $140 per patient. Today we charge near cost to get in. Later our share goes up. The profit is the medications, 15 to 20 per patient, and DME. Code amounts are approximate 2026 national rates; profit inputs are illustrative.">
+<section class="slide" data-title="Unit economics" data-notes="Per patient per month. Care management: CCM and RPM for every patient plus BHI for about half bill about $144, billed by the doctor. Labor, mostly pharmacy technicians, is about $26. That leaves about $117 per patient. Today we charge near cost to get in. Later our share goes up. The profit is the medications, 15 to 20 per patient, and DME. Code amounts are approximate 2026 national rates; profit inputs are illustrative.">
   <header class="s-head"><div class="logo" aria-label="Carepak Pharmacy"><span class="word"><span class="par">(</span>Carepak<span class="par">)</span></span><span class="ph">Pharmacy</span></div></header>
   <div class="s-body" style="justify-content:flex-start">
     <p class="eyebrow r">Per patient per month</p>
-    <h2 class="r" style="font-size:clamp(28px,min(3.4vw,6vh),46px)">CCM at cost to get in. <em>Meds and DME are the profit.</em></h2>
+    <h2 class="r" style="font-size:clamp(28px,min(3.4vw,6vh),46px)">CCM at cost to get in. <em>Meds and DME add extra profit.</em></h2>
     <div class="ue2 r">
       <div class="card">
         <span class="who">Care management · billed by the MD</span>
         <div class="uerows">
           <div><span>CCM · 99490</span><b>$66</b></div>
-          <div><span>BHI · 99484</span><b>$57</b></div>
-          <div><span>RTM · 98980</span><b>$49</b></div>
-          <div class="tot"><span>Billed per patient</span><b>$172</b></div>
-          <div class="neg"><span>Labor · 3 × 20 min, mostly technicians</span><b>−$31.50</b></div>
-          <div class="tot"><span>Left after labor</span><b class="bl">$140.50</b></div>
+          <div><span>BHI · 99484 · 50% of patients</span><b>$28.50</b></div>
+          <div><span>RPM</span><b>$49</b></div>
+          <div class="tot"><span>Billed per patient</span><b>$143.50</b></div>
+          <div class="neg"><span>Labor · about 50 min, mostly technicians</span><b>−$26.25</b></div>
+          <div class="tot"><span>Left after labor</span><b class="bl">$117.25</b></div>
         </div>
-        <div class="tog" role="group" aria-label="Carepak share" style="margin:14px 0 0"><button data-ph2="0" aria-pressed="true">Today: at cost</button><button data-ph2="1" aria-pressed="false">Later: 50% share</button></div>
+        <div class="tog" role="group" aria-label="Carepak share" style="margin:14px 0 0"><button data-ph2="0" aria-pressed="true">Today: at cost</button><button data-ph2="1" aria-pressed="false">Later: 70% share</button></div>
         <p class="hint" style="margin-top:6px" id="shareNote">Carepak charges labor cost only. Margin $0. We get in the door.</p>
       </div>
       <div class="card cpc">
@@ -1274,9 +1275,9 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
   const shb=[...document.querySelectorAll('[data-ph2]')];
   shb.forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();share=+b.dataset.ph2;shb.forEach(x=>x.setAttribute('aria-pressed',String(x===b)));ueCalc()}));
   function ueCalc(){const N=PTS[+$('uePts').value],rx=+$('u2rx').value,dp=+$('u2d').value;
-    const meds=17*rx,dme=.7*dp,cm=share?(172*.5-31.5):0,tot=meds+dme+cm;
+    const meds=17*rx,dme=.7*dp,cm=share?(143.5*.7-26.25):0,tot=meds+dme+cm;
     $('u2rxO').textContent='$'+rx;$('u2dO').textContent='$'+dp;$('u2meds').textContent=money(meds);$('u2dme').textContent=money(dme);$('u2cm').textContent=cm?('$'+cm.toFixed(2)):'$0';$('u2tot').textContent=money(tot);
-    $('shareNote').textContent=share?'Patients are engaged and hard to move. Carepak takes 50% of billing: $86, minus $31.50 labor.':'Carepak charges labor cost only. Margin $0. We get in the door.';
+    $('shareNote').textContent=share?'Patients are engaged and hard to move. Carepak takes 70% of billing: $100.45, minus $26.25 labor.':'Carepak charges labor cost only. Margin $0. We get in the door.';
     $('uePtsO').textContent=N.toLocaleString('en-US');$('ueY').textContent=big(tot*N*12);
     const hrs=N*60/60,f=x=>x>=10?Math.round(x).toLocaleString('en-US'):x.toFixed(1);$('ueS').textContent='Staff for 60 min / patient / month: '+f(hrs*.75/150)+' techs + '+f(hrs*.25/150)+' pharmacists'}
   ['uePts','u2rx','u2d'].forEach(id=>$(id).addEventListener('input',ueCalc));ueCalc();
@@ -1286,10 +1287,13 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
   wc.forEach(c=>c.addEventListener('click',()=>{c.classList.add('on');if(wc.every(x=>x.classList.contains('on')))$('turn').classList.add('show')}));
 
   // Calculator
-  const RATE=66.13,fmt=n=>'$'+Math.round(n).toLocaleString('en-US');
-  function calc(){const p=+$('pts').value,f=+$('fee').value;const bill=p*RATE*12,cp=p*f*12;
-    $('ptsOut').textContent=p;$('feeOut').textContent='$'+f;$('o1').textContent=fmt(bill);$('o2').textContent=fmt(cp);$('o3').textContent=fmt(bill-cp)}
-  $('pts').addEventListener('input',calc);$('fee').addEventListener('input',calc);calc();
+  const fmt=n=>'$'+Math.round(n).toLocaleString('en-US');
+  function calc(){const p=+$('pts').value,m=+$('mh').value/100,f=+$('fee').value/100;
+    const per=66+49+57*m,bill=p*per*12,cp=bill*f;
+    $('ptsOut').textContent=p.toLocaleString('en-US');$('mhOut').textContent=Math.round(m*100)+'%';$('feeOut').textContent=Math.round(f*100)+'%';
+    $('perPt').textContent='Billed per patient / month: CCM $66 + RPM $49 + BHI $57 × '+Math.round(m*100)+'% = '+fmt(per);
+    $('o1').textContent=fmt(bill);$('o2').textContent=fmt(cp);$('o3').textContent=fmt(bill-cp)}
+  ['pts','mh','fee'].forEach(id=>$(id).addEventListener('input',calc));calc();
 
 
   // Roadmap stepper
