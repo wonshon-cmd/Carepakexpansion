@@ -511,7 +511,7 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
 /* Unit economics */
 .ue{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:clamp(20px,3.5vw,56px);align-items:start;margin-top:18px}
 .ue .ctl{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 22px}
-.ue .ctl > div:first-child{grid-column:1/-1}
+
 .ue .ctl label{font-size:13.5px}
 .ue .ctl label output{font-size:20px}
 .ue .ctl input[type=range]{height:28px}
@@ -916,20 +916,21 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
 </section>
 
 <!-- 15d Unit economics -->
-<section class="slide" data-title="Unit economics" data-notes="Drag the sliders. Per patient per month: Carepak's CCM fee minus labor at a technician and pharmacist mix, 20 minutes per patient. On top: profit on 15 to 20 monthly medications, and DME for most of these patients. Then multiply by patients enrolled. We work with many doctors, so we have many patients to call. All inputs are illustrative; replace with real numbers.">
+<section class="slide" data-title="Unit economics" data-notes="Drag the sliders. Per patient per month: Carepak's CCM fee minus labor at a technician and pharmacist mix, 20 minutes per patient. On top: profit on 15 to 20 monthly medications, and DME for most of these patients. Then multiply by patients enrolled. We work with many doctors, so we have many patients to call. Strategy: price CCM and BHI near cost until wide adoption to get in the door. Patients become deeply engaged and are hard to convert away; then raise the fee to the practice. The real profit is medications (sick patients, expensive meds) and DME. All inputs are illustrative; replace with real numbers.">
   <header class="s-head"><div class="logo" aria-label="Carepak Pharmacy"><span class="word"><span class="par">(</span>Carepak<span class="par">)</span></span><span class="ph">Pharmacy</span></div></header>
   <div class="s-body" style="justify-content:flex-start">
     <p class="eyebrow r">Cost analysis · per patient per month</p>
-    <h2 class="r" style="font-size:clamp(28px,min(3.4vw,6vh),46px)">CCM pays for the call. <em>Meds and DME stack on top.</em></h2>
+    <h2 class="r" style="font-size:clamp(28px,min(3.4vw,6vh),46px)">CCM at cost to get in. <em>Meds and DME are the profit.</em></h2>
     <div class="ue r">
       <div class="ctl">
-        <div><label for="uePts">Patients enrolled <output id="uePtsO">1,000</output></label><input id="uePts" type="range" min="0" max="10" step="1" value="3" aria-valuetext="1,000 patients"><div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:-4px"><span>Pilot clinic</span><span>Regional</span><span>Nationwide</span></div></div>
-        <div><label for="ueFee">Carepak CCM fee / patient <output id="ueFeeO">$40</output></label><input id="ueFee" type="range" min="20" max="60" step="5" value="40"></div>
+        <div class="tog" role="group" aria-label="CCM pricing phase" style="grid-column:1/-1;justify-self:start;margin-bottom:4px"><button data-ph="15" aria-pressed="true">Today: CCM at cost</button><button data-ph="45" aria-pressed="false">Later: raise fee to MD</button></div>
+        <div style="grid-column:1/-1"><label for="uePts">Patients enrolled <output id="uePtsO">1,000</output></label><input id="uePts" type="range" min="0" max="10" step="1" value="3" aria-valuetext="1,000 patients"><div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:-4px"><span>Pilot clinic</span><span>Regional</span><span>Nationwide</span></div></div>
+        <div><label for="ueFee">Carepak CCM fee / patient <output id="ueFeeO">$15</output></label><input id="ueFee" type="range" min="10" max="60" step="5" value="15"></div>
         <div><label for="ueTech">Work done by technicians <output id="ueTechO">75%</output></label><input id="ueTech" type="range" min="0" max="100" step="5" value="75"></div>
         <div><label for="ueMeds">Medications per patient <output id="ueMedsO">17</output></label><input id="ueMeds" type="range" min="10" max="20" step="1" value="17"></div>
-        <div><label for="ueRx">Profit per medication / month <output id="ueRxO">$6</output></label><input id="ueRx" type="range" min="2" max="15" step="1" value="6"></div>
-        <div><label for="ueDme">Patients with DME <output id="ueDmeO">60%</output></label><input id="ueDme" type="range" min="0" max="100" step="5" value="60"></div>
-        <div><label for="ueDmeP">DME profit / patient / month <output id="ueDmePO">$25</output></label><input id="ueDmeP" type="range" min="5" max="60" step="5" value="25"></div>
+        <div><label for="ueRx">Profit per medication / month <output id="ueRxO">$15</output></label><input id="ueRx" type="range" min="2" max="50" step="1" value="15"></div>
+        <div><label for="ueDme">Patients with DME <output id="ueDmeO">70%</output></label><input id="ueDme" type="range" min="0" max="100" step="5" value="70"></div>
+        <div><label for="ueDmeP">DME profit / patient / month <output id="ueDmePO">$50</output></label><input id="ueDmeP" type="range" min="10" max="150" step="5" value="50"></div>
         <div><label for="ueRpm">Patients on RPM (later) <output id="ueRpmO">0%</output></label><input id="ueRpm" type="range" min="0" max="100" step="5" value="0"></div>
         <div><label for="ueRpmP">RPM profit / patient / month <output id="ueRpmPO">$40</output></label><input id="ueRpmP" type="range" min="10" max="80" step="5" value="40"></div>
       </div>
@@ -951,7 +952,7 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
         </div>
       </div>
     </div>
-    <p class="fine r">Illustrative inputs · Labor at approximate US median wages · 150 working hours per staff member per month</p>
+    <p class="fine r">CCM and BHI priced near cost until wide adoption. Engaged patients rarely switch, so the fee to the practice can rise later. · Sick patients, expensive meds: higher profit per med · Illustrative inputs · Labor at US median wages</p>
   </div>
 </section>
 
@@ -1141,7 +1142,7 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
 
   // What is CCM timeline
   const PLANS={"dm": [["Jan", "Care plan + A1C goal. Reconcile every med."], ["Feb", "Glucose log review. Metformin side effects."], ["Mar", "Low blood sugar: signs and what to do."], ["Apr", "Carb basics. Sync all refills."], ["May", "Daily foot checks. Numbness or tingling?"], ["Jun", "Blood pressure. Statin taken daily?"], ["Jul", "Heat: hydration, insulin storage."], ["Aug", "Eye exam due. Book it."], ["Sep", "A1C lab due. Flu shot."], ["Oct", "Kidney labs. Dose check with MD."], ["Nov", "Holiday eating. Sick-day rules."], ["Dec", "Year review. Update the care plan."]], "bh": [["Jan", "PHQ-9 + GAD-7 baseline. Care plan."], ["Feb", "Antidepressant taken daily? Side effects."], ["Mar", "Sleep habits and routine."], ["Apr", "PHQ-9 recheck. Response sent to MD."], ["May", "Stress and coping skills."], ["Jun", "Therapy visits kept? Support at home."], ["Jul", "Alcohol and substance screen."], ["Aug", "Weight, energy, side effects."], ["Sep", "PHQ-9 recheck. Seasonal mood."], ["Oct", "Safety check. Crisis plan reviewed."], ["Nov", "Holiday stress and isolation."], ["Dec", "Year review. Update the care plan."]]};
-  const tgb=[...document.querySelectorAll('.tog button')];
+  const tgb=[...document.querySelectorAll('.tog button[data-plan]')];
   function showPlan(k){tgb.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.plan===k)));const tl=$('tl');tl.innerHTML='';
     PLANS[k].forEach(([m,t],i)=>{const d=document.createElement('div');d.className='mo2';d.style.animationDelay=(i*0.03)+'s';const b=document.createElement('b');b.textContent=m;const sp=document.createElement('span');sp.textContent=t;d.append(b,sp);tl.append(d)})}
   tgb.forEach(b=>b.addEventListener('click',()=>showPlan(b.dataset.plan)));showPlan('dm');
@@ -1159,6 +1160,10 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
     const pos=Math.max(ccm,0)+meds+dme+rpm||1;[['ueB1',Math.max(ccm,0)],['ueB2',meds],['ueB3',dme],['ueB4',rpm]].forEach(([id,v])=>$(id).style.width=(v/pos*100)+'%');
     $('ueY').textContent=big(tot*N*12);
     const hrs=N*20/60,tech=hrs*t/150,ph=hrs*(1-t)/150,f=x=>x>=10?Math.round(x).toLocaleString('en-US'):x.toFixed(1);$('ueS').textContent=f(tech)+' techs + '+f(ph)+' pharmacists'}
+  const phb2=[...document.querySelectorAll('[data-ph]')];
+  function setPh(v){phb2.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ph===String(v))))}
+  phb2.forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();$('ueFee').value=b.dataset.ph;setPh(b.dataset.ph);ueCalc()}));
+  $('ueFee').addEventListener('input',()=>setPh($('ueFee').value));
   ['uePts','ueFee','ueTech','ueMeds','ueRx','ueDme','ueDmeP','ueRpm','ueRpmP'].forEach(id=>$(id).addEventListener('input',ueCalc));ueCalc();
 
   // Why cards
