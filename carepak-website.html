@@ -1045,14 +1045,14 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
       <div class="card yr">
         <div><label for="uePts" style="display:flex;justify-content:space-between;font-weight:600;font-size:14px">Patients <output id="uePtsO" style="font-family:var(--display);font-size:22px;font-weight:500">1,000</output></label><input id="uePts" type="range" min="0" max="10" step="1" value="3" style="width:100%;accent-color:var(--blue)"><div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted)"><span>Pilot</span><span>State</span><span>Regional</span><span>Nationwide</span></div></div>
         <div class="uerows" style="margin-top:0">
+          <div><span>Revenue / patient / month</span><b id="revPt">$3,571</b></div>
           <div><span>Profit / patient / month</span><b class="bl" id="u2tot">$920</b></div>
-          <div><span>Care mgmt revenue / year</span><b id="revY">$315,000</b></div>
           <div><span>Practice keeps / year</span><b id="keepY">$1,407,000</b></div>
         </div>
-        <div class="yrout"><span>Carepak profit per year<br><small style="display:inline;margin:0">CCM + BHI + RPM + meds + DME + OTC</small></span><b id="ueY">$11.0M</b><small id="ueS"></small></div>
+        <div class="yrout"><span>Carepak revenue per year</span><b id="revTotY" style="color:var(--ink);font-size:clamp(26px,2.6vw,38px)">$42.9M</b><span style="margin-top:8px">Carepak profit per year<br><small style="display:inline;margin:0">CCM + BHI + RPM + meds + DME + OTC</small></span><b id="ueY">$11.0M</b><small id="ueS"></small></div>
       </div>
     </div>
-    <p class="fine r">Approximate 2026 Medicare national rates, billed by the practice · Carepak paid as a contractor · Labor: tech $20/hr, pharmacist $66/hr · Profit inputs from Carepak estimates</p>
+    <p class="fine r">Approximate 2026 Medicare national rates, billed by the practice · Carepak paid as a contractor · Labor: tech $20/hr, pharmacist $66/hr · Profit inputs from Carepak estimates · Revenue estimate per patient / month: meds $3,000, DME $600 (70% of patients), OTC $150 · replace with actuals</p>
   </div>
 </section>
 
@@ -1286,7 +1286,8 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
     $('shareLbl').textContent=share?'70% share':'at cost';$('cpRev').textContent=m2(rev);$('u2cm').textContent=cm>0.005?m2(cm):'$0';
     $('u2rxO').textContent='$'+rx;$('u2dO').textContent='$'+dp;$('u2oO').textContent='$'+otc;
     $('u2meds').textContent=money(rx);$('dmeLbl').textContent='DME · 70% × $'+dp;$('u2dme').textContent=money(dme);$('u2otc').textContent=money(otc);$('u2tot').textContent=money(tot);
-    $('uePtsO').textContent=N.toLocaleString('en-US');$('revY').textContent=big(rev*N*12);$('keepY').textContent=big((bill-rev)*N*12);$('ueY').textContent=big(tot*N*12);
+    const RXREV=3000,DMEREV=600,OTCREV=150,revPt=rev+RXREV+.7*DMEREV+OTCREV;$('revPt').textContent=money(revPt);$('revTotY').textContent=big(revPt*N*12);
+    $('uePtsO').textContent=N.toLocaleString('en-US');$('keepY').textContent=big((bill-rev)*N*12);$('ueY').textContent=big(tot*N*12);
     const hrs=N*50/60,f=x=>x>=10?Math.round(x).toLocaleString('en-US'):x.toFixed(1);$('ueS').textContent='Call staff: '+f(hrs*.75/150)+' techs + '+f(hrs*.25/150)+' pharmacists'}
   ['uePts','mh','u2rx','u2d','u2o'].forEach(id=>$(id).addEventListener('input',ueCalc));ueCalc();
 
