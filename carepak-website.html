@@ -370,8 +370,8 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
 .out .plus{font-size:14px;font-weight:600;color:var(--ok);padding-left:4px}
 
 .contact{margin-top:6px}
-.road{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:34px}
-.road .bar{position:absolute;left:22px;right:calc(25% - 22px + 12px);top:21px;height:2px;background:var(--line)}
+.road{position:relative;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-top:34px}
+.road .bar{position:absolute;left:22px;right:calc(20% - 10px);top:21px;height:2px;background:var(--line)}
 .road .bar i{display:block;height:100%;width:0;background:var(--blue);transition:width .45s ease}
 .stp{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;background:none;border:0;padding:0 8px 0 0;font:inherit;color:inherit;cursor:pointer}
 .stp .dot{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:#fff;border:1.5px solid var(--line);font-weight:600;color:var(--muted);margin-bottom:12px;transition:all .3s ease;position:relative;z-index:1}
@@ -455,6 +455,82 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
 @media (prefers-reduced-motion:reduce){.gb{transform:none}}
 @media print{.gb{transform:none}}
 @media (max-width:760px){.why{grid-template-columns:minmax(0,1fr)}}
+
+/* Positioned */
+.pos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:28px}
+.pos .card ul{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:9px}
+.pos .card li{display:grid;grid-template-columns:18px 1fr;gap:8px;font-size:15px;line-height:1.4;color:var(--muted)}
+.pos .card li::before{content:"✕";color:#C0574C;font-weight:700}
+.pos .card.cp{border-color:var(--blue);background:var(--wash2);box-shadow:0 10px 30px rgba(3,158,220,.12)}
+.pos .card.cp li{color:var(--ink)}
+.pos .card.cp li::before{content:"✓";color:var(--ok)}
+.pos .who{font-size:12px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted)}
+.pos .cp .who{color:var(--deep)}
+.pos h3{margin-top:6px}
+.posline{font-family:var(--display);font-size:clamp(22px,2.2vw,32px);letter-spacing:-.6px;line-height:1.2;margin-top:24px}
+.posline em{font-style:normal;color:var(--blue)}
+/* Flywheel (reuses spiral layout in blue) */
+.fly .nd rect{animation-name:hlb}
+@keyframes hlb{0%,18%{fill:#EAF6FC;stroke:#039EDC}22%,100%{fill:#fff;stroke:#D9E4E9}}
+.fly li{animation-name:hlib}
+@keyframes hlib{0%,18%{color:#087FAA}22%,100%{color:var(--ink)}}
+@media (max-width:760px){.pos{grid-template-columns:minmax(0,1fr)}}
+
+/* What is CCM */
+.ccmx{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.6fr);gap:clamp(20px,3vw,48px);align-items:start;margin-top:22px}
+.def{display:grid;gap:12px}
+.def .card{padding:16px 18px}
+.def .card b{font-family:var(--display);font-weight:500;font-size:20px}
+.def .card p{font-size:14px;margin-top:4px}
+.tog{display:inline-flex;border:1px solid var(--line);border-radius:99px;padding:3px;gap:3px;margin-bottom:14px}
+.tog button{border:0;background:none;border-radius:99px;padding:8px 16px;font-size:13.5px;font-weight:600;color:var(--muted);min-height:38px}
+.tog button[aria-pressed="true"]{background:var(--blue);color:#fff}
+.tl{position:relative;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:22px 10px}
+.tl::before{content:"";position:absolute;left:8px;right:8px;top:7px;height:2px;background:#BFE3F3}
+.tl::after{content:"";position:absolute;left:8px;right:8px;top:calc(50% + 18px);height:2px;background:#BFE3F3}
+.mo2{position:relative;padding-top:24px;font-size:13px;line-height:1.35;animation:rise .35s ease both}
+.mo2::before{content:"";position:absolute;left:0;top:1px;width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid var(--blue);z-index:1}
+.mo2 b{display:block;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--deep);margin-bottom:3px}
+.mo2 span{color:var(--ink)}
+@media (max-width:1000px){.ccmx{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:760px){.tl{grid-template-columns:repeat(2,minmax(0,1fr))}.tl::before,.tl::after{display:none}}
+
+/* Cost per call */
+.costbars{display:grid;gap:14px;margin-top:30px;max-width:960px}
+.cb{display:grid;grid-template-columns:170px minmax(0,1fr) 70px;gap:14px;align-items:center}
+.cb .lbl{font-weight:600;font-size:15px}.cb .lbl small{display:block;font-weight:400;color:var(--muted);font-size:12.5px}
+.cb .track{height:34px;background:#F3F6F8;border-radius:6px;overflow:hidden}
+.cb .fill{height:100%;border-radius:6px;background:#C9D6DD;transform-origin:left;transform:scaleX(0)}
+.active .cb .fill{animation:grow .8s cubic-bezier(.2,.7,.2,1) both}
+.cb.cp .fill{background:var(--blue)}
+.cb .v{font-family:var(--display);font-weight:500;font-size:26px;font-variant-numeric:tabular-nums;text-align:right}
+.cb.cp .v{color:var(--blue)}
+@keyframes grow{to{transform:scaleX(1)}}
+@media (prefers-reduced-motion:reduce){.cb .fill{transform:none}}
+@media print{.cb .fill{transform:none}}
+/* Unit economics */
+.ue{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:clamp(20px,3.5vw,56px);align-items:start;margin-top:18px}
+.ue .ctl{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 22px}
+.ue .ctl > div:first-child{grid-column:1/-1}
+.ue .ctl label{font-size:13.5px}
+.ue .ctl label output{font-size:20px}
+.ue .ctl input[type=range]{height:28px}
+.uebar{display:flex;height:40px;border-radius:8px;overflow:hidden;margin:6px 0 8px;background:#F3F6F8}
+.uebar i{display:block;height:100%;transition:width .3s ease}
+.leg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--muted)}
+.leg span{display:inline-flex;align-items:center;gap:6px}.leg span::before{content:"";width:10px;height:10px;border-radius:3px;background:var(--c)}
+.uerows{border-top:1px solid var(--line);margin-top:12px}
+.uerows div{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.uerows div b{font-variant-numeric:tabular-nums;font-weight:600}
+.uerows .neg b{color:#B23A30}
+.uerows .tot{font-weight:600}
+.uebig{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.uebig .card{padding:14px 16px}
+.uebig span{font-size:12.5px;color:var(--muted);font-weight:500}
+.uebig b{display:block;font-family:var(--display);font-weight:500;font-size:clamp(26px,2.6vw,38px);letter-spacing:-1px;line-height:1.1;font-variant-numeric:tabular-nums}
+.uebig .cp{border-color:var(--blue);background:var(--wash2)}.uebig .cp b{color:var(--blue)}
+@media (max-width:760px){.ue,.uebig,.ue .ctl{grid-template-columns:minmax(0,1fr)}.cb{grid-template-columns:110px minmax(0,1fr) 56px}}
+.orig{font-family:var(--body);font-size:max(11px,.14em);font-weight:500;letter-spacing:.4px;color:var(--muted);vertical-align:middle;margin:0 .1em}
 </style>
 </head>
 <body>
@@ -467,7 +543,7 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
     <div class="split cover">
       <div>
         <p class="eyebrow r">Carepak Pharmacy · Investor pitch</p>
-        <h1 class="r" style="max-width:none">Pharmacy, built for outcomes. <em>Health and savings.</em></h1>
+        <h1 class="r" style="max-width:none">Pharmacy, <span class="orig">originally</span> built for <em>clinical and health outcomes.</em></h1>
         <p class="lead r">For hospitals. Doctors. Health plans.</p>
         <div class="btn-row r no-print"><button class="btn" data-go="1">Start <span aria-hidden="true">→</span></button></div>
       </div>
@@ -672,6 +748,26 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
   </div>
 </section>
 
+<!-- 9b What is CCM -->
+<section class="slide" data-title="What is CCM" data-notes="What CCM and BHI are. Chronic Care Management: Medicare pays monthly for at least 20 minutes of care management for patients with two or more chronic conditions: a care plan, medication review, check-in calls, coordination with the doctor. Behavioral Health Integration: the same idea for depression, anxiety and other behavioral conditions, tracked with validated scales like PHQ-9 and GAD-7. Toggle to show what the pharmacist talks about each month.">
+  <header class="s-head"><div class="logo" aria-label="Carepak Pharmacy"><span class="word"><span class="par">(</span>Carepak<span class="par">)</span></span><span class="ph">Pharmacy</span></div></header>
+  <div class="s-body">
+    <p class="eyebrow r">What is CCM?</p>
+    <h2 class="r">A monthly check-in. <em>Medicare pays for it.</em></h2>
+    <div class="ccmx r">
+      <div class="def">
+        <div class="card"><b>CCM</b><p>Chronic Care Management. Patients with 2+ chronic conditions. 20+ minutes a month: care plan, med review, calls, coordination with the doctor.</p></div>
+        <div class="card"><b>BHI</b><p>Behavioral Health Integration. Depression, anxiety and more. Monthly check-ins tracked with PHQ-9 and GAD-7.</p></div>
+      </div>
+      <div>
+        <div class="tog" role="group" aria-label="Patient type"><button data-plan="dm" aria-pressed="true">Diabetic patient · CCM</button><button data-plan="bh" aria-pressed="false">BHI patient</button></div>
+        <div class="tl" id="tl"></div>
+        <p class="fine" style="margin-top:14px">Example topics · The pharmacist tailors each month to the patient, with AI help</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- 10 Codes -->
 <section class="slide" data-title="Billing codes" data-notes="These codes already pay for this work. CCM: 2+ chronic conditions, care plan, monthly clinical staff time. BHI: behavioral health monitoring with validated tools. 2026 national non-facility rates; amounts include the 20% patient coinsurance and vary by locality. CCM and BHI can both be billed for the same patient in the same month when the time is not double-counted.">
   <header class="s-head"><div class="logo" aria-label="Carepak Pharmacy"><span class="word"><span class="par">(</span>Carepak<span class="par">)</span></span><span class="ph">Pharmacy</span></div></header>
@@ -721,6 +817,24 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
       <button class="card"><span class="q">Reason 3</span><span class="a">Not enough patients.</span></button>
     </div>
     <p class="turn" id="turn">Pharmacists are already doing the work. Every day. Unpaid. <em>Let the pharmacist carry it, and the practice gets paid.</em></p>
+  </div>
+</section>
+
+<!-- 12b Positioned -->
+<section class="slide" data-title="Why we are positioned" data-notes="Why us. CCM and BHI billing alone isn't enough for a doctor: small checks, not enough eligible patients per practice, no time. Retail pharmacies can't do it either: their workflow is the counter, fill and go. Carepak pharmacists have the time, because we fill and ship monthly, and CCM patients are exactly the complex chronic patients on many medications we already serve.">
+  <header class="s-head"><div class="logo" aria-label="Carepak Pharmacy"><span class="word"><span class="par">(</span>Carepak<span class="par">)</span></span><span class="ph">Pharmacy</span></div></header>
+  <div class="s-body">
+    <p class="eyebrow r">Why we are positioned</p>
+    <h2 class="r">Doctors can’t. Retail can’t. <em>Carepak is ready.</em></h2>
+    <div class="pos r">
+      <div class="card"><span class="who">Doctors</span><h3>Not worth it alone</h3>
+        <ul><li>Billing alone isn’t enough money</li><li>Not enough eligible patients</li><li>No time for monthly calls</li></ul></div>
+      <div class="card"><span class="who">Retail pharmacy</span><h3>Wrong workflow</h3>
+        <ul><li>Counter workflow: fill and go</li><li>No time for 20-minute calls</li><li>Not built for complex patients</li></ul></div>
+      <div class="card cp"><span class="who">Carepak pharmacists</span><h3>Ready now</h3>
+        <ul><li>We have the time: monthly cycle</li><li>Already serve complex chronic patients</li><li>Already know every med they take</li></ul></div>
+    </div>
+    <p class="posline r">CCM patients take a lot of medicine. <em>They are exactly who we already serve.</em></p>
   </div>
 </section>
 
@@ -790,18 +904,98 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
   </div>
 </section>
 
-<!-- 16 Roadmap -->
-<section class="slide" data-title="Roadmap" data-notes="Click each step. Start with one mental health clinic: BHI (99484) for behavioral health conditions, CCM where patients also have 2+ chronic conditions, plus Carepak packaging. Measure for 90 days. Then expand to more clinics and primary care. DME added in 2027. Everyone gains: patients get better care in one place, doctors get new revenue, Carepak gets service revenue on top of dispensing.">
+<!-- 15c Cost per call -->
+<section class="slide" data-title="Cost per call" data-notes="Labor is the main cost of CCM, and the pharmacy technician is the least expensive trained person in healthcare. Technicians do most of the work: scheduling, outreach, refill and adherence checks, documentation prep. Pharmacist hours cover the clinical part. Approximate US median hourly wages. Check that technician minutes meet CMS clinical-staff rules before counting them toward billable time.">
   <header class="s-head"><div class="logo" aria-label="Carepak Pharmacy"><span class="word"><span class="par">(</span>Carepak<span class="par">)</span></span><span class="ph">Pharmacy</span></div></header>
   <div class="s-body">
-    <p class="eyebrow r">The plan</p>
-    <h2 class="r">One clinic first. <em>Then scale.</em></h2>
+    <p class="eyebrow r">Cost of one 20-minute call</p>
+    <h2 class="r">Technicians do most of the work. <em>Cheapest in healthcare.</em></h2>
+    <div class="costbars r"><div class="cb cp"><span class="lbl">Pharmacy technician<small>~$20/hr</small></span><div class="track"><div class="fill" style="width:16.7%;animation-delay:0.00s"></div></div><span class="v">$7</span></div><div class="cb"><span class="lbl">Registered nurse<small>~$45/hr</small></span><div class="track"><div class="fill" style="width:37.5%;animation-delay:0.12s"></div></div><span class="v">$15</span></div><div class="cb cp"><span class="lbl">Pharmacist<small>~$66/hr</small></span><div class="track"><div class="fill" style="width:55.0%;animation-delay:0.24s"></div></div><span class="v">$22</span></div><div class="cb"><span class="lbl">Physician<small>~$120/hr</small></span><div class="track"><div class="fill" style="width:100.0%;animation-delay:0.36s"></div></div><span class="v">$40</span></div></div>
+    <p class="fine r">Labor cost of 20 minutes at approximate US median hourly wages · Carepak model: technicians do most of the work, pharmacist hours for clinical review</p>
+  </div>
+</section>
+
+<!-- 15d Unit economics -->
+<section class="slide" data-title="Unit economics" data-notes="Drag the sliders. Per patient per month: Carepak's CCM fee minus labor at a technician and pharmacist mix, 20 minutes per patient. On top: profit on 15 to 20 monthly medications, and DME for most of these patients. Then multiply by patients enrolled. We work with many doctors, so we have many patients to call. All inputs are illustrative; replace with real numbers.">
+  <header class="s-head"><div class="logo" aria-label="Carepak Pharmacy"><span class="word"><span class="par">(</span>Carepak<span class="par">)</span></span><span class="ph">Pharmacy</span></div></header>
+  <div class="s-body" style="justify-content:flex-start">
+    <p class="eyebrow r">Cost analysis · per patient per month</p>
+    <h2 class="r" style="font-size:clamp(28px,min(3.4vw,6vh),46px)">CCM pays for the call. <em>Meds and DME stack on top.</em></h2>
+    <div class="ue r">
+      <div class="ctl">
+        <div><label for="uePts">Patients enrolled <output id="uePtsO">1,000</output></label><input id="uePts" type="range" min="0" max="10" step="1" value="3" aria-valuetext="1,000 patients"><div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:-4px"><span>Pilot clinic</span><span>Regional</span><span>Nationwide</span></div></div>
+        <div><label for="ueFee">Carepak CCM fee / patient <output id="ueFeeO">$40</output></label><input id="ueFee" type="range" min="20" max="60" step="5" value="40"></div>
+        <div><label for="ueTech">Work done by technicians <output id="ueTechO">75%</output></label><input id="ueTech" type="range" min="0" max="100" step="5" value="75"></div>
+        <div><label for="ueMeds">Medications per patient <output id="ueMedsO">17</output></label><input id="ueMeds" type="range" min="10" max="20" step="1" value="17"></div>
+        <div><label for="ueRx">Profit per medication / month <output id="ueRxO">$6</output></label><input id="ueRx" type="range" min="2" max="15" step="1" value="6"></div>
+        <div><label for="ueDme">Patients with DME <output id="ueDmeO">60%</output></label><input id="ueDme" type="range" min="0" max="100" step="5" value="60"></div>
+        <div><label for="ueDmeP">DME profit / patient / month <output id="ueDmePO">$25</output></label><input id="ueDmeP" type="range" min="5" max="60" step="5" value="25"></div>
+        <div><label for="ueRpm">Patients on RPM (later) <output id="ueRpmO">0%</output></label><input id="ueRpm" type="range" min="0" max="100" step="5" value="0"></div>
+        <div><label for="ueRpmP">RPM profit / patient / month <output id="ueRpmPO">$40</output></label><input id="ueRpmP" type="range" min="10" max="80" step="5" value="40"></div>
+      </div>
+      <div>
+        <div class="uebar" aria-hidden="true"><i id="ueB1" style="background:#039EDC"></i><i id="ueB2" style="background:#087FAA"></i><i id="ueB3" style="background:#7FCDEE"></i><i id="ueB4" style="background:#F3B547"></i></div>
+        <div class="leg"><span style="--c:#039EDC">CCM margin</span><span style="--c:#087FAA">Medications</span><span style="--c:#7FCDEE">DME</span><span style="--c:#F3B547">RPM (later)</span></div>
+        <div class="uerows">
+          <div><span>CCM fee</span><b id="ueR1"></b></div>
+          <div class="neg"><span>Labor · 20 min (tech $20/hr · pharmacist $66/hr)</span><b id="ueR2"></b></div>
+          <div><span>CCM margin</span><b id="ueR3"></b></div>
+          <div><span>Medication profit</span><b id="ueR4"></b></div>
+          <div><span>DME profit (average)</span><b id="ueR5"></b></div>
+          <div><span>RPM profit (later, average)</span><b id="ueR5b"></b></div>
+          <div class="tot"><span>Profit per patient / month</span><b id="ueR6"></b></div>
+        </div>
+        <div class="uebig">
+          <div class="card cp"><span>Profit per year</span><b id="ueY"></b></div>
+          <div class="card"><span>Staff for the calls</span><b id="ueS" style="font-size:clamp(18px,1.7vw,24px);letter-spacing:-.3px"></b></div>
+        </div>
+      </div>
+    </div>
+    <p class="fine r">Illustrative inputs · Labor at approximate US median wages · 150 working hours per staff member per month</p>
+  </div>
+</section>
+
+<!-- 15b Growth engine -->
+<section class="slide" data-title="Growth engine" data-notes="How we scale. CCM and BHI let us reach patients nationwide while bringing extra revenue to doctors. Those patients can transition to Carepak packaged medication. We ship, so no need to build more sites. Then we add OTC cards and DME on top. Each loop grows revenue per patient.">
+  <header class="s-head"><div class="logo" aria-label="Carepak Pharmacy"><span class="word"><span class="par">(</span>Carepak<span class="par">)</span></span><span class="ph">Pharmacy</span></div></header>
+  <div class="s-body">
+    <p class="eyebrow r">How we scale</p>
+    <h2 class="r">CCM opens the door. <em>Every service follows.</em></h2>
+    <div class="spiral fly r">
+      <svg viewBox="0 0 460 460" role="img" aria-label="A growth loop: CCM and BHI nationwide, doctor revenue, patients switch to Carepak packaged meds, no new sites needed, OTC cards and DME added on top, then back to more CCM">
+        <circle cx="230" cy="230" r="150" fill="none" stroke="#BFE3F3" stroke-width="2" stroke-dasharray="6 6"/>
+        <g class="loop"><circle cx="230" cy="80" r="6" fill="#039EDC"/></g>
+        <g fill="#039EDC"><path d="M300 98l8 13-15 2z"/><path d="M380 260l-6 14-8-12z"/><path d="M228 386l-14 -6 14-7z"/><path d="M78 268l-8-12 15 0z"/><path d="M146 103l15-2-7 13z"/></g>
+        <text x="230" y="222" text-anchor="middle" font-size="12" font-weight="600" fill="#63717B" letter-spacing="1.5">GROWTH ENGINE</text>
+        <text x="230" y="250" text-anchor="middle" font-size="22" font-weight="600" fill="#039EDC">More per patient.</text>
+        <g class="nd"><rect x="156" y="55" width="148" height="50" rx="25"/><text x="230" y="77" text-anchor="middle" font-size="13" font-weight="600" fill="#14232D">CCM + BHI</text><text x="230" y="94" text-anchor="middle" font-size="11" fill="#63717B">Nationwide, pharmacist-led</text></g><g class="nd"><rect x="299" y="159" width="148" height="50" rx="25"/><text x="373" y="181" text-anchor="middle" font-size="13" font-weight="600" fill="#14232D">Doctor revenue</text><text x="373" y="198" text-anchor="middle" font-size="11" fill="#63717B">New $ for the practice</text></g><g class="nd"><rect x="244" y="326" width="148" height="50" rx="25"/><text x="318" y="348" text-anchor="middle" font-size="13" font-weight="600" fill="#14232D">Packaged meds</text><text x="318" y="365" text-anchor="middle" font-size="11" fill="#63717B">Patients switch to Carepak</text></g><g class="nd"><rect x="68" y="326" width="148" height="50" rx="25"/><text x="142" y="348" text-anchor="middle" font-size="13" font-weight="600" fill="#14232D">No new sites</text><text x="142" y="365" text-anchor="middle" font-size="11" fill="#63717B">We ship to every state</text></g><g class="nd"><rect x="13" y="159" width="148" height="50" rx="25"/><text x="87" y="181" text-anchor="middle" font-size="13" font-weight="600" fill="#14232D">OTC · DME · RPM</text><text x="87" y="198" text-anchor="middle" font-size="11" fill="#63717B">Added on top</text></g>
+      </svg>
+      <div>
+        <ol>
+          <li><span class="num">01</span><span><b>CCM + BHI nationwide</b><span class="d">Pharmacist-led. Not bound by geography.</span></span></li>
+          <li><span class="num">02</span><span><b>Extra revenue for doctors</b><span class="d">The practice bills. We do the work.</span></span></li>
+          <li><span class="num">03</span><span><b>Patients move to Carepak packaging</b><span class="d">Complex patients, many meds: our core business</span></span></li>
+          <li><span class="num">04</span><span><b>No new sites to build</b><span class="d">We ship. Same model in every state.</span></span></li>
+          <li><span class="num">05</span><span><b>Add OTC cards, DME and RPM on top</b><span class="d">More services, same patient. Remote monitoring later.</span></span></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 16 Roadmap -->
+<section class="slide" data-title="Roadmap" data-notes="Click each step. Pilot started November 9, 2026 at one of nine clinics owned by a mental health group: BHI (99484) for behavioral health conditions, CCM where patients also have 2+ chronic conditions, plus Carepak packaging. Measure for 90 days. Then expand to more clinics and primary care. DME added in 2027. Then a health and economic outcomes study, and contracts with state, government and private plans. Everyone gains: patients get better care in one place, doctors get new revenue, Carepak gets service revenue on top of dispensing.">
+  <header class="s-head"><div class="logo" aria-label="Carepak Pharmacy"><span class="word"><span class="par">(</span>Carepak<span class="par">)</span></span><span class="ph">Pharmacy</span></div></header>
+  <div class="s-body">
+    <p class="eyebrow r">The plan · Pilot started Nov 9, 2026</p>
+    <h2 class="r">Pilot is live. <em>1 clinic → 9 → nationwide.</em></h2>
     <div class="road r" id="road">
       <div class="bar"><i id="roadFill"></i></div>
-      <button class="stp on" aria-pressed="true"><span class="dot">1</span><b>Pilot</b><span class="sub">1 mental health clinic</span><span class="det">BHI + CCM · Packaging · 90 days</span></button>
-      <button class="stp" aria-pressed="false"><span class="dot">2</span><b>Prove</b><span class="sub">Measure results</span><span class="det">Adherence · ER visits · Readmits · Revenue</span></button>
-      <button class="stp" aria-pressed="false"><span class="dot">3</span><b>Expand</b><span class="sub">More clinics</span><span class="det">Mental health → Primary care → Specialists</span></button>
-      <button class="stp" aria-pressed="false"><span class="dot">4</span><b>Add DME</b><span class="sub">2027</span><span class="det">Meds + supplies + equipment. One pharmacy.</span></button>
+      <button class="stp on" aria-pressed="true"><span class="dot">1</span><b>Pilot · live</b><span class="sub">Started Nov 9, 2026</span><span class="det">1 of 9 clinics in a mental health group · BHI + CCM · Packaging</span></button>
+      <button class="stp" aria-pressed="false"><span class="dot">2</span><b>All 9 clinics</b><span class="sub">Same owner</span><span class="det">Measure adherence, ER visits, readmits, revenue. Then roll out to all 9.</span></button>
+      <button class="stp" aria-pressed="false"><span class="dot">3</span><b>Expand</b><span class="sub">More groups, more states</span><span class="det">Mental health → Primary care → Specialists</span></button>
+      <button class="stp" aria-pressed="false"><span class="dot">4</span><b>Add DME, OTC + RPM</b><span class="sub">2027 and later</span><span class="det">Meds, OTC cards, supplies, equipment and remote monitoring. One pharmacy.</span></button>
+      <button class="stp" aria-pressed="false"><span class="dot">5</span><b>Outcomes + contracts</b><span class="sub">Next</span><span class="det">Study health and economic outcomes. Then contract with state, government and private plans.</span></button>
     </div>
     <div class="wins r">
       <div><b>Patients</b><span>Better care. One pharmacy.</span></div>
@@ -831,7 +1025,7 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
     <div class="split">
       <div>
         <h1 class="r" style="max-width:13ch">Who would like to <em>do it together?</em></h1>
-        <p class="lead r">One clinic. 90 days. Then scale.</p>
+        <p class="lead r">Pilot live since Nov 9, 2026. 1 of 9 clinics. Then all 9. Then nationwide.</p>
       </div>
       <div class="r">
         <div class="contact">
@@ -944,6 +1138,29 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
   new MutationObserver(()=>{if(gslide.classList.contains('active'))growMap();else{gtok++;resetMap()}}).observe(gslide,{attributes:true,attributeFilter:['class']});
   resetMap();if(gslide.classList.contains('active'))growMap();
 
+
+  // What is CCM timeline
+  const PLANS={"dm": [["Jan", "Care plan + A1C goal. Reconcile every med."], ["Feb", "Glucose log review. Metformin side effects."], ["Mar", "Low blood sugar: signs and what to do."], ["Apr", "Carb basics. Sync all refills."], ["May", "Daily foot checks. Numbness or tingling?"], ["Jun", "Blood pressure. Statin taken daily?"], ["Jul", "Heat: hydration, insulin storage."], ["Aug", "Eye exam due. Book it."], ["Sep", "A1C lab due. Flu shot."], ["Oct", "Kidney labs. Dose check with MD."], ["Nov", "Holiday eating. Sick-day rules."], ["Dec", "Year review. Update the care plan."]], "bh": [["Jan", "PHQ-9 + GAD-7 baseline. Care plan."], ["Feb", "Antidepressant taken daily? Side effects."], ["Mar", "Sleep habits and routine."], ["Apr", "PHQ-9 recheck. Response sent to MD."], ["May", "Stress and coping skills."], ["Jun", "Therapy visits kept? Support at home."], ["Jul", "Alcohol and substance screen."], ["Aug", "Weight, energy, side effects."], ["Sep", "PHQ-9 recheck. Seasonal mood."], ["Oct", "Safety check. Crisis plan reviewed."], ["Nov", "Holiday stress and isolation."], ["Dec", "Year review. Update the care plan."]]};
+  const tgb=[...document.querySelectorAll('.tog button')];
+  function showPlan(k){tgb.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.plan===k)));const tl=$('tl');tl.innerHTML='';
+    PLANS[k].forEach(([m,t],i)=>{const d=document.createElement('div');d.className='mo2';d.style.animationDelay=(i*0.03)+'s';const b=document.createElement('b');b.textContent=m;const sp=document.createElement('span');sp.textContent=t;d.append(b,sp);tl.append(d)})}
+  tgb.forEach(b=>b.addEventListener('click',()=>showPlan(b.dataset.plan)));showPlan('dm');
+
+
+  // Unit economics
+  const PTS=[100,250,500,1000,2500,5000,10000,25000,50000,100000,250000];
+  const ue=id=>+$(id).value,money=n=>(n<0?'−$':'$')+Math.abs(Math.round(n)).toLocaleString('en-US');
+  const big=n=>n>=1e9?'$'+(n/1e9).toFixed(2)+'B':n>=1e6?'$'+(n/1e6).toFixed(1)+'M':money(n);
+  function ueCalc(){const N=PTS[ue('uePts')],fee=ue('ueFee'),t=ue('ueTech')/100,m=ue('ueMeds'),rx=ue('ueRx'),d=ue('ueDme')/100,dp=ue('ueDmeP'),r=ue('ueRpm')/100,rp=ue('ueRpmP');
+    const labor=(t*20+(1-t)*66)/3,ccm=fee-labor,meds=m*rx,dme=d*dp,rpm=r*rp,tot=ccm+meds+dme+rpm;
+    $('uePtsO').textContent=N.toLocaleString('en-US');$('uePts').setAttribute('aria-valuetext',N.toLocaleString('en-US')+' patients');
+    $('ueFeeO').textContent='$'+fee;$('ueTechO').textContent=Math.round(t*100)+'%';$('ueMedsO').textContent=m;$('ueRxO').textContent='$'+rx;$('ueDmeO').textContent=Math.round(d*100)+'%';$('ueDmePO').textContent='$'+dp;$('ueRpmO').textContent=Math.round(r*100)+'%';$('ueRpmPO').textContent='$'+rp;
+    $('ueR1').textContent='$'+fee.toFixed(2);$('ueR2').textContent='−$'+labor.toFixed(2);$('ueR3').textContent=money(ccm);$('ueR4').textContent=money(meds)+' ('+m+' × $'+rx+')';$('ueR5').textContent=money(dme);$('ueR5b').textContent=money(rpm);$('ueR6').textContent=money(tot);
+    const pos=Math.max(ccm,0)+meds+dme+rpm||1;[['ueB1',Math.max(ccm,0)],['ueB2',meds],['ueB3',dme],['ueB4',rpm]].forEach(([id,v])=>$(id).style.width=(v/pos*100)+'%');
+    $('ueY').textContent=big(tot*N*12);
+    const hrs=N*20/60,tech=hrs*t/150,ph=hrs*(1-t)/150,f=x=>x>=10?Math.round(x).toLocaleString('en-US'):x.toFixed(1);$('ueS').textContent=f(tech)+' techs + '+f(ph)+' pharmacists'}
+  ['uePts','ueFee','ueTech','ueMeds','ueRx','ueDme','ueDmeP','ueRpm','ueRpmP'].forEach(id=>$(id).addEventListener('input',ueCalc));ueCalc();
+
   // Why cards
   const wc=[...$('why').children];
   wc.forEach(c=>c.addEventListener('click',()=>{c.classList.add('on');if(wc.every(x=>x.classList.contains('on')))$('turn').classList.add('show')}));
@@ -995,7 +1212,7 @@ h3{font-size:clamp(19px,1.6vw,24px);line-height:1.2;letter-spacing:-.4px;font-we
   function setStep(n){stps.forEach((s,i)=>{s.classList.toggle('done',i<n);s.classList.toggle('on',i===n);s.setAttribute('aria-pressed',i===n)});
     const pct=n/(stps.length-1)*100;const f=$('roadFill');if(matchMedia('(max-width:760px)').matches){f.style.height=pct+'%';f.style.width=''}else{f.style.width=pct+'%';f.style.height=''}}
   stps.forEach((s,i)=>s.addEventListener('click',()=>setStep(i)));setStep(0);
-  addEventListener('beforeprint',()=>{setStep(3);wc.forEach(c=>c.classList.add('on'));$('turn').classList.add('show');if(!$('chatBody').querySelector('.msg')){$('chatBody').innerHTML='';lines.forEach(l=>$('chatBody').append(bubble(l)));markStep(5)}});
+  addEventListener('beforeprint',()=>{setStep(4);wc.forEach(c=>c.classList.add('on'));$('turn').classList.add('show');if(!$('chatBody').querySelector('.msg')){$('chatBody').innerHTML='';lines.forEach(l=>$('chatBody').append(bubble(l)));markStep(5)}});
 })();
 </script>
 </body>
