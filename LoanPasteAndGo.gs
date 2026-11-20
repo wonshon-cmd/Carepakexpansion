@@ -32,7 +32,7 @@ function joined_(c1, c2) {
 // otherwise the k-th number in reading order (labels contain no digits, so they are skipped).
 function pick_(cell, k, labelRe) {
   const nth = 'INDEX(SPLIT(TRIM(REGEXREPLACE(' + cell + ',"[^0-9.]+"," "))," "),1,' + k + ')';
-  return '=IF(' + cell + '="","",IFERROR(VALUE(REGEXEXTRACT(' + cell + ',"(?i)(?:' + labelRe + ')[^0-9]*([0-9.]+)")),IFERROR(VALUE(' + nth + '),"")))';
+  return '=IF(' + cell + '="","",IFERROR(VALUE(REGEXEXTRACT(' + cell + ',"(?i)(?:' + labelRe + ')[^0-9a-z]*([0-9.]+)")),IFERROR(VALUE(' + nth + '),"")))';
 }
 function head_(sh, a1, text) {
   const r = sh.getRange(a1).merge().setBackground(HEAD_BG).setFontColor("#FFFFFF").setFontWeight("bold").setFontSize(12);
@@ -100,7 +100,7 @@ function buildTemplate_(sh) {
 
   // state + status bar
   const L = "C" + RES, F = "G" + RES, B = "G" + (RES + 1), ST = "$I$" + STATUS;
-  sh.getRange("I" + STATUS).setFormula('=IF(' + L + '="","",IF(' + L + '>1,"R",IF(' + L + '<0.85,"G",IF(OR(' + F + '="",' + B + '=""),"Y",IF(AND(' + F + '<0.25,' + B + '<0.35),"G","R")))))');
+  sh.getRange("I" + STATUS).setFormula('=IF(' + L + '="","",IF(' + L + '>1,"R",IF(' + L + '<0.85,"G",IF(' + F + '="","Y",IF(' + F + '>=0.25,"R",IF(' + B + '="","Y",IF(' + B + '<0.35,"G","R")))))))');
   sh.getRange("A" + STATUS + ":G" + (STATUS + 1)).merge().setFontSize(18).setFontWeight("bold").setHorizontalAlignment("center").setVerticalAlignment("middle");
   sh.getRange("A" + STATUS).setFormula('=IF(I' + STATUS + '="","PASTE L, H, V ABOVE",IF(I' + STATUS + '="G","✓ APPROVED — click Approve Loan",IF(I' + STATUS + '="Y","NEED DATA — paste Front/Back in STEP 2","✗ NOT QUALIFIED — submit Reject Loan, then this one is complete")))');
   sh.setRowHeight(STATUS, 34); sh.setRowHeight(STATUS + 1, 34);

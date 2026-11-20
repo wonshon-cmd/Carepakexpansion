@@ -364,6 +364,7 @@ function verdict(d, rounded){
   const b = bandOf(f(d.ltv));
   if (b === "low") return "approve";
   if (b === "high") return "reject";
+  if (d.front != null && f(d.front) >= 0.25) return "reject";          // Front fails: Back not needed
   if (d.front == null || d.back == null) return null;
   return (f(d.front) < 0.25 && f(d.back) < 0.35) ? "approve" : "reject";
 }
@@ -379,7 +380,8 @@ function evaluate(d){
   out.band = bandOf(R ? r100(d.ltv) / 100 : d.ltv);
   if (bandOf(d.ltv) !== bandOf(r100(d.ltv) / 100)) out.borderline = true;
   if (out.band === "high") out.decision = "reject";
-  if ((out.band === "mid" || all) && (d.front == null || d.back == null)) { out.stage = "ratios"; return out; }
+  const frontFails = d.front != null && (R ? r100(d.front) / 100 : d.front) >= 0.25;
+  if ((out.band === "mid" || all) && (d.front == null || (d.back == null && !(frontFails && !all)))) { out.stage = "ratios"; return out; }
   out.decision = verdict(d, R);
   const other = verdict(d, !R);
   if (other && other !== out.decision) out.borderline = true;
@@ -680,22 +682,29 @@ function parseAmounts(t){
 const LABEL_RE = {L:/\(L\)|loan amount/i, H:/\(H\)|house price/i, V:/\(V\)|appraisal/i, I:/\(I\)|yearly income/i,
   A:/\(A\)|additional income/i, P:/\(P\)|mortgage payment/i, DE:/\(DE\)|debt exp/i, OT:/\(OT\)|other tax/i};
 function smartParse(text, keys){
-  const out = {}; let pending = null;
-  const nextFree = () => keys.find(k => out[k] == null);
+  const out = {}; const queue = [];
+  const nextFree = () => keys.find(k => out[k] == null && !queue.includes(k));
   const t = String(text).replace(/application\s*\d+/gi, " ").replace(/round to nearest percentage[^%]*%/gi, " ").replace(/\d+\s*%/g, " ").replace(/(\d),(?=\d)/g, "$1");
   const re = /(\((?:L|H|V|I|A|P|DE|OT)\)|loan amount|house price|appraisal|yearly income|additional income|mortgage payment|debt exp\w*|other tax\w*)|(\d+(?:\.\d+)?)/gi;
   let m;
   while ((m = re.exec(t))) {
-    if (m[1]) { const k = Object.keys(LABEL_RE).find(x => LABEL_RE[x].test(m[1])); if (k && keys.includes(k)) pending = k; else if (k) pending = "skip"; continue; }
+    if (m[1]) {   // a label: the next unlabeled number belongs to it (works for "label number" and "all labels, then all numbers")
+      const k = Object.keys(LABEL_RE).find(x => LABEL_RE[x].test(m[1]));
+      const tag = k && keys.includes(k) ? k : "skip:" + k;
+      if (k && !queue.includes(tag) && out[k] == null) queue.push(tag);
+      continue;
+    }
     const num = Number(m[2]); if (!(num > 0)) continue;
-    if (pending === "skip") { pending = null; continue; }        // a number that belongs to a field not on this form
-    const k = pending && out[pending] == null ? pending : nextFree();
-    if (k) out[k] = num; pending = null;
+    const k = queue.length ? queue.shift() : nextFree();
+    if (k && !k.startsWith("skip:")) out[k] = num;
   }
   return out;
 }
 function fillFromText(t, startIdx){
   const inputs = [...document.querySelectorAll("#task input[data-k]")]; if (!inputs.length) return 0;
+  const nums = (String(t).replace(/(\d),(?=\d)/g, "$1").match(/\d+(?:\.\d+)?/g) || []).length;
+  const labeled = /\((?:L|H|V|I|A|P|DE|OT)\)|loan amount|house price|apprais|income|mortgage|debt|tax/i.test(t);
+  if (labeled || nums > inputs.length - startIdx) startIdx = 0;            // e.g. all 5 Back amounts pasted while the cursor sat in DE
   const map = smartParse(t, inputs.slice(startIdx).map(i => i.dataset.k)); let n = 0;
   if (cur) cur.pasted = true;
   inputs.forEach(i => { if (map[i.dataset.k] != null) { i.value = fmt$(map[i.dataset.k]); n++; } });
@@ -705,7 +714,7 @@ function fillFromText(t, startIdx){
   const empty = inputs.find(i => !i.value);
   const box = $("#pastebox"); if (box) box.value = "";
   if (!empty) { const sb = document.querySelector("#task [data-save]"); sb && sb.focus(); }
-  else if (box) box.focus();
+  else if (box) box.focus();      // keep the cursor in the paste box, ready for the Back page paste
   toast("Pasted " + n + " amount" + (n > 1 ? "s" : ""));
   return n;
 }
@@ -807,6 +816,7 @@ function live(){
     if (f != null) { tf = g(f) < .25 ? '<span class="verdict v-good">&lt; 25% ✓</span>' : '<span class="verdict v-bad">≥ 25% ✗</span>';
       if ((f < .25) !== (r100(f)/100 < .25)) tf += '<span class="warnline">Borderline: rounding changes pass/fail.</span>'; }
     let tb = '';
+    if (f != null && g(f) >= .25 && b == null) tb = '<span class="verdict v-bad">Front failed → reject, Back not needed</span>';
     if (b != null) { const pass = g(f) < .25 && g(b) < .35;
       tb = (g(b) < .35 ? '<span class="verdict v-good">&lt; 35% ✓</span>' : '<span class="verdict v-bad">≥ 35% ✗</span>') +
            (pass ? '<span class="verdict v-good">Pass → puzzle</span>' : '<span class="verdict v-bad">Reject</span>');
@@ -825,51 +835,47 @@ function guide(v){
   const R = !!run.useRounded, all = !!run.allTasks; const g = x => R ? r100(x)/100 : x;
   const sb = document.querySelector("#task [data-save]");
   let steps = [], label = null, outcome = null, note = "";
+  // Short directions: only what to click now, then close the tab and move on.
+  const SEL = (x, page) => "Select " + K(r100(x) + "%") + (page ? " on " + page : "") + " → " + K("Submit");
+  const REJ = [K("Decision") + " → " + K("Reject Loan"), "Close the tab " + K("Ctrl/⌘+W") + " → next application"];
+  const NEXT = "Close the tab " + K("Ctrl/⌘+W") + " → next application";
   if (cur.stage === "ltv") {
     const ltv = v.L && v.H && v.V ? v.L / Math.min(v.H, v.V) : null;
-    if (ltv == null) steps = ["Open " + K("Application " + n) + " → " + K("Loan-to-Value") + ' <span class="hint">(Ctrl/⌘+click opens it in a new tab · Ctrl/⌘+W closes it when done)</span>', "Highlight the 3 $ amounts → " + K("Ctrl/⌘ + C") + " → paste in the box above"];
+    if (ltv == null) steps = ["Loan-to-Value page: copy the 3 $ amounts → paste above"];
     else {
-      const b = bandOf(g(ltv)); const sel = "Select " + K(r100(ltv) + "%") + " → " + K("Submit");
+      const b = bandOf(g(ltv));
       if (b === "high" && !all) { outcome = "reject"; label = "Rejected in panel ✓ — next loan";
-        steps = [sel + ' <b class="warnline" style="width:auto">(three digits: ' + r100(ltv) + ', not ' + (r100(ltv) % 100) + ')</b>'].concat(TO_REJECT); note = "If a Next Task link won't open, use " + K("Back to Application") + " → " + K("Decision") + "."; }
-      else if (b === "low") { label = "LTV selected ✓ — next loan";
-        steps = [sel, "Done here. The puzzle person finishes this loan.", K("Next Application")]; }
-      else { label = "LTV selected ✓ → do Front/Back now";
-        steps = [sel, K("Back to Application") + " → " + K("Front Ratio"), "Press the button below. Front/Back for this same loan opens here."]; }
+        steps = [SEL(ltv) + ' <b class="warnline" style="width:auto">(' + r100(ltv) + ', not ' + (r100(ltv) % 100) + ')</b>'].concat(REJ); }
+      else if (b === "low") { label = "LTV selected ✓ — next loan"; steps = [SEL(ltv), "✓ Qualified. " + NEXT]; }
+      else { label = "LTV selected ✓ → do Front/Back now"; steps = [SEL(ltv), "Needs Front/Back: press the blue button"]; }
     }
   } else if (cur.stage === "ratios") {
     const inc = (v.I||0) + (v.A||0);
     const f = inc > 0 && v.P != null ? v.P/inc : null;
     const b = f != null && v.DE != null && v.OT != null ? (v.DE+v.OT+v.P)/inc : null;
-    steps = [
-      "On " + K("Front Ratio") + ": copy the 3 $ amounts → paste above → select " + K(f == null ? "Front %" : r100(f) + "%") + " → " + K("Submit"),
-      K("Next Task: Back Ratio") + ": copy all 5 $ amounts → paste above → select " + K(b == null ? "Back %" : r100(b) + "%") + " → " + K("Submit")
-    ];
-    if (b != null) {
+    if (f == null) steps = ["Front Ratio page: copy the 3 $ amounts → paste above"];
+    else if (g(f) >= .25 && !all) { outcome = "reject"; label = "Rejected in panel ✓ — next loan";
+      steps = [SEL(f, "Front Ratio"), "No Back Ratio needed"].concat(REJ); }
+    else if (b == null) steps = [SEL(f, "Front Ratio"), "Back Ratio page: copy all 5 $ amounts → paste above"];
+    else {
       const pass = g(f) < .25 && g(b) < .35;
-      if (!pass && !all) { outcome = "reject"; label = "Rejected in panel ✓ — next loan";
-        steps = steps.concat([K("Next Task: Loan-to-Value")], TO_REJECT);
-        note = "If a Next Task link won't open, use " + K("Back to Application") + " → " + K("Decision") + "."; }
-      else { label = "Ratios selected ✓ — next loan";
-        steps = steps.concat([pass ? "Passed. The puzzle person finishes this loan." : "Puzzle still needed (all-tasks mode).", K("Next Application")]); }
+      if (!pass && !all) { outcome = "reject"; label = "Rejected in panel ✓ — next loan"; steps = [SEL(b, "Back Ratio")].concat(REJ); }
+      else { label = "Ratios selected ✓ — next loan"; steps = [SEL(b, "Back Ratio"), "✓ Qualified. " + NEXT]; }
     }
   } else if (cur.stage === "puzzle") {
     const dec = evaluate(d).decision;
-    steps = ["Open " + K("Application " + n) + " → " + K("Risk Assessment") + ' <span class="hint">(Ctrl/⌘+click opens it in a new tab · Ctrl/⌘+W closes it when done)</span>',
-             "Find FIRE, FLOOD, HEAT, SOIL, WIND → " + K("Submit"), K("Next Task: Decision")];
-    if (dec === "reject") { steps.push(K("Reject Loan")); label = "Rejected in panel ✓ — next loan"; }
-    else { steps.push("Click the rate " + K("% = words found") + " → " + K("Approve Loan")); label = "Approved in panel ✓ — next loan"; }
-    steps.push(K("Next Application"));
+    steps = [K("Risk Assessment") + ": find the words → " + K("Submit")];
+    if (dec === "reject") { steps = steps.concat(REJ); label = "Rejected in panel ✓ — next loan"; }
+    else { steps.push(K("Decision") + ": click the rate (= words found) → " + K("Approve Loan"), NEXT); label = "Approved in panel ✓ — next loan"; }
   } else if (cur.stage === "submit") {
     const ev = evaluate(d);
-    steps = ["Open " + K("Application " + n) + " → " + K("Decision"),
-      ev.decision === "approve" ? "Click " + K(ev.rate + "%") + " → " + K("Approve Loan") : K("Reject Loan"), K("Next Application")];
+    steps = [K("Decision") + ": " + (ev.decision === "approve" ? "click " + K(ev.rate + "%") + " → " + K("Approve Loan") : K("Reject Loan")), NEXT];
   }
   cur.outcome = outcome;
   if (sb && label) sb.textContent = label;
   const banner = outcome === "reject"
-    ? '<div class="rejectbanner"><b>✗ NOT QUALIFIED</b><span>Submit <u>Reject Loan</u> in the bank panel. Then this application is complete. Press the blue button.</span></div>' : '';
-  el.innerHTML = banner + (steps.length ? '<div class="stepsbox"><div class="stepstitle">Do this in the bank panel</div><ol>' +
+    ? '<div class="rejectbanner"><b>✗ NOT QUALIFIED</b><span>Submit <u>Reject Loan</u> in the bank panel. This application is complete: close the tab and go to the next one.</span></div>' : '';
+  el.innerHTML = banner + (steps.length ? '<div class="stepsbox"><div class="stepstitle">In the bank panel</div><ol>' +
     steps.map(x => '<li>' + x + '</li>').join("") + '</ol>' + (note ? '<div class="hint">' + note + '</div>' : '') + '</div>' : '');
 }
 async function save(){
@@ -883,8 +889,11 @@ async function save(){
   }
   if (cur.stage === "ratios") {
     const inc = (v.I||0)+(v.A||0);
-    if (!inc || [v.P,v.DE,v.OT].some(x => x == null)) return toast("Fill in all five amounts");
-    const p = {I:v.I, A:v.A, P:v.P, DE:v.DE, OT:v.OT, front: v.P/inc, back: (v.DE+v.OT+v.P)/inc};
+    if (!inc || v.P == null) return toast("Paste the Front amounts first (I, A, P)");
+    const front = v.P/inc, frontFails = (run.useRounded ? r100(front)/100 : front) >= 0.25;
+    const hasBack = v.DE != null && v.OT != null;
+    if (!hasBack && !(frontFails && !run.allTasks)) return toast("Front passes, so paste all 5 from the Back Ratio page");
+    const p = {I:v.I, A:v.A, P:v.P, DE:v.DE ?? null, OT:v.OT ?? null, front, back: hasBack ? (v.DE+v.OT+v.P)/inc : null};
     if (cur.outcome === "reject") Object.assign(p, {submitted:true, submittedAt:Date.now()});
     return finish(p);
   }

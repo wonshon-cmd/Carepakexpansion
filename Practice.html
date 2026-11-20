@@ -412,17 +412,21 @@ function renderWeb(){
 const LABEL_RE = {L:/\(L\)|loan amount/i, H:/\(H\)|house price/i, V:/\(V\)|appraisal/i, I:/\(I\)|yearly income/i,
   A:/\(A\)|additional income/i, P:/\(P\)|mortgage payment/i, DE:/\(DE\)|debt exp/i, OT:/\(OT\)|other tax/i};
 function smartParse(text, keys){
-  const out = {}; let pending = null;
-  const nextFree = () => keys.find(k => out[k] == null);
+  const out = {}; const queue = [];
+  const nextFree = () => keys.find(k => out[k] == null && !queue.includes(k));
   const t = String(text).replace(/application\s*\d+/gi, " ").replace(/round to nearest percentage[^%]*%/gi, " ").replace(/\d+\s*%/g, " ").replace(/(\d),(?=\d)/g, "$1");
   const re = /(\((?:L|H|V|I|A|P|DE|OT)\)|loan amount|house price|appraisal|yearly income|additional income|mortgage payment|debt exp\w*|other tax\w*)|(\d+(?:\.\d+)?)/gi;
   let m;
   while ((m = re.exec(t))) {
-    if (m[1]) { const k = Object.keys(LABEL_RE).find(x => LABEL_RE[x].test(m[1])); if (k && keys.includes(k)) pending = k; else if (k) pending = "skip"; continue; }
+    if (m[1]) {
+      const k = Object.keys(LABEL_RE).find(x => LABEL_RE[x].test(m[1]));
+      const tag = k && keys.includes(k) ? k : "skip:" + k;
+      if (k && !queue.includes(tag) && out[k] == null) queue.push(tag);
+      continue;
+    }
     const num = Number(m[2]); if (!(num > 0)) continue;
-    if (pending === "skip") { pending = null; continue; }        // a number that belongs to a field not on this form
-    const k = pending && out[pending] == null ? pending : nextFree();
-    if (k) out[k] = num; pending = null;
+    const k = queue.length ? queue.shift() : nextFree();
+    if (k && !k.startsWith("skip:")) out[k] = num;
   }
   return out;
 }
