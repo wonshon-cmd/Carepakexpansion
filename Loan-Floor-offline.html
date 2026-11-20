@@ -173,6 +173,8 @@ td:first-child{font-family:var(--f-body);font-weight:600}
 .more[open] summary{margin-bottom:12px}
 .skip{display:block;margin:10px auto 0;background:none;border:0;color:var(--muted);text-decoration:underline;font-size:14px}
 .task:empty{display:none}
+.copyable{background:none;border:0;padding:0 4px;margin-left:-4px;border-radius:6px;font-family:var(--f-mono);font-weight:600;color:var(--ink);cursor:copy}
+.copyable:hover{background:color-mix(in srgb,var(--accent) 12%,transparent)}
 .navbtns{display:flex;gap:4px}
 .navbtn{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--soft);color:var(--ink);font-size:17px;font-weight:700;line-height:1}
 .navbtn:disabled{opacity:.35;cursor:default}
@@ -582,9 +584,34 @@ function readInputs(){
   const o = {}; document.querySelectorAll("#task input[data-k]").forEach(i => o[i.dataset.k] = money(i.value)); return o;
 }
 function resHTML(label, x, tail){
-  return '<span><span class="hint">' + label + ' — select in panel</span><br><span class="big">' + bigPct(x) + '</span>' +
-    (x == null ? '' : ' <span class="hint num">exact ' + pct(x) + '</span>') + '</span>' + (tail || '');
+  const big = x == null ? '<span class="big">–</span>'
+    : '<button type="button" class="big copyable" data-copy="' + r100(x) + '" title="Click or Ctrl/⌘+C to copy">' + bigPct(x) + '</button>';
+  return '<span><span class="hint">' + label + ' — select in panel</span><br>' + big +
+    (x == null ? '' : ' <span class="hint num">exact ' + pct(x) + '</span>') +
+    (x == null ? '' : '<br><span class="hint">Copy: <span class="key">Ctrl/⌘ + C</span> · in the panel dropdown just type <b>' + r100(x) + '</b> to jump to it</span>') +
+    '</span>' + (tail || '');
 }
+/* ---------- Ctrl/⌘+C copies the answer you need next ---------- */
+function currentAnswer(){
+  const btns = [...document.querySelectorAll("#task [data-copy]")];
+  return btns.length ? btns[btns.length - 1].dataset.copy : null;   // Back after Front, else the only one
+}
+function copyText(t){
+  const done = () => toast("Copied " + t + " — type " + t + " in the panel dropdown");
+  try { navigator.clipboard.writeText(t).then(done, () => fallbackCopy(t, done)); } catch(e){ fallbackCopy(t, done); }
+}
+function fallbackCopy(t, done){
+  const ta = document.createElement("textarea"); ta.value = t; ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); done(); } catch(e){} ta.remove();
+}
+document.addEventListener("click", e => { const b = e.target.closest("[data-copy]"); if (b) copyText(b.dataset.copy); });
+document.addEventListener("copy", e => {
+  const tgt = e.target; if (tgt && (tgt.tagName === "INPUT" || tgt.tagName === "TEXTAREA")) return;
+  if (String(window.getSelection() || "").trim()) return;       // normal copy when text is selected
+  const a = currentAnswer(); if (!a) return;
+  e.preventDefault(); e.clipboardData.setData("text/plain", a);
+  toast("Copied " + a + " — type " + a + " in the panel dropdown");
+});
 function live(){
   if (!cur) return;
   const v = readInputs(); const R = !!run.useRounded; const g = x => R ? r100(x)/100 : x;
