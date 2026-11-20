@@ -166,6 +166,9 @@ td:first-child{font-family:var(--f-body);font-weight:600}
 .miss b{font-family:var(--f-mono);margin-right:4px}
 .allgood{color:var(--good);font-weight:600}
 .warnline{color:var(--warn);font-size:13px;font-weight:600;width:100%}
+.rejectbanner{margin:12px 0 0;padding:14px;border-radius:10px;background:color-mix(in srgb,var(--bad) 14%,var(--panel));border:2px solid var(--bad);color:var(--bad);display:grid;gap:4px;text-align:center}
+.rejectbanner b{font-size:22px}
+.rejectbanner span{font-size:15px;font-weight:600;color:var(--ink)}
 .stepsbox{margin:12px 0;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--soft)}
 .stepstitle{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px}
 .stepsbox ol{margin:0;padding-left:22px;display:grid;gap:7px;font-size:15px}
@@ -199,6 +202,10 @@ td:first-child{font-family:var(--f-body);font-weight:600}
 .wide{width:100%}
 .counts{display:flex;flex-wrap:wrap;gap:6px 16px;margin-bottom:12px;font-size:14px;color:var(--muted)}
 .counts span b{font-family:var(--f-mono);color:var(--ink);font-size:16px;margin-right:4px}
+.countbtn b{font-family:var(--f-mono);color:var(--ink);font-size:16px;margin-right:4px}
+.countbtn{font:inherit;color:var(--muted);background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:4px 10px;cursor:pointer}
+.countbtn:hover:not(:disabled){border-color:var(--accent);color:var(--ink)}
+.countbtn:disabled{opacity:.5;cursor:default}
 .counts i{display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--c);margin-right:6px}
 .more{margin-top:18px}
 .more summary{cursor:pointer;font-weight:600;color:var(--muted)}
@@ -670,7 +677,7 @@ function entryBlock(d, ev){
   const dec = ev.decision;
   let h = '';
   if (dec === "approve") h += '<div class="decision ok">' + (ev.rate == null ? 'Click the rate (words found) then <u>Approve Loan</u>' : 'Click <span class="num">' + ev.rate + '%</span> then <u>Approve Loan</u>') + '</div>';
-  else if (dec === "reject") h += '<div class="decision no">Click <u>Reject Loan</u></div>';
+  else if (dec === "reject") h += '<div class="decision no">✗ NOT QUALIFIED · submit <u>Reject Loan</u>, then it is complete</div>';
   if (ev.borderline) h += '<div class="warnline">Borderline: the exact and the rounded % give different answers. Check with the team.</div>';
   h += '<dl class="entry">';
   h += '<dt>Loan-to-Value</dt><dd>' + bigPct(d.ltv) + ' <span class="hint">' + pct(d.ltv) + '</span></dd>';
@@ -804,8 +811,10 @@ function guide(v){
   }
   cur.outcome = outcome;
   if (sb && label) sb.textContent = label;
-  el.innerHTML = steps.length ? '<div class="stepsbox"><div class="stepstitle">Do this in the bank panel</div><ol>' +
-    steps.map(x => '<li>' + x + '</li>').join("") + '</ol>' + (note ? '<div class="hint">' + note + '</div>' : '') + '</div>' : '';
+  const banner = outcome === "reject"
+    ? '<div class="rejectbanner"><b>✗ NOT QUALIFIED</b><span>Submit <u>Reject Loan</u> in the bank panel. Then this application is complete. Press the blue button.</span></div>' : '';
+  el.innerHTML = banner + (steps.length ? '<div class="stepsbox"><div class="stepstitle">Do this in the bank panel</div><ol>' +
+    steps.map(x => '<li>' + x + '</li>').join("") + '</ol>' + (note ? '<div class="hint">' + note + '</div>' : '') + '</div>' : '');
 }
 async function save(){
   if (!cur) return;
@@ -871,7 +880,11 @@ function render(){
       (claim ? '<span class="who" title="' + claim + ' is on it">' + claim[0] + '</span>' : '') + '</button>';
   }).join("");
   const pipeDefs = [["ltv","Need LTV"],["ratios","Need ratios"],["puzzle","Need puzzle"],["submit","Need Decision"],["done","Approved ✓"],["rej","Rejected ✓"]];
-  $("#pipeline").innerHTML = pipeDefs.map(([k,l]) => '<span><i style="--c:var(' + STAGE[k].c + ')"></i><b>' + counts[k] + '</b>' + l + '</span>').join("");
+  $("#pipeline").innerHTML = pipeDefs.map(([k,l]) => {
+    const inner = '<i style="--c:var(' + STAGE[k].c + ')"></i><b>' + counts[k] + '</b>' + l;
+    return (k === "done" || k === "rej") ? '<span>' + inner + '</span>'
+      : '<button type="button" class="countbtn" data-pick="' + k + '" title="Open the next application that ' + l.toLowerCase() + '"' + (counts[k] ? '' : ' disabled') + '>' + inner + ' →</button>';
+  }).join("");
   const done = counts.done + counts.rej;
   $("#kDone").textContent = done;
   renderPeople(); renderTimes(); renderChips(); renderMissing();
@@ -962,6 +975,22 @@ async function openTile(id){
   if (window.innerWidth <= 900) $("#task").scrollIntoView({behavior:"smooth", block:"start"});
 }
 $("#nextBtn").addEventListener("click", nextTask);
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-pick]"); if (!b) return;
+  if (!me) { toast("Pick your name first"); return; }
+  const st = b.dataset.pick;
+  if (cur) await release();
+  for (const id of queue(st)) {
+    if (claimedByOther(loans[id])) continue;
+    if (!(await tryLock(id, st))) continue;
+    if (evaluate(loans[id]).stage !== st || claimedByOther(loans[id])) continue;
+    toast("Go to Application " + Number(id.slice(1)) + " in the bank panel");
+    await open(id, st);
+    if (window.innerWidth <= 900) $("#task").scrollIntoView({behavior: "smooth", block: "start"});
+    return;
+  }
+  toast("Nothing free in that group right now");
+});
 $("#startBtn").addEventListener("click", () => writeRun({startedAt: Date.now()}));
 $("#allTasks").addEventListener("change", e => writeRun({allTasks: e.target.checked}));
 $("#useRounded").addEventListener("change", e => writeRun({useRounded: e.target.checked}));

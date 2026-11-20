@@ -102,7 +102,7 @@ function buildTemplate_(sh) {
   const L = "C" + RES, F = "G" + RES, B = "G" + (RES + 1), ST = "$I$" + STATUS;
   sh.getRange("I" + STATUS).setFormula('=IF(' + L + '="","",IF(' + L + '>1,"R",IF(' + L + '<0.85,"G",IF(OR(' + F + '="",' + B + '=""),"Y",IF(AND(' + F + '<0.25,' + B + '<0.35),"G","R")))))');
   sh.getRange("A" + STATUS + ":G" + (STATUS + 1)).merge().setFontSize(18).setFontWeight("bold").setHorizontalAlignment("center").setVerticalAlignment("middle");
-  sh.getRange("A" + STATUS).setFormula('=IF(I' + STATUS + '="","PASTE L, H, V ABOVE",IF(I' + STATUS + '="G","✓ APPROVED — click Approve Loan",IF(I' + STATUS + '="Y","NEED DATA — paste Front/Back in STEP 2","✗ NOT QUALIFIED — click Reject Loan")))');
+  sh.getRange("A" + STATUS).setFormula('=IF(I' + STATUS + '="","PASTE L, H, V ABOVE",IF(I' + STATUS + '="G","✓ APPROVED — click Approve Loan",IF(I' + STATUS + '="Y","NEED DATA — paste Front/Back in STEP 2","✗ NOT QUALIFIED — submit Reject Loan, then this one is complete")))');
   sh.setRowHeight(STATUS, 34); sh.setRowHeight(STATUS + 1, 34);
 
   // STEP 3 · puzzle + decision

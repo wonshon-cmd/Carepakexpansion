@@ -240,7 +240,7 @@ function steps(){
   if (sc.id === 1) return [copyLTV, pasteLTV, typeLTV,
     { t: "Red means reject. Click \"Next Task: Risk Assessment\".", s: "You stay in the same application.", c: () => S.visited.risk, pane: "bank" },
     { t: "Click \"Next Task: Decision\".", c: () => S.visited.decision, pane: "bank" },
-    { t: "Click \"Reject Loan\".", s: "No rate needed for a rejected loan.", c: () => S.decision === "reject", pane: "bank" }, mark];
+    { t: "Not qualified: click \"Reject Loan\". Then this application is complete.", s: "No rate needed for a rejected loan.", c: () => S.decision === "reject", pane: "bank" }, mark];
   if (sc.id === 3) return [copyLTV, pasteLTV, typeLTV,
     web ? { t: "Green means qualified. Press the blue button on the web board.", s: "The puzzle person finishes this loan.", c: () => S.marked, pane: "tool" }
         : { t: "Green means qualified. Leave the rest to the puzzle person.", s: "Nothing else to fill in on this tab for you.", c: () => true, pane: "tool" },
@@ -508,7 +508,7 @@ function renderSheet(){
 function renderSheetStatus(){
   const ss = sheetState(); const el = $("#sStatus"); if (!el) return;
   el.className = "status " + ss.st;
-  el.textContent = ({"": "PASTE L, H, V ABOVE", g: "✓ APPROVED — click Approve Loan", y: "NEED DATA — paste Front/Back in STEP 2", r: "✗ NOT QUALIFIED — click Reject Loan"})[ss.st];
+  el.textContent = ({"": "PASTE L, H, V ABOVE", g: "✓ APPROVED — click Approve Loan", y: "NEED DATA — paste Front/Back in STEP 2", r: "✗ NOT QUALIFIED — submit Reject Loan, then this one is complete"})[ss.st];
   const w = S.sWords; $("#sStep3").textContent = ss.st !== "g" ? "" : (w === "" ? "Do the puzzle, type words found" : "Click " + w + "% → Approve Loan → Next Application");
 }
 // typing straight into a sheet cell
