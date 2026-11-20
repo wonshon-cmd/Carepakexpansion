@@ -5,7 +5,7 @@
 .lfnav a{color:#e5e7eb;text-decoration:none;padding:6px 9px;border-radius:8px;white-space:nowrap}
 .lfnav a:hover{background:#1f2937}
 .lfnav a[aria-current="page"]{background:#1f5fd6;color:#fff}
-.lfnav .brand{font-weight:700;color:#fff;margin-right:6px}
+.lfnav .brand{font-weight:700;color:#fff;margin-right:2px}
 .lfnav .real{color:#fecaca;border:1px solid #7f1d1d}
 .lfnav .test{color:#bbf7d0;border:1px solid #14532d}
 .lfnav .sp{flex:1}
@@ -17,18 +17,20 @@
   <a class="brand" href="Loan-Floor-offline.html">Loan Floor</a>
   <a href="Loan-Floor-offline.html" data-page="program">Program</a>
   <a href="Practice.html#web" data-page="web">How to use · Program</a>
-  <a href="Practice.html#sheet" data-page="sheet">How to use · Google Sheet</a>
+  <a href="Practice.html#sheet" data-page="sheet">How to use · Sheet</a>
+  <a href="Workflow.html" data-page="workflow">Workflow</a>
   <span class="sp"></span>
-  <a class="test" href="https://docs.google.com/spreadsheets/d/1OKJ-hPE26-xSvTBSW-o1qQ8YTFYOuiuua8sOu9V7qJk/edit?usp=sharing" target="_blank" rel="noopener" title="Practice copy, type anything">TEST &amp; PRACTICE sheet ↗</a>
-  <a class="real" href="https://docs.google.com/spreadsheets/d/1rxMJrqUcFL1y4Q-48_IiZNxnorFBIMfMP-exQzGFRN0/edit?usp=sharing" target="_blank" rel="noopener" title="The real sheet for the 15-minute run">REAL sheet · do not touch ↗</a>
+  <a class="test" href="https://docs.google.com/spreadsheets/d/1OKJ-hPE26-xSvTBSW-o1qQ8YTFYOuiuua8sOu9V7qJk/edit?usp=sharing" target="_blank" rel="noopener" title="Practice copy, type anything">TEST &amp; PRACTICE ↗</a>
+  <a class="real" href="https://docs.google.com/spreadsheets/d/1rxMJrqUcFL1y4Q-48_IiZNxnorFBIMfMP-exQzGFRN0/edit?usp=sharing" target="_blank" rel="noopener" title="The real sheet for the 15-minute run">REAL · do not touch ↗</a>
 </nav>
-<script>(function(){var p=location.pathname.indexOf("Practice")>-1?(location.hash==="#sheet"?"sheet":"web"):"program";
-function mark(){var q=location.pathname.indexOf("Practice")>-1?(location.hash==="#sheet"?"sheet":"web"):"program";
+<script>(function(){
+function mark(){var path=location.pathname;var q=path.indexOf("Workflow")>-1?"workflow":path.indexOf("Practice")>-1?(location.hash==="#sheet"?"sheet":"web"):"program";
 document.querySelectorAll(".lfnav [data-page]").forEach(function(a){a.toggleAttribute("aria-current",a.dataset.page===q);if(a.dataset.page===q)a.setAttribute("aria-current","page");});}
 mark();window.addEventListener("hashchange",mark);
 function navh(){document.documentElement.style.setProperty("--navh",document.querySelector(".lfnav").offsetHeight+"px");}
 navh();window.addEventListener("resize",navh);
 document.getElementById("lfBack").addEventListener("click",function(){if(history.length>1)history.back();else location.href="Loan-Floor-offline.html";});})();</script>
+<script>window.LF_SYNC_URL = '';</script>
 <title>Huntsman Loan Floor</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -225,6 +227,9 @@ button.brand:hover{color:var(--accent)}
 .cursor{position:absolute;right:-4px;bottom:-10px;font-size:20px;color:var(--ink);transform:rotate(180deg)}
 @keyframes flash{from{background:color-mix(in srgb,var(--good) 30%,var(--bg))}to{background:var(--bg)}}
 .field input.flash{animation:flash 1.2s ease-out}
+.pwbox{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 90px);transform:translateX(-50%);z-index:60;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:8px;width:min(360px,calc(100vw - 32px));box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.pwbox input{font:inherit;font-size:18px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.pwmsg{color:var(--bad);font-weight:600;min-height:1em}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:10px 16px;border-radius:10px;font-size:14px;z-index:20}
 @media (prefers-reduced-motion:no-preference){.tile{transition:background .25s,border-color .25s}}
 </style>
@@ -241,6 +246,7 @@ button.brand:hover{color:var(--accent)}
     <div class="kpi"><b id="kDone">0</b><span>of 49 done</span></div>
     <div class="spacer"></div>
     <div class="sync" id="sync"><i></i>Connecting…</div>
+    <button class="btn danger" id="resetTop" type="button">Reset</button>
   </div>
 </header>
 
@@ -279,6 +285,13 @@ button.brand:hover{color:var(--accent)}
     </details>
   </section>
 </main>
+<div class="pwbox" id="pwbox" hidden role="dialog" aria-label="Reset the board">
+  <b>Reset the whole board?</b>
+  <span>This erases all 49 applications for everyone. Enter the reset password.</span>
+  <input id="pwInput" type="password" inputmode="numeric" autocomplete="off" placeholder="Password">
+  <div class="actions"><button class="btn danger" id="pwGo" type="button">Erase everything</button><button class="btn" id="pwCancel" type="button">Cancel</button></div>
+  <span class="pwmsg" id="pwMsg"></span>
+</div>
 <div class="toast" id="toast" hidden></div>
 
 <script>
@@ -916,25 +929,72 @@ $("#demoBtn").addEventListener("click", () => {
   if (!run.startedAt) writeRun({startedAt: Date.now() - 300000});
   toast("Demo loaded: 24 sample loans");
 });
-let resetArmed = 0;
-$("#resetBtn").addEventListener("click", async e => {
-  if (Date.now() - resetArmed > 4000) { resetArmed = Date.now(); e.target.textContent = "Click again to erase all 49 loans"; setTimeout(() => e.target.textContent = "Reset board", 4000); return; }
-  resetArmed = 0; e.target.textContent = "Reset board"; cur = null;
-  const had = Object.keys(loans); loans = {}; run = {allTasks: !!run.allTasks, useRounded: !!run.useRounded}; render(); renderTask();
-  outbox = {}; persistOutbox();
-  if (db) { for (const id of had) { try { await db.collection("loans").doc(id).delete(); } catch(_){} } try { await db.doc("meta/run").set(run); } catch(_){} }
-  syncStatus();
-  toast("Board cleared");
+/* Reset: asks for the password (1234) before erasing the board for everyone. */
+const RESET_PASSWORD = "1234";
+function openReset(){ $("#pwbox").hidden = false; $("#pwMsg").textContent = ""; $("#pwInput").value = ""; setTimeout(() => $("#pwInput").focus(), 30); }
+function closeReset(){ $("#pwbox").hidden = true; }
+$("#resetBtn").addEventListener("click", openReset);
+$("#resetTop").addEventListener("click", openReset);
+$("#pwCancel").addEventListener("click", closeReset);
+$("#pwInput").addEventListener("keydown", e => { if (e.key === "Enter") $("#pwGo").click(); if (e.key === "Escape") closeReset(); });
+$("#pwGo").addEventListener("click", async () => {
+  const pw = $("#pwInput").value.trim();
+  if (pw !== RESET_PASSWORD) { $("#pwMsg").textContent = "Wrong password."; $("#pwInput").select(); return; }
+  $("#pwGo").disabled = true;
+  try {
+    if (db && db.resetAll) { const r = await db.resetAll(pw); if (!r || r.ok === false) throw new Error((r && r.error) || "reset failed"); }
+    cur = null;
+    const had = Object.keys(loans); loans = {}; run = {allTasks: !!run.allTasks, useRounded: !!run.useRounded}; outbox = {}; persistOutbox();
+    ls.set("lf.run", JSON.stringify(run)); render(); renderTask();
+    if (db && !db.resetAll) { for (const id of had) { try { await db.collection("loans").doc(id).delete(); } catch(_){} } try { await db.doc("meta/run").set(run); } catch(_){} }
+    if (db && db.refresh) db.refresh();
+    closeReset(); syncStatus(); toast("Board reset for everyone");
+  } catch (e) { $("#pwMsg").textContent = "Couldn't reset: " + (e.message || e) + ". Check the connection and try again."; }
+  finally { $("#pwGo").disabled = false; }
 });
 let toastT; function toast(m){ const t = $("#toast"); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 2600); }
 function setSync(cls, txt){ const s = $("#sync"); s.className = "sync " + cls; s.innerHTML = "<i></i>" + txt; }
 
 render(); renderTask(); tick();
 
+/* ---------- shared store via the team's Google sync script (no login needed) ---------- */
+function makeSheetDb(url){
+  const subs = {loans: [], run: [], err: []}; let timer = null, fails = 0;
+  const post = body => fetch(url, {method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"}, body: JSON.stringify(body)}).then(r => r.json());
+  const chk = r => { if (!r || r.ok === false) throw {code: "unavailable", message: (r && r.error) || "no answer"}; refreshSoon(); return r; };
+  async function poll(){
+    try {
+      const r = await fetch(url + (url.includes("?") ? "&" : "?") + "action=state&t=" + Date.now());
+      const st = await r.json(); fails = 0;
+      const docs = Object.keys(st.loans || {}).sort().map(id => ({id, exists: true, data: () => st.loans[id]}));
+      subs.loans.forEach(f => f({metadata: {fromCache: false, hasPendingWrites: false}, docs}));
+      subs.run.forEach(f => f({exists: true, data: () => st.run || {}}));
+    } catch (e) {
+      if (++fails === 3) setSync("local", "Can't reach the team board — retrying… (your work is kept)");
+    } finally { clearTimeout(timer); timer = setTimeout(poll, fails ? 4000 : 2000); }
+  }
+  let soon = null; function refreshSoon(){ clearTimeout(soon); soon = setTimeout(() => { clearTimeout(timer); poll(); }, 150); }
+  const start = () => { if (!timer) poll(); };
+  const loanRef = id => ({
+    update: p => post({action: "patch", id, patch: p}).then(chk),
+    set: d => post({action: "set", id, data: d}).then(chk),
+    delete: () => post({action: "delete", id}).then(chk)
+  });
+  return {
+    collection: () => ({ doc: id => loanRef(id), onSnapshot: (f, e) => { subs.loans.push(f); start(); return () => {}; } }),
+    doc: path => path === "meta/run"
+      ? { set: d => post({action: "run", data: d}).then(chk), onSnapshot: f => { subs.run.push(f); start(); return () => {}; } }
+      : { acquire: o => post({action: "lock", id: path.replace(/^locks\//, ""), holder: o.holder, ttlMs: o.ttlMs}).catch(() => ({acquired: true})) },
+    resetAll: pw => post({action: "reset", password: pw}),
+    refresh: () => { clearTimeout(timer); poll(); }
+  };
+}
+const SYNC_URL = (() => { try { return new URLSearchParams(location.search).get("sync") || window.LF_SYNC_URL || ""; } catch(e){ return window.LF_SYNC_URL || ""; } })();
+
 /* ---------- connect shared store ---------- */
 (async () => {
   const timer = setTimeout(() => setSync("local", "Can't reach team data yet — working on this device only"), 10000);
-  try { db = window.claude && window.claude.use ? await window.claude.use("db") : null; } catch(e){ db = null; }
+  try { db = SYNC_URL ? makeSheetDb(SYNC_URL) : (window.claude && window.claude.use ? await window.claude.use("db") : null); } catch(e){ db = null; }
   if (!db) {
     clearTimeout(timer);
     for (const [id, p] of Object.entries(outbox)) loans[id] = mergePatch(loans[id], p);
