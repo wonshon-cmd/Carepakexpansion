@@ -206,6 +206,10 @@ td:first-child{font-family:var(--f-body);font-weight:600}
 .closeout{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;margin-top:10px;font-size:13px;color:var(--muted)}
 .closeout span{width:100%;text-align:center}
 .btn.ok{color:var(--good)}
+.myblock{font-size:13px;color:var(--muted);margin:-4px 0 10px}
+.myblock b{color:var(--ink);font-family:var(--f-mono)}
+.teamblocks{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:14px}
+.tm{display:inline-flex;gap:6px;align-items:center}
 .wayrow{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted);margin:-4px 0 12px}
 .wayrow input{flex:1;min-width:0;font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
 .countbtn b{font-family:var(--f-mono);color:var(--ink);font-size:16px;margin-right:4px}
@@ -273,6 +277,7 @@ button.brand:hover{color:var(--accent)}
       <nav class="crumbs" id="crumbs" aria-label="Where you are"></nav>
       <div class="me"><button type="button" class="link" id="changeName"></button></div>
       <div class="seg" id="roles" role="group" aria-label="My job"></div>
+      <div class="myblock" id="myBlock"></div>
       <label class="wayrow">Way being tested <input id="wayInput" maxlength="20" placeholder="optional, e.g. A" autocomplete="off"></label>
       <button class="btn primary big wide" id="nextBtn" type="button">Next loan →</button>
       <div class="task" id="task"></div>
@@ -307,6 +312,9 @@ button.brand:hover{color:var(--accent)}
       </ul>
       <label class="toggle"><input type="checkbox" id="allTasks"> Panel needs all 4 tasks before Decision</label>
       <label class="toggle"><input type="checkbox" id="useRounded"> Decide on the rounded % (⚠ marks loans where it matters)</label>
+      <h2 style="margin-top:14px">Number blocks (who starts where)</h2>
+      <div class="teamblocks" id="teamBlocks"></div>
+      <p class="hint">Tick the people doing LTV. The 49 applications are split into one run of numbers each, in this order. Untick the puzzle person if they only do puzzles.</p>
       <div class="actions"><button class="btn" id="demoBtn" type="button">Load demo loans</button><button class="btn danger" id="resetBtn" type="button">Reset board</button></div>
     </details>
   </section>
@@ -470,11 +478,35 @@ async function tryLock(id, stage){
 }
 
 /* ---------- task flow ---------- */
+/* Number blocks: each teammate owns a run of numbers and works it in order (so the panel's
+   "Next Application" lines up). When your block has nothing left, you help whoever has the most
+   left, starting from the BACK of their block, so you meet them in the middle. */
+function team(){ const t = Array.isArray(run.team) ? run.team.filter(n => NAMES.includes(n)) : []; return t.length ? t : NAMES.slice(); }
+function blocks(){
+  const t = team(), k = t.length, base = Math.floor(N / k), extra = N % k; const out = {}; let from = 1;
+  t.forEach((name, i) => { const size = base + (i < extra ? 1 : 0); out[name] = [from, from + size - 1]; from += size; });
+  return out;
+}
+const numOf = id => Number(id.slice(1));
+function pickOrder(st){
+  const q = queue(st);
+  if (st !== "ltv") return q;
+  const B = blocks(), mine = B[me];
+  const inBlock = (id, b) => b && numOf(id) >= b[0] && numOf(id) <= b[1];
+  const own = mine ? q.filter(id => inBlock(id, mine) && !claimedByOther(loans[id])) : [];
+  if (own.length) return own;                                            // 1) my own block, lowest number first
+  // 2) help the slowest: the block with the most still waiting, taken from its highest number down
+  const others = Object.entries(B).filter(([n]) => n !== me).map(([n, b]) => ({n, b, left: q.filter(id => inBlock(id, b)).length}))
+    .filter(x => x.left).sort((a, b) => b.left - a.left);
+  const help = []; others.forEach(x => q.filter(id => inBlock(id, x.b)).sort((a, b) => numOf(b) - numOf(a)).forEach(id => help.push(id)));
+  q.forEach(id => { if (!help.includes(id)) help.push(id); });           // anything outside every block
+  return help;
+}
 async function nextTask(){
   if (!me) { toast("Pick your name first"); return; }
   if (cur) await release();
   for (const st of order()) {
-    for (const id of queue(st)) {
+    for (const id of pickOrder(st)) {
       if (claimedByOther(loans[id])) continue;
       if (!(await tryLock(id, st))) continue;
       if (evaluate(loans[id]).stage !== st || claimedByOther(loans[id])) continue;
@@ -974,6 +1006,13 @@ function renderChips(){
   $("#names").innerHTML = NAMES.map(n => '<button type="button" class="chip" data-name="' + n + '">' + n + '</button>').join("");
   $("#changeName").textContent = me ? "I'm " + me + " · change" : "";
   $("#roles").innerHTML = ROLES.map(r => '<button type="button" data-role="' + r.id + '" aria-pressed="' + (r.id===role) + '">' + r.label + '</button>').join("");
+  const B = blocks(), b = B[me];
+  $("#myBlock").innerHTML = role === "ltv"
+    ? (b ? 'Your numbers: <b>' + b[0] + '–' + b[1] + '</b> in order. When they are done you help the slowest, from the back.' : 'You are not in a number block: you help the slowest, from the back.')
+    : 'Puzzle + Decision: qualified loans in number order.';
+  $("#myBlock").hidden = !!cur;
+  $("#teamBlocks").innerHTML = NAMES.map(n => '<label class="tm"><input type="checkbox" data-team="' + n + '"' + (team().includes(n) ? ' checked' : '') + '> ' + n +
+    (B[n] ? ' <span class="hint">' + B[n][0] + '–' + B[n][1] + '</span>' : '') + '</label>').join("");
 }
 function renderHint(c){
   const map = {ltv:"ltv", ratios:"ratios", puzzsub:"puzzle", submit:"submit"};
@@ -1024,6 +1063,11 @@ async function goHome(){ if (cur) { await release(); } cur = null; renderTask();
 $("#backBtn").addEventListener("click", () => { if (navPos > 0) goNav(navHist[--navPos]); });
 $("#fwdBtn").addEventListener("click", () => { if (navPos < navHist.length - 1) goNav(navHist[++navPos]); });
 $("#homeLogo").addEventListener("click", goHome);
+document.addEventListener("change", e => {
+  const c = e.target.closest && e.target.closest("[data-team]"); if (!c) return;
+  const t = NAMES.filter(n => { const el = document.querySelector('[data-team="' + n + '"]'); return el && el.checked; });
+  writeRun({team: t.length ? t : NAMES.slice()});
+});
 $("#wayInput").value = way;
 $("#wayInput").addEventListener("input", e => { way = e.target.value.trim(); ls.set("lf.way", way); });
 $("#copyTimes").addEventListener("click", () => {
@@ -1048,7 +1092,7 @@ document.addEventListener("click", async e => {
   if (!me) { toast("Pick your name first"); return; }
   const st = b.dataset.pick;
   if (cur) await release();
-  for (const id of queue(st)) {
+  for (const id of pickOrder(st)) {
     if (claimedByOther(loans[id])) continue;
     if (!(await tryLock(id, st))) continue;
     if (evaluate(loans[id]).stage !== st || claimedByOther(loans[id])) continue;
@@ -1096,7 +1140,9 @@ $("#pwGo").addEventListener("click", async () => {
   try {
     if (db && db.resetAll) { const r = await db.resetAll(pw); if (!r || r.ok === false) throw new Error((r && r.error) || "reset failed"); }
     cur = null;
+    const keepTeam = run.team;
     const had = Object.keys(loans); loans = {}; run = {allTasks: !!run.allTasks, useRounded: !!run.useRounded}; outbox = {}; persistOutbox();
+    if (keepTeam) writeRun({team: keepTeam});
     ls.set("lf.run", JSON.stringify(run)); render(); renderTask();
     if (db && !db.resetAll) { for (const id of had) { try { await db.collection("loans").doc(id).delete(); } catch(_){} } try { await db.doc("meta/run").set(run); } catch(_){} }
     if (db && db.refresh) db.refresh();
