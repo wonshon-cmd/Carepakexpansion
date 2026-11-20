@@ -104,8 +104,8 @@ h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute
 .pipe b{display:block;font-family:var(--f-mono);font-size:24px;font-variant-numeric:tabular-nums}
 .pipe span{font-size:12px;color:var(--muted)}
 .board{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:6px}
-.tile{position:relative;text-align:left;border:1px solid var(--line);border-left:5px solid var(--c);background:var(--panel);color:var(--ink);border-radius:8px;padding:6px 7px;min-height:66px;display:flex;flex-direction:column;gap:2px}
-.tile .n{font-family:var(--f-mono);font-weight:600;font-size:15px}
+.tile{position:relative;text-align:left;justify-content:center;border:1px solid var(--line);border-left:5px solid var(--c);background:var(--panel);color:var(--ink);border-radius:8px;padding:6px 7px;min-height:66px;display:flex;flex-direction:column;gap:2px}
+.tile .n{font-family:var(--f-mono);font-weight:600;font-size:17px}
 .tile .s{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tile .v{font-family:var(--f-mono);font-size:12px}
 .tile .who{position:absolute;top:5px;right:6px;margin:0;width:20px;height:20px;border-radius:50%;background:var(--ink);color:var(--panel);font-size:11px;font-weight:700;display:grid;place-items:center}
@@ -154,20 +154,34 @@ td:first-child{font-family:var(--f-body);font-weight:600}
   .tile{min-height:56px}
   .field label{min-width:8em;font-size:13px}
 }
+.ask{font-size:20px;font-weight:600;margin-bottom:12px}
+.namegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.namegrid .chip{padding:16px;font-size:17px;border-radius:12px;font-weight:600}
+.me{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.link{background:none;border:0;padding:0;color:var(--muted);font-size:14px;text-decoration:underline;text-underline-offset:3px}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:12px}
+.seg button{border:0;background:var(--panel);color:var(--ink);padding:11px 6px;font-weight:600;font-size:14px}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.wide{width:100%}
+.counts{display:flex;flex-wrap:wrap;gap:6px 16px;margin-bottom:12px;font-size:14px;color:var(--muted)}
+.counts span b{font-family:var(--f-mono);color:var(--ink);font-size:16px;margin-right:4px}
+.counts i{display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--c);margin-right:6px}
+.more{margin-top:18px}
+.more summary{cursor:pointer;font-weight:600;color:var(--muted)}
+.more[open] summary{margin-bottom:12px}
+.skip{display:block;margin:10px auto 0;background:none;border:0;color:var(--muted);text-decoration:underline;font-size:14px}
+.task:empty{display:none}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:10px 16px;border-radius:10px;font-size:14px;z-index:20}
 @media (prefers-reduced-motion:no-preference){.tile{transition:background .25s,border-color .25s}}
 </style>
 
 <header class="top">
   <div class="wrap">
-    <div class="brand">Loan Floor<small>Huntsman Bank · Team run</small></div>
+    <div class="brand">Loan Floor</div>
     <div class="clock num" id="clock">15:00</div>
-    <button class="btn primary" id="startBtn" type="button">Start 15:00</button>
-    <div class="kpis">
-      <div class="kpi"><b id="kDone">0</b><span>Submitted</span></div>
-      <div class="kpi"><b id="kPace">–</b><span>Pace / 15 min</span></div>
-      <div class="kpi"><b id="kLeft">49</b><span>Still open</span></div>
-    </div>
+    <button class="btn primary" id="startBtn" type="button">Start</button>
+    <div class="kpi"><b id="kDone">0</b><span>of 49 done</span></div>
     <div class="spacer"></div>
     <div class="sync" id="sync"><i></i>Connecting…</div>
   </div>
@@ -175,49 +189,36 @@ td:first-child{font-family:var(--f-body);font-weight:600}
 
 <main class="wrap">
   <section class="card desk" aria-label="My desk">
-    <h2>I am</h2>
-    <div class="who" id="names"></div>
-    <h2>My job</h2>
-    <div class="who roles" id="roles"></div>
-    <div class="hint" id="roleHint"></div>
-    <div class="actions"><button class="btn primary big" id="nextBtn" type="button">Get next loan →</button></div>
-    <div class="task" id="task"><div class="empty">Pick your name, then press <b>Get next loan</b>.</div></div>
+    <div id="pickName">
+      <div class="ask">Who are you?</div>
+      <div class="namegrid" id="names"></div>
+    </div>
+    <div id="working" hidden>
+      <div class="me"><button type="button" class="link" id="changeName"></button></div>
+      <div class="seg" id="roles" role="group" aria-label="My job"></div>
+      <button class="btn primary big wide" id="nextBtn" type="button">Next loan →</button>
+      <div class="task" id="task"></div>
+    </div>
   </section>
 
   <section style="min-width:0">
     <div class="card">
-      <h2>Pipeline</h2>
-      <div class="pipeline" id="pipeline"></div>
-      <h2>All 49 loans</h2>
-      <div class="board" id="board"></div>
-      <div class="legend" id="legend"></div>
-    </div>
-    <div class="card" style="margin-top:18px">
-      <h2 id="missingTitle">Not yet entered in the bank panel</h2>
       <div class="banner" id="banner" hidden></div>
-      <div class="missing" id="missing"></div>
+      <div class="counts" id="pipeline"></div>
+      <div class="board" id="board"></div>
     </div>
-    <div class="split">
-      <div class="card">
-        <h2>Team output</h2>
-        <table><thead><tr><th>Person</th><th>LTV</th><th>Ratios</th><th>Puzzle</th><th>Entered</th><th>Avg s</th></tr></thead><tbody id="people"></tbody></table>
-      </div>
-      <div class="card">
-        <h2>Underwriting rules</h2>
-        <ul class="rules">
-          <li>LTV = L ÷ min(H, V)</li>
-          <li><b>LTV &lt; 85%</b> → approve, needs word puzzle</li>
-          <li><b>85% – 100%</b> → needs Front &lt; 25% and Back &lt; 35%, else reject</li>
-          <li><b>LTV &gt; 100%</b> → reject, no puzzle</li>
-          <li>Front = P ÷ (I + A) · Back = (DE + OT + P) ÷ (I + A)</li>
-          <li>Rate = number of FIRE / FLOOD / HEAT / SOIL / WIND found</li>
-        </ul>
-        <label class="toggle"><input type="checkbox" id="allTasks"> The panel won't open Decision until all 4 tasks are done (forces ratios + puzzle on every loan)</label>
-        <label class="toggle"><input type="checkbox" id="useRounded"> Decide using the rounded % (default: exact %). Borderline loans show ⚠ either way.</label>
-        <div class="actions"><button class="btn" id="demoBtn" type="button">Load demo loans</button><button class="btn danger" id="resetBtn" type="button">Reset board</button></div>
-        <div class="hint">Demo fills 24 made-up loans at different stages so you can see the board work. Reset before the real run.</div>
-      </div>
-    </div>
+    <details class="card more">
+      <summary>Team, rules &amp; settings</summary>
+      <table><thead><tr><th>Person</th><th>LTV</th><th>Ratios</th><th>Puzzle</th><th>Decision</th><th>Avg s</th></tr></thead><tbody id="people"></tbody></table>
+      <ul class="rules">
+        <li>LTV = L ÷ min(H, V). Under 85% approve · 85–100% check ratios · over 100% reject</li>
+        <li>Front = P ÷ (I + A) must be under 25% · Back = (DE + OT + P) ÷ (I + A) must be under 35%</li>
+        <li>Rate = number of FIRE / FLOOD / HEAT / SOIL / WIND found</li>
+      </ul>
+      <label class="toggle"><input type="checkbox" id="allTasks"> Panel needs all 4 tasks before Decision</label>
+      <label class="toggle"><input type="checkbox" id="useRounded"> Decide on the rounded % (⚠ marks loans where it matters)</label>
+      <div class="actions"><button class="btn" id="demoBtn" type="button">Load demo loans</button><button class="btn danger" id="resetBtn" type="button">Reset board</button></div>
+    </details>
   </section>
 </main>
 <div class="toast" id="toast" hidden></div>
@@ -227,11 +228,8 @@ td:first-child{font-family:var(--f-body);font-weight:600}
 const N = 49;
 const NAMES = ["Rishi","Senthil","Tobe","Gabrielle","Joe"];
 const ROLES = [
-  {id:"ltv", label:"LTV typing"},
-  {id:"ratios", label:"Front/Back"},
+  {id:"ltv", label:"LTV + Ratios"},
   {id:"puzzsub", label:"Puzzle + Decision"},
-  {id:"submit", label:"Decision only"},
-  {id:"auto", label:"Wherever needed"},
 ];
 const STAGE = {
   ltv:{label:"Needs LTV", c:"--s-ltv"}, ratios:{label:"Needs Front/Back", c:"--s-ratios"},
@@ -244,7 +242,7 @@ const ids = Array.from({length:N}, (_,i) => "L" + String(i+1).padStart(2,"0"));
 
 const ls = { get(k){ try{return localStorage.getItem(k)}catch(e){return null} }, set(k,v){ try{localStorage.setItem(k,v)}catch(e){} } };
 let me = ls.get("lf.me") || "";
-let role = ls.get("lf.role") || "ltv";
+let role = ls.get("lf.role") === "puzzsub" ? "puzzsub" : "ltv";
 let loans = {};          // id -> data
 let run = {};            // meta/run doc
 let db = null;
@@ -353,7 +351,10 @@ window.addEventListener("beforeunload", e => { if (db && Object.keys(outbox).len
 window.addEventListener("online", () => flush());
 async function tryLock(id, stage){
   if (!db) return true;
-  try { const r = await db.doc("locks/" + id + "-" + stage).acquire({holder: me, ttlMs: CLAIM_MS}); return !!r.acquired; }
+  try {
+    const r = await Promise.race([db.doc("locks/" + id + "-" + stage).acquire({holder: me, ttlMs: CLAIM_MS}), new Promise(res => setTimeout(() => res({acquired:true}), 1500))]);
+    return !!r.acquired;
+  }
   catch(e){ return true; }
 }
 
@@ -390,6 +391,7 @@ function logPatch(id, stage){
 }
 async function finish(patch){
   const {id, stage} = cur;
+  clearDraft();
   await writeLoan(id, Object.assign(patch, logPatch(id, stage)));
   const ev = evaluate(loans[id]);
   // Stay in the same application: LTV >= 85% -> same person does Front/Back;
@@ -402,19 +404,18 @@ async function finish(patch){
 /* ---------- task UI ---------- */
 function renderTask(){
   const box = $("#task");
-  if (!cur) { box.innerHTML = '<div class="empty">' + (me ? 'Press <b>Get next loan</b>, or click any tile on the board.' : 'Pick your name, then press <b>Get next loan</b>.') + '</div>'; return; }
+  $("#nextBtn").hidden = !!cur;
+  if (!cur) { box.innerHTML = ''; return; }
   const d = loans[cur.id] || {}; const ev = evaluate(d); const st = cur.stage;
   const n = Number(cur.id.slice(1));
   const pillCls = st === "view" ? (ev.stage==="rej"?"st-rej":"st-"+ev.stage) : "st-" + st;
   const pillTxt = st === "view" ? STAGE[ev.stage].label : STAGE[st].label;
-  let h = '<div class="taskhead"><span class="lid">Loan ' + n + '</span><span class="stagepill ' + pillCls + '">' + pillTxt + '</span></div>';
-  h += '<div class="panelpath">Bank panel: <b>Application ' + n + '</b> → ' + ({ltv:"Loan-to-Value", ratios:"Front Ratio, then Back Ratio", puzzle:"Risk Assessment", submit:"Decision"}[st] || "overview") + '</div>';
+  let h = '<div class="taskhead"><span class="lid">Application ' + n + '</span><span class="stagepill ' + pillCls + '">' + pillTxt + '</span></div>';
   if (st === "ltv") {
     h += field("L","Loan amount","L",d.L) + field("H","House price","H",d.H) + field("V","Appraisal value","V",d.V);
     h += '<div class="result" id="live"></div><div id="steps"></div>';
     h += actions("Selected in panel ✓ — next");
   } else if (st === "ratios") {
-    h += '<div class="hint">LTV ' + bigPct(d.ltv) + '. Front page: I, A, P. Back page adds DE and OT.</div>';
     h += field("I","Yearly income","I",d.I) + field("A","Additional income","A",d.A) + field("P","Yearly mortgage pmt","P",d.P);
     h += '<div class="result" id="liveF"></div>';
     h += field("DE","Debt expenses","DE",d.DE) + field("OT","Other taxes","OT",d.OT);
@@ -422,7 +423,7 @@ function renderTask(){
     h += actions("Both selected in panel ✓ — next");
   } else if (st === "puzzle") {
     const w = cur.draft || (Array.isArray(d.words) ? d.words.slice() : []); cur.draft = w;
-    h += '<div class="hint">Words run only left→right or top→bottom. Tap each word you find (keys 1–5); each appears once or not at all. Enter saves.</div>';
+    h += '<div class="hint">Tap each word you find. Words go left→right or top→bottom only.</div>';
     h += '<div class="words">' + WORDS.map((x,i) => '<button type="button" class="word" data-w="' + x + '" aria-pressed="' + w.includes(x) + '">' + x + '<small>' + (i+1) + '</small></button>').join("") + '</div>';
     h += '<div class="result"><span class="hint">Words found = interest rate</span><span class="big" id="rate">' + w.length + '%</span></div><div id="steps"></div>';
     h += actions("Approved in panel ✓ — next loan");
@@ -442,13 +443,14 @@ function renderTask(){
   }
   box.innerHTML = h;
   bindTask();
+  restoreDraft();
   live();
 }
 function field(k, name, sym, val){
   return '<div class="field"><label for="f_' + k + '">' + name + ' <b>(' + sym + ')</b></label><input id="f_' + k + '" data-k="' + k + '" inputmode="decimal" autocomplete="off" placeholder="$" value="' + fmt$(val) + '"></div>';
 }
 function actions(label){
-  return '<div class="actions"><button class="btn primary big" data-save type="button">' + label + '</button><button class="btn" data-skip type="button">Skip</button></div>';
+  return '<button class="btn primary big wide" data-save type="button">' + label + '</button><button class="skip" data-skip type="button">Skip this loan</button>';
 }
 function entryBlock(d, ev){
   const dec = ev.decision;
@@ -467,6 +469,13 @@ function logBlock(d){
   const L = d.log || {}; const rows = Object.entries(L).map(([k,v]) => k + ": " + v.by + (v.sec!=null ? " (" + v.sec + "s)" : "")).join(" · ");
   return rows ? '<div class="hint" style="margin-top:10px">' + rows + '</div>' : '';
 }
+const draftKey = () => cur ? "lf.draft." + cur.id + "." + cur.stage : "";
+function saveDraft(){ if (!cur) return; const o = {}; document.querySelectorAll("#task input[data-k]").forEach(i => { if (i.value) o[i.dataset.k] = i.value; }); ls.set(draftKey(), JSON.stringify(o)); }
+function restoreDraft(){
+  if (!cur) return; let o = null; try { o = JSON.parse(ls.get(draftKey()) || "null"); } catch(e){}
+  if (!o) return; document.querySelectorAll("#task input[data-k]").forEach(i => { if (!i.value && o[i.dataset.k]) i.value = o[i.dataset.k]; });
+}
+function clearDraft(){ try { localStorage.removeItem(draftKey()); } catch(e){} }
 function readInputs(){
   const o = {}; document.querySelectorAll("#task input[data-k]").forEach(i => o[i.dataset.k] = money(i.value)); return o;
 }
@@ -580,7 +589,7 @@ async function save(){
 function bindTask(){
   const box = $("#task");
   box.querySelectorAll("input[data-k]").forEach((inp, i, all) => {
-    inp.addEventListener("input", live);
+    inp.addEventListener("input", () => { live(); saveDraft(); });
     inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); if (i < all.length-1) all[i+1].focus(); else save(); } });
   });
   box.querySelectorAll(".word").forEach(b => b.addEventListener("click", () => toggleWord(b.dataset.w)));
@@ -616,30 +625,22 @@ function render(){
     let val = d.ltv != null ? bigPct(d.ltv) : "";
     if (ev.borderline) val += " ⚠";
     if (ev.rate != null) val += " · " + ev.rate + "%";
-    return '<button type="button" class="tile' + (isRej ? " rej" : "") + (ev.stage==="done" ? " done" : "") + (cur && cur.id===id ? " sel" : "") + '" style="--c:var(' + c + ')" data-id="' + id + '" title="Loan ' + Number(id.slice(1)) + '">' +
-      '<span class="n">' + Number(id.slice(1)) + '</span><span class="s">' + sub + '</span><span class="v">' + val + '</span>' +
+    return '<button type="button" class="tile' + (isRej ? " rej" : "") + (ev.stage==="done" ? " done" : "") + (cur && cur.id===id ? " sel" : "") + '" style="--c:var(' + c + ')" data-id="' + id + '" title="Application ' + Number(id.slice(1)) + ': ' + sub + '">' +
+      '<span class="n">' + Number(id.slice(1)) + '</span><span class="v">' + val + '</span>' +
       (claim ? '<span class="who" title="' + claim + ' is on it">' + claim[0] + '</span>' : '') + '</button>';
   }).join("");
   const pipeDefs = [["ltv","Need LTV"],["ratios","Need ratios"],["puzzle","Need puzzle"],["submit","Need Decision"],["done","Approved ✓"],["rej","Rejected ✓"]];
-  $("#pipeline").innerHTML = pipeDefs.map(([k,l]) => '<div class="pipe" style="--c:var(' + STAGE[k].c + ')"><b>' + counts[k] + '</b><span>' + l + (k==="submit" && rejPending ? ' (' + rejPending + ' rejects)' : '') + '</span></div>').join("");
-  $("#legend").innerHTML = ["ltv","ratios","puzzle","submit","done","rej"].map(k => '<span><i style="--c:var(' + STAGE[k].c + ')"></i>' + STAGE[k].label + '</span>').join("");
+  $("#pipeline").innerHTML = pipeDefs.map(([k,l]) => '<span><i style="--c:var(' + STAGE[k].c + ')"></i><b>' + counts[k] + '</b>' + l + '</span>').join("");
   const done = counts.done + counts.rej;
-  $("#kDone").textContent = done; $("#kLeft").textContent = N - done;
-  const el = run.startedAt ? (Date.now() - run.startedAt)/1000 : 0;
-  $("#kPace").textContent = el > 30 && done ? Math.min(N, Math.round(done / el * 900)) : "–";
-  renderPeople(); renderChips(); renderHint(counts); renderMissing();
+  $("#kDone").textContent = done;
+  renderPeople(); renderChips(); renderMissing();
 }
 function renderMissing(){
   const open = ids.filter(id => !["done","rej"].includes(evaluate(loans[id]).stage));
-  $("#missingTitle").textContent = open.length ? "Not yet entered in the bank panel (" + open.length + ")" : "Not yet entered in the bank panel";
-  $("#missing").innerHTML = open.length ? open.map(id => {
-    const ev = evaluate(loans[id]); const rej = ev.decision === "reject";
-    return '<button type="button" class="miss tile-link" data-id="' + id + '" style="--c:var(' + (rej ? "--s-rej" : STAGE[ev.stage].c) + ')"><b>' + Number(id.slice(1)) + '</b>' + (rej ? "reject · " : "") + STAGE[ev.stage].label.toLowerCase() + '</button>';
-  }).join("") : '<span class="allgood">All 49 loans are entered in the bank panel ✓</span>';
   const left = run.startedAt ? 900 - (Date.now() - run.startedAt)/1000 : null;
   const ready = open.filter(id => evaluate(loans[id]).stage === "submit").length;
   const b = $("#banner");
-  if (left != null && left < 180 && ready) { b.hidden = false; b.textContent = ready + " loan(s) are finished but not entered in the bank panel. Enter those first — they only count once submitted."; }
+  if (left != null && left < 180 && ready) { b.hidden = false; b.textContent = ready + " loan(s) still need the Decision click. Do those first."; }
   else b.hidden = true;
 }
 function renderPeople(){
@@ -649,8 +650,10 @@ function renderPeople(){
   $("#people").innerHTML = Object.entries(P).map(([n,p]) => '<tr><td>' + n + (n===me?' (you)':'') + '</td><td>' + p.ltv + '</td><td>' + p.ratios + '</td><td>' + p.puzzle + '</td><td>' + p.submit + '</td><td>' + (p.k ? Math.round(p.sec/p.k) : "–") + '</td></tr>').join("");
 }
 function renderChips(){
-  $("#names").innerHTML = NAMES.map(n => '<button type="button" class="chip" data-name="' + n + '" aria-pressed="' + (n===me) + '">' + n + '</button>').join("");
-  $("#roles").innerHTML = ROLES.map(r => '<button type="button" class="chip" data-role="' + r.id + '" aria-pressed="' + (r.id===role) + '">' + r.label + '</button>').join("");
+  $("#pickName").hidden = !!me; $("#working").hidden = !me;
+  $("#names").innerHTML = NAMES.map(n => '<button type="button" class="chip" data-name="' + n + '">' + n + '</button>').join("");
+  $("#changeName").textContent = me ? "I'm " + me + " · change" : "";
+  $("#roles").innerHTML = ROLES.map(r => '<button type="button" data-role="' + r.id + '" aria-pressed="' + (r.id===role) + '">' + r.label + '</button>').join("");
 }
 function renderHint(c){
   const map = {ltv:"ltv", ratios:"ratios", puzzsub:"puzzle", submit:"submit"};
@@ -675,6 +678,7 @@ setInterval(() => { render(); }, 15000);
 
 document.addEventListener("click", e => {
   const n = e.target.closest("[data-name]"); if (n) { me = n.dataset.name; ls.set("lf.me", me); render(); renderTask(); return; }
+  if (e.target.closest("#changeName")) { release().then(() => { me = ""; ls.set("lf.me", ""); cur = null; render(); renderTask(); }); return; }
   const r = e.target.closest("[data-role]"); if (r) { role = r.dataset.role; ls.set("lf.role", role); render(); return; }
   const t = e.target.closest(".tile, .tile-link"); if (t) { openTile(t.dataset.id); }
 });
