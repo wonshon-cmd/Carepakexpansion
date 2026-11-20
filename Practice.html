@@ -219,7 +219,7 @@ SCEN.forEach(s => { s.ltv = s.L / Math.min(s.H, s.V); s.front = s.P / (s.I + s.A
 let mode = "web", sc = SCEN[0], S;
 function reset(){
   S = { page: "ltv", visited: {ltv: true}, copied: {}, sub: {}, risk: false, rate: null, decision: null, nextApp: false,
-        t: {L:null,H:null,V:null,I:null,A:null,P:null,DE:null,OT:null}, stage: "ltv", marked: false, words: new Set(),
+        t: {L:null,H:null,V:null,I:null,A:null,P:null,DE:null,OT:null}, stage: "ltv", marked: false, count: null,
         z1: Array(8).fill(""), z2: Array(10).fill(""), sWords: "", clicked: "", oops: "", step: 0, started: Date.now() };
   renderAll();
 }
@@ -259,11 +259,10 @@ function steps(){
   if (web) out.push({ t: "Press \"Ratios selected ✓\" on the web board.", s: "Next you practise the puzzle person's job.", c: () => S.stage === "puzzle" || S.stage === "done", pane: "tool" });
   out.push(
     { t: "Now be the puzzle person. Click \"Next Task: Loan-to-Value\", then \"Next Task: Risk Assessment\".", c: () => S.visited.risk, pane: "bank" },
-    { t: web ? "Find the words in the grid. Tap each one you find on the web board." : "Find the words in the grid. Type how many you found in STEP 3.",
-      s: "Words go left→right or top→bottom only. This grid has 3.", c: () => (web ? S.words.size : Number(S.sWords)) === sc.words && (!web || true) && (web ? ["FIRE","SOIL","WIND"].every(w => S.words.has(w)) : true), pane: "tool" },
-    { t: "Click Submit on the Risk Assessment page.", c: () => S.risk, pane: "bank" },
+    { t: "Find FIRE, FLOOD, HEAT, SOIL, WIND in the grid, then click Submit on the Risk Assessment page.",
+      s: "Words go left→right or top→bottom only. Count them: that number is the interest rate. This grid has 3.", c: () => S.risk, pane: "bank" },
     { t: "Click \"Next Task: Decision\".", c: () => S.visited.decision, pane: "bank" },
-    { t: "Click " + sc.words + "% then \"Approve Loan\".", c: () => S.decision === "approve" && S.rate === sc.words, pane: "bank" },
+    { t: "Click " + sc.words + "% (the words you found) then \"Approve Loan\".", c: () => S.decision === "approve" && S.rate === sc.words, pane: "bank" },
     mark);
   return out;
 }
@@ -400,10 +399,8 @@ function renderWeb(){
       h += '<button type="button" class="go" data-web="ratios"' + (b != null ? '' : ' disabled') + '>' + (b == null ? "Paste all 5 amounts first" : (f < .25 && b < .35 ? "Ratios selected ✓ — next loan" : "Rejected in panel ✓ — next loan")) + '</button>';
     }
   } else {
-    h += '<div style="color:var(--muted);font-size:13px">Puzzle person: tap each word you find in the grid. Words go left→right or top→bottom.</div><div class="words">' +
-      WORDS.map(w => '<button type="button" class="word" data-word="' + w + '" aria-pressed="' + S.words.has(w) + '">' + w + '</button>').join("") + '</div>' +
-      '<div class="res"><span>Words found = interest rate</span><span class="big">' + S.words.size + '%</span></div>' +
-      '<button type="button" class="go" data-web="puzzle">Approved ' + S.words.size + '% in panel ✓ — next loan</button>';
+    h += '<div class="res"><span><b>Qualified.</b> Do the word puzzle and the Decision in the bank panel.<br><span style="font-size:12px;color:var(--muted)">Interest rate = how many of FIRE, FLOOD, HEAT, SOIL, WIND you find.</span></span></div>' +
+      '<button type="button" class="go" data-web="puzzle">Approved in panel ✓ — next loan</button>';
   }
   h += '</div>';
   $("#tool").innerHTML = h;
@@ -461,8 +458,8 @@ document.addEventListener("change", e => {
   if (e.target.id === "sClicked") { S.clicked = e.target.value; advance(); }
 });
 document.addEventListener("click", e => {
-  const w = e.target.closest("[data-word]");
-  if (w) { const x = w.dataset.word; S.words.has(x) ? S.words.delete(x) : S.words.add(x); renderWeb(); advance(); return; }
+  const w = e.target.closest("[data-count]");
+  if (w) { S.count = Number(w.dataset.count); renderWeb(); advance(); return; }
   const g = e.target.closest("[data-web]");
   if (g) {
     if (g.dataset.web === "ltv") { const band = S.t.L / Math.min(S.t.H, S.t.V); if (band >= .85 && band <= 1) S.stage = "ratios"; else { S.stage = "done"; S.marked = true; } }

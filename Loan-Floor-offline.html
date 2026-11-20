@@ -118,7 +118,7 @@ h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute
 .hint{font-size:13px;color:var(--muted)}
 .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 
-.words{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.words{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
 .word{border:2px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:14px 4px;font-family:var(--f-mono);font-weight:600;font-size:14px}
 .word[aria-pressed="true"]{border-color:var(--s-puzzle);background:color-mix(in srgb,var(--s-puzzle) 18%,transparent)}
 .word small{display:block;font-weight:400;color:var(--muted);font-size:11px}
@@ -308,6 +308,8 @@ const STAGE = {
   done:{label:"Approved ✓", c:"--s-done"}, rej:{label:"Rejected ✓", c:"--s-rej"}
 };
 const WORDS = ["FIRE","FLOOD","HEAT","SOIL","WIND"];
+// How many risk words were found (the words themselves are found in the bank panel). Older saves kept a word list.
+const foundOf = d => !d ? null : typeof d.found === "number" ? d.found : Array.isArray(d.words) ? d.words.length : null;
 const CLAIM_MS = 90000;      // a claim lapses 90 s after its holder last checked in
 const LOCK_MS = 15000;       // short lock that settles two people clicking at once
 const ids = Array.from({length:N}, (_,i) => "L" + String(i+1).padStart(2,"0"));
@@ -350,8 +352,8 @@ function evaluate(d){
   const other = verdict(d, !R);
   if (other && other !== out.decision) out.borderline = true;
   if (out.decision === "approve" || all) {
-    if (!Array.isArray(d.words)) { out.stage = "puzzle"; return out; }
-    if (out.decision === "approve") out.rate = d.words.length;
+    if (!d.puzzleDone && foundOf(d) == null) { out.stage = "puzzle"; return out; }
+    if (out.decision === "approve") out.rate = foundOf(d);
   }
   out.stage = d.submitted ? (out.decision === "reject" ? "rej" : "done") : "submit";
   return out;
@@ -514,10 +516,7 @@ function renderTask(){
     h += '<div class="result" id="liveB"></div><div id="steps"></div>';
     h += actions("Both selected in panel ✓ — next");
   } else if (st === "puzzle") {
-    const w = cur.draft || (Array.isArray(d.words) ? d.words.slice() : []); cur.draft = w;
-    h += '<div class="hint">Tap each word you find. Words go left→right or top→bottom only.</div>';
-    h += '<div class="words">' + WORDS.map((x,i) => '<button type="button" class="word" data-w="' + x + '" aria-pressed="' + w.includes(x) + '">' + x + '<small>' + (i+1) + '</small></button>').join("") + '</div>';
-    h += '<div class="result"><span class="hint">Words found = interest rate</span><span class="big" id="rate">' + w.length + '%</span></div><div id="steps"></div>';
+    h += '<div class="result"><span><b>Qualified.</b> Do the word puzzle and the Decision in the bank panel.<br><span class="hint">Interest rate = how many of FIRE, FLOOD, HEAT, SOIL, WIND you find.</span></span></div><div id="steps"></div>';
     h += actions("Approved in panel ✓ — next loan");
   } else if (st === "submit") {
     h += entryBlock(d, ev) + '<div id="steps"></div>';
@@ -531,7 +530,7 @@ function renderTask(){
     h += '<div class="actions">' +
       '<button class="btn" data-redo="ltv" type="button">Edit LTV</button>' +
       ((ev.band === "mid" || run.allTasks || d.front != null) ? '<button class="btn" data-redo="ratios" type="button">Edit ratios</button>' : '') +
-      ((ev.decision === "approve" || run.allTasks || Array.isArray(d.words)) ? '<button class="btn" data-redo="puzzle" type="button">Edit puzzle</button>' : '') +
+      ((ev.decision === "approve" || run.allTasks || foundOf(d) != null) ? '<button class="btn" data-redo="puzzle" type="button">Edit puzzle</button>' : '') +
       (ev.stage === "submit" ? '<button class="btn primary" data-redo="submit" type="button">Do Decision</button>' : '') +
       (d.submitted ? '<button class="btn" data-unsubmit type="button">Mark decision not entered</button>' : '') +
       '<button class="btn" data-close type="button">Close</button></div>';
@@ -621,13 +620,13 @@ function actions(label){
 function entryBlock(d, ev){
   const dec = ev.decision;
   let h = '';
-  if (dec === "approve") h += '<div class="decision ok">Click <span class="num">' + (ev.rate == null ? "?" : ev.rate + "%") + '</span> then <u>Approve Loan</u></div>';
+  if (dec === "approve") h += '<div class="decision ok">' + (ev.rate == null ? 'Click the rate (words found) then <u>Approve Loan</u>' : 'Click <span class="num">' + ev.rate + '%</span> then <u>Approve Loan</u>') + '</div>';
   else if (dec === "reject") h += '<div class="decision no">Click <u>Reject Loan</u></div>';
   if (ev.borderline) h += '<div class="warnline">Borderline: the exact and the rounded % give different answers. Check with the team.</div>';
   h += '<dl class="entry">';
   h += '<dt>Loan-to-Value</dt><dd>' + bigPct(d.ltv) + ' <span class="hint">' + pct(d.ltv) + '</span></dd>';
   if (d.front != null) h += '<dt>Front ratio</dt><dd>' + bigPct(d.front) + ' <span class="hint">' + pct(d.front) + '</span></dd><dt>Back ratio</dt><dd>' + bigPct(d.back) + ' <span class="hint">' + pct(d.back) + '</span></dd>';
-  if (Array.isArray(d.words)) h += '<dt>Risk words</dt><dd>' + (d.words.join(", ") || "none") + '</dd>';
+  if (foundOf(d) != null) h += '<dt>Risk words found</dt><dd>' + foundOf(d) + '</dd>';
   h += '</dl>';
   return h;
 }
@@ -743,10 +742,11 @@ function guide(v){
         steps = steps.concat([pass ? "Passed. The puzzle person finishes this loan." : "Puzzle still needed (all-tasks mode).", K("Next Application")]); }
     }
   } else if (cur.stage === "puzzle") {
-    const rate = (cur.draft || []).length; const dec = evaluate(d).decision;
-    steps = ["Open " + K("Application " + n) + " → " + K("Risk Assessment") + ' <span class="hint">(Ctrl/⌘+click opens it in a new tab · Ctrl/⌘+W closes it when done)</span>', "Tap each word you find above → " + K("Submit"), K("Next Task: Decision")];
+    const dec = evaluate(d).decision;
+    steps = ["Open " + K("Application " + n) + " → " + K("Risk Assessment") + ' <span class="hint">(Ctrl/⌘+click opens it in a new tab · Ctrl/⌘+W closes it when done)</span>',
+             "Find FIRE, FLOOD, HEAT, SOIL, WIND → " + K("Submit"), K("Next Task: Decision")];
     if (dec === "reject") { steps.push(K("Reject Loan")); label = "Rejected in panel ✓ — next loan"; }
-    else { steps.push("Click " + K(rate + "%") + " → " + K("Approve Loan")); label = "Approved " + rate + "% in panel ✓ — next loan"; }
+    else { steps.push("Click the rate " + K("% = words found") + " → " + K("Approve Loan")); label = "Approved in panel ✓ — next loan"; }
     steps.push(K("Next Application"));
   } else if (cur.stage === "submit") {
     const ev = evaluate(d);
@@ -774,7 +774,9 @@ async function save(){
     if (cur.outcome === "reject") Object.assign(p, {submitted:true, submittedAt:Date.now()});
     return finish(p);
   }
-  if (cur.stage === "puzzle") return finish({words: WORDS.filter(w => cur.draft.includes(w)), submitted:true, submittedAt:Date.now()});
+  if (cur.stage === "puzzle") {
+    return finish({puzzleDone: true, submitted:true, submittedAt:Date.now()});
+  }
   if (cur.stage === "submit") return finish({submitted:true, submittedAt:Date.now()});
 }
 function bindTask(){
@@ -783,7 +785,6 @@ function bindTask(){
     inp.addEventListener("input", () => { live(); saveDraft(); });
     inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); if (i < all.length-1) all[i+1].focus(); else save(); } });
   });
-  box.querySelectorAll(".word").forEach(b => b.addEventListener("click", () => toggleWord(b.dataset.w)));
   const s = box.querySelector("[data-save]"); s && s.addEventListener("click", save);
   const k = box.querySelector("[data-skip]"); k && k.addEventListener("click", async () => { await release(); renderTask(); render(); });
   box.querySelectorAll("[data-redo]").forEach(b => b.addEventListener("click", () => open(cur.id, b.dataset.redo)));
@@ -791,16 +792,15 @@ function bindTask(){
   const to = box.querySelector("[data-takeover]"); to && to.addEventListener("click", () => { cur.takeover = true; renderTask(); });
   const c = box.querySelector("[data-close]"); c && c.addEventListener("click", () => { cur = null; renderTask(); render(); });
 }
-function toggleWord(w){
+function pickCount(n){
   if (!cur || cur.stage !== "puzzle") return;
-  const i = cur.draft.indexOf(w); i >= 0 ? cur.draft.splice(i,1) : cur.draft.push(w);
-  document.querySelectorAll("#task .word").forEach(b => b.setAttribute("aria-pressed", cur.draft.includes(b.dataset.w)));
-  $("#rate").textContent = cur.draft.length + "%"; live();
+  cur.draft = n;
+  document.querySelectorAll("#task .word").forEach(b => b.setAttribute("aria-pressed", Number(b.dataset.n) === n));
+  $("#rate").textContent = n + "%"; live();
 }
 document.addEventListener("keydown", e => {
   if (!cur || e.target.tagName === "INPUT") return;
-  if (cur.stage === "puzzle" && /^[1-5]$/.test(e.key)) { toggleWord(WORDS[+e.key-1]); e.preventDefault(); }
-  else if ((cur.stage === "puzzle" || cur.stage === "submit") && e.key === "Enter" && !e.target.closest("[data-skip]")) { e.preventDefault(); save(); }
+  if ((cur.stage === "puzzle" || cur.stage === "submit") && e.key === "Enter" && !e.target.closest("[data-skip]")) { e.preventDefault(); save(); }
 });
 
 /* ---------- board UI ---------- */
@@ -922,8 +922,8 @@ $("#demoBtn").addEventListener("click", () => {
     if (i < 18 && (b === "mid")) { const I = k(20000 + rnd()*80000), A = k(rnd()*40000), inc = I + A; const P = k(inc*(0.15+rnd()*0.15)), DE = k(inc*rnd()*0.06), OT = k(inc*rnd()*0.05);
       Object.assign(p, {I, A, P, DE, OT, front:P/inc, back:(DE+OT+P)/inc}); p.log.ratios = {by:NAMES[(i+1)%5], sec: 25 + Math.round(rnd()*25), at:Date.now()}; }
     const tmp = Object.assign({}, p); const dec = verdict(tmp, !!run.useRounded);
-    if (i < 12 && dec === "approve") { p.words = WORDS.filter(() => rnd() < 0.5); p.log.puzzle = {by:"Joe", sec: 35 + Math.round(rnd()*30), at:Date.now()}; }
-    if (i < 10 && dec) { if (dec === "reject" || p.words) p.submitted = true; }
+    if (i < 12 && dec === "approve") { p.found = WORDS.filter(() => rnd() < 0.5).length; p.log.puzzle = {by:"Joe", sec: 35 + Math.round(rnd()*30), at:Date.now()}; }
+    if (i < 10 && dec) { if (dec === "reject" || p.found != null) p.submitted = true; }
     writeLoan(id, p);
   }
   if (!run.startedAt) writeRun({startedAt: Date.now() - 300000});
