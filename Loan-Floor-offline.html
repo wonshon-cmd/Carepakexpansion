@@ -272,7 +272,14 @@ button.brand:hover{color:var(--accent)}
       <div class="board" id="board"></div>
     </div>
     <details class="card more">
-      <summary>Team, rules &amp; settings</summary>
+      <summary>Step times, team, rules &amp; settings</summary>
+      <h2 style="margin-top:4px">Step times (seconds)</h2>
+      <div style="overflow-x:auto"><table><thead><tr><th>Step</th><th>Count</th><th>Average</th><th>Median</th><th>Fastest</th><th>Slowest</th></tr></thead><tbody id="times"></tbody></table></div>
+      <h2 style="margin-top:14px">Average seconds by person</h2>
+      <div style="overflow-x:auto"><table id="timesBy"></table></div>
+      <div class="actions"><button class="btn" id="copyTimes" type="button">Copy all step times (CSV for Excel / Sheets)</button></div>
+      <p class="hint">Each step is timed from opening the application to pressing the blue button. Demo loans are left out.</p>
+      <h2 style="margin-top:14px">Steps done by person</h2>
       <table><thead><tr><th>Person</th><th>LTV</th><th>Ratios</th><th>Puzzle</th><th>Decision</th><th>Avg s</th></tr></thead><tbody id="people"></tbody></table>
       <ul class="rules">
         <li>LTV = L ÷ min(H, V). Under 85% approve · 85–100% check ratios · over 100% reject</li>
@@ -287,7 +294,8 @@ button.brand:hover{color:var(--accent)}
 </main>
 <div class="pwbox" id="pwbox" hidden role="dialog" aria-label="Reset the board">
   <b>Reset the whole board?</b>
-  <span>This erases all 49 applications for everyone. Enter the reset password.</span>
+  <span>This erases all 49 applications and their step times for everyone. Copy the step times first if you need them. Enter the reset password.</span>
+  <button class="btn" id="pwCopy" type="button">Copy step times first</button>
   <input id="pwInput" type="password" inputmode="numeric" autocomplete="off" placeholder="Password">
   <div class="actions"><button class="btn danger" id="pwGo" type="button">Erase everything</button><button class="btn" id="pwCancel" type="button">Cancel</button></div>
   <span class="pwmsg" id="pwMsg"></span>
@@ -463,8 +471,46 @@ async function release(){
 }
 function logPatch(id, stage){
   const d = loans[id] || {};
-  const sec = cur ? Math.round((Date.now()-cur.t0)/1000) : null;
+  const sec = cur ? Math.round((Date.now()-cur.t0)/100)/10 : null;     // seconds, one decimal
   return {log: Object.assign({}, d.log || {}, {[stage]: {by: me, sec, at: Date.now()}}), claim:null};
+}
+/* Step timing: every finished step is kept (who, how long, what happened) so averages can be worked out later. */
+const STEP_NAMES = {
+  "ltv|qualified": "LTV → qualified (under 85%)", "ltv|to ratios": "LTV → needs ratios (85–100%)", "ltv|reject": "LTV + Reject (over 100%)",
+  "ratios|pass": "Front + Back → pass", "ratios|reject": "Front + Back + Reject",
+  "puzzle|approve": "Puzzle + Approve", "puzzle|reject": "Puzzle + Reject", "submit|decision": "Decision only"
+};
+const STEP_ORDER = Object.keys(STEP_NAMES);
+function outcomeOf(stage, next){
+  if (stage === "ltv") return next.decision === "reject" && next.stage !== "ratios" ? "reject" : next.stage === "ratios" ? "to ratios" : "qualified";
+  if (stage === "ratios") return next.decision === "reject" ? "reject" : "pass";
+  if (stage === "puzzle") return next.decision === "reject" ? "reject" : "approve";
+  return "decision";
+}
+function allTimes(){
+  const rows = [];
+  ids.forEach(id => { const d = loans[id]; if (!d || d.demo) return;
+    (Array.isArray(d.times) ? d.times : []).forEach(t => { if (t && t.sec != null) rows.push(Object.assign({app: Number(id.slice(1))}, t)); }); });
+  return rows.sort((a, b) => (a.at || 0) - (b.at || 0));
+}
+const median = a => { if (!a.length) return null; const s = a.slice().sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m-1] + s[m]) / 2; };
+const r1 = x => x == null ? "–" : (Math.round(x * 10) / 10).toFixed(1);
+function renderTimes(){
+  const rows = allTimes(); const el = $("#times"); if (!el) return;
+  if (!rows.length) { el.innerHTML = '<tr><td colspan="6" style="text-align:left;font-family:inherit;font-weight:400;color:var(--muted)">No steps timed yet. Every step you finish is timed from opening the application to pressing the blue button.</td></tr>'; $("#timesBy").innerHTML = ""; return; }
+  const by = {}; rows.forEach(t => { const k = t.stage + "|" + t.outcome; (by[k] = by[k] || []).push(t.sec); });
+  el.innerHTML = STEP_ORDER.filter(k => by[k]).map(k => { const a = by[k], avg = a.reduce((x, y) => x + y, 0) / a.length;
+    return '<tr><td>' + STEP_NAMES[k] + '</td><td>' + a.length + '</td><td><b>' + r1(avg) + '</b></td><td>' + r1(median(a)) + '</td><td>' + r1(Math.min(...a)) + '</td><td>' + r1(Math.max(...a)) + '</td></tr>'; }).join("");
+  const people = [...new Set(rows.map(t => t.by))];
+  const cols = STEP_ORDER.filter(k => by[k]);
+  $("#timesBy").innerHTML = '<thead><tr><th>Person</th>' + cols.map(k => '<th>' + STEP_NAMES[k].replace(/ \(.*\)/, "") + '</th>').join("") + '</tr></thead><tbody>' +
+    people.map(p => '<tr><td>' + p + '</td>' + cols.map(k => { const a = rows.filter(t => t.by === p && t.stage + "|" + t.outcome === k).map(t => t.sec);
+      return '<td>' + (a.length ? r1(a.reduce((x, y) => x + y, 0) / a.length) + ' <span class="hint">×' + a.length + '</span>' : "–") + '</td>'; }).join("") + '</tr>').join("") + '</tbody>';
+}
+function timesCsv(){
+  const rows = allTimes();
+  return ["application,step,outcome,person,seconds,finished_at"].concat(rows.map(t =>
+    [t.app, t.stage, t.outcome, t.by, t.sec, new Date(t.at).toLocaleTimeString()].join(","))).join("\n");
 }
 async function finish(patch){
   const {id, stage} = cur;
@@ -473,6 +519,9 @@ async function finish(patch){
   // Stay in the same application: LTV 85%+ -> the same person does Front/Back.
   // The claim is handed over in the same save, so the loan never shows up free in between.
   const next = evaluate(mergePatch(loans[id], patch));
+  const step = {stage, outcome: outcomeOf(stage, next), by: me, sec: patch.log[stage].sec, at: Date.now()};
+  patch.log[stage].outcome = step.outcome;
+  patch.times = (Array.isArray((loans[id] || {}).times) ? loans[id].times : []).concat([step]);
   const chain = stage === "ltv" && next.stage === "ratios";
   if (chain) patch.claim = {who:me, stage:"ratios", at:Date.now()};
   await writeLoan(id, patch);
@@ -825,7 +874,7 @@ function render(){
   $("#pipeline").innerHTML = pipeDefs.map(([k,l]) => '<span><i style="--c:var(' + STAGE[k].c + ')"></i><b>' + counts[k] + '</b>' + l + '</span>').join("");
   const done = counts.done + counts.rej;
   $("#kDone").textContent = done;
-  renderPeople(); renderChips(); renderMissing();
+  renderPeople(); renderTimes(); renderChips(); renderMissing();
 }
 function renderMissing(){
   const open = ids.filter(id => !["done","rej"].includes(evaluate(loans[id]).stage));
@@ -896,6 +945,11 @@ async function goHome(){ if (cur) { await release(); } cur = null; renderTask();
 $("#backBtn").addEventListener("click", () => { if (navPos > 0) goNav(navHist[--navPos]); });
 $("#fwdBtn").addEventListener("click", () => { if (navPos < navHist.length - 1) goNav(navHist[++navPos]); });
 $("#homeLogo").addEventListener("click", goHome);
+$("#copyTimes").addEventListener("click", () => {
+  const t = timesCsv(); const n = t.split("\n").length - 1;
+  const done = () => toast("Copied " + n + " timed steps. Paste into Excel or Google Sheets.");
+  try { navigator.clipboard.writeText(t).then(done, () => fallbackCopy(t, done)); } catch(e){ fallbackCopy(t, done); }
+});
 document.addEventListener("click", e => { if (e.target.closest("[data-home]")) goHome(); });
 document.addEventListener("keydown", e => {
   if (!e.altKey) return;
@@ -936,6 +990,7 @@ function closeReset(){ $("#pwbox").hidden = true; }
 $("#resetBtn").addEventListener("click", openReset);
 $("#resetTop").addEventListener("click", openReset);
 $("#pwCancel").addEventListener("click", closeReset);
+$("#pwCopy").addEventListener("click", () => $("#copyTimes").click());
 $("#pwInput").addEventListener("keydown", e => { if (e.key === "Enter") $("#pwGo").click(); if (e.key === "Escape") closeReset(); });
 $("#pwGo").addEventListener("click", async () => {
   const pw = $("#pwInput").value.trim();
