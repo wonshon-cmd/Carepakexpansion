@@ -1,0 +1,749 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}[hidden]{display:none!important}</style></head><body>
+<title>Huntsman Loan Floor</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: sticky control strip on top; left = "my desk" (one task at a time), right = 49-loan board + team stats. Stacks on phones. */
+:root{
+  --bg:#f3f5f8; --panel:#ffffff; --ink:#18202c; --muted:#5d6878; --line:#dde2ea; --soft:#eef1f5;
+  --accent:#1f5fd6; --accent-ink:#ffffff;
+  --s-ltv:#1f5fd6; --s-ratios:#c27a0e; --s-puzzle:#7a4bd1; --s-submit:#0f8a8a; --s-done:#1d8a4b; --s-rej:#8b93a1;
+  --good:#1d8a4b; --bad:#c23b3b; --warn:#c27a0e;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f141b; --panel:#171e28; --ink:#e6ebf2; --muted:#9aa5b5; --line:#2a3442; --soft:#1e2733;
+  --accent:#5b8cf0; --accent-ink:#0b1220;
+  --s-ltv:#5b8cf0; --s-ratios:#e0a23c; --s-puzzle:#a582ef; --s-submit:#3cc2c2; --s-done:#4cc27e; --s-rej:#6b7484;
+  --good:#4cc27e; --bad:#ef6b6b; --warn:#e0a23c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f141b; --panel:#171e28; --ink:#e6ebf2; --muted:#9aa5b5; --line:#2a3442; --soft:#1e2733;
+  --accent:#5b8cf0; --accent-ink:#0b1220;
+  --s-ltv:#5b8cf0; --s-ratios:#e0a23c; --s-puzzle:#a582ef; --s-submit:#3cc2c2; --s-done:#4cc27e; --s-rej:#6b7484;
+  --good:#4cc27e; --bad:#ef6b6b; --warn:#e0a23c; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--panel)}
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+button{font:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* top strip */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--panel);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;padding-block:10px}
+.brand{font-weight:700;letter-spacing:.01em;font-size:16px}
+.brand small{display:block;font-weight:500;color:var(--muted);font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+.clock{font-family:var(--f-mono);font-size:28px;font-weight:600;font-variant-numeric:tabular-nums;min-width:5ch}
+.clock.over{color:var(--bad)}
+.kpis{display:flex;gap:18px;flex-wrap:wrap}
+.kpi{display:flex;flex-direction:column}
+.kpi b{font-family:var(--f-mono);font-size:20px;font-variant-numeric:tabular-nums}
+.kpi span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.spacer{flex:1}
+.btn{border:1px solid var(--line);background:var(--soft);color:var(--ink);padding:7px 12px;border-radius:8px;font-weight:600;font-size:14px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.danger{color:var(--bad)}
+.btn.big{padding:12px 18px;font-size:16px}
+.btn:disabled{opacity:.45;cursor:default}
+.sync{font-size:12px;color:var(--muted)}
+.sync i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--muted);margin-right:6px;vertical-align:middle}
+.sync.live i{background:var(--good)} .sync.local i{background:var(--warn)}
+
+/* main grid */
+main.wrap{display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:18px;padding-block:18px 40px;align-items:start}
+@media (max-width:900px){main.wrap{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0}
+h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 10px;font-weight:600}
+.desk{position:sticky;top:calc(env(safe-area-inset-top,0px) + 80px)}
+@media (max-width:900px){.desk{position:static}}
+
+.who{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.chip{border:1px solid var(--line);background:var(--soft);color:var(--ink);border-radius:999px;padding:6px 12px;font-size:14px;font-weight:500}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.roles .chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.label{font-size:12px;color:var(--muted);margin:10px 0 6px}
+
+.task{margin-top:14px;border-top:1px solid var(--line);padding-top:14px}
+.taskhead{display:flex;align-items:baseline;gap:10px;margin-bottom:12px}
+.taskhead .lid{font-family:var(--f-mono);font-size:26px;font-weight:600}
+.stagepill{font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;color:#fff;letter-spacing:.03em}
+.st-ltv{background:var(--s-ltv)} .st-ratios{background:var(--s-ratios)} .st-puzzle{background:var(--s-puzzle)}
+.st-submit{background:var(--s-submit)} .st-done{background:var(--s-done)} .st-rej{background:var(--s-rej)}
+.field{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center;margin-bottom:8px}
+.field label{font-size:14px;color:var(--muted);min-width:9.5em}
+.field label b{color:var(--ink);font-family:var(--f-mono)}
+.field input{width:100%;font-family:var(--f-mono);font-size:18px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);text-align:right}
+.result{margin:12px 0;padding:12px;border-radius:10px;background:var(--soft);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.result .big{font-family:var(--f-mono);font-size:26px;font-weight:600}
+.verdict{font-weight:700;font-size:14px;padding:4px 10px;border-radius:6px}
+.v-good{color:var(--good);background:color-mix(in srgb,var(--good) 14%,transparent)}
+.v-bad{color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,transparent)}
+.v-warn{color:var(--warn);background:color-mix(in srgb,var(--warn) 16%,transparent)}
+.hint{font-size:13px;color:var(--muted)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+
+.words{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.word{border:2px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:14px 4px;font-family:var(--f-mono);font-weight:600;font-size:14px}
+.word[aria-pressed="true"]{border-color:var(--s-puzzle);background:color-mix(in srgb,var(--s-puzzle) 18%,transparent)}
+.word small{display:block;font-weight:400;color:var(--muted);font-size:11px}
+
+.entry{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:15px;margin:6px 0}
+.entry dt{color:var(--muted)} .entry dd{margin:0;font-family:var(--f-mono);font-weight:600;text-align:right}
+.decision{font-size:28px;font-weight:700;text-align:center;padding:12px;border-radius:10px;margin:10px 0}
+.decision.ok{color:var(--good);background:color-mix(in srgb,var(--good) 12%,transparent)}
+.decision.no{color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,transparent)}
+.empty{color:var(--muted);text-align:center;padding:18px 6px}
+
+/* board */
+.pipeline{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-bottom:14px}
+@media (max-width:620px){.pipeline{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.pipe{border-radius:10px;padding:10px;background:var(--soft);border-top:4px solid var(--c)}
+.pipe b{display:block;font-family:var(--f-mono);font-size:24px;font-variant-numeric:tabular-nums}
+.pipe span{font-size:12px;color:var(--muted)}
+.board{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:6px}
+.tile{position:relative;text-align:left;border:1px solid var(--line);border-left:5px solid var(--c);background:var(--panel);color:var(--ink);border-radius:8px;padding:6px 7px;min-height:66px;display:flex;flex-direction:column;gap:2px}
+.tile .n{font-family:var(--f-mono);font-weight:600;font-size:15px}
+.tile .s{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .v{font-family:var(--f-mono);font-size:12px}
+.tile .who{position:absolute;top:5px;right:6px;margin:0;width:20px;height:20px;border-radius:50%;background:var(--ink);color:var(--panel);font-size:11px;font-weight:700;display:grid;place-items:center}
+.tile.rej{background:var(--soft);color:var(--muted);border-left-color:var(--s-rej)}
+.tile.rej .n{text-decoration:line-through;text-decoration-color:var(--s-rej)}
+.tile.done{background:color-mix(in srgb,var(--s-done) 12%,var(--panel))}
+.tile.sel{outline:2px solid var(--accent);outline-offset:1px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:10px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--c);margin-right:5px;vertical-align:-1px}
+
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;margin-top:18px}
+@media (max-width:620px){.split{grid-template-columns:minmax(0,1fr)}}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:6px 4px;border-bottom:1px solid var(--line);text-align:right}
+th:first-child,td:first-child{text-align:left}
+th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+td{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+td:first-child{font-family:var(--f-body);font-weight:600}
+.rules{font-size:13px;color:var(--muted);margin:0;padding-left:18px}
+.rules li{margin-bottom:4px}
+.toggle{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--muted);margin-top:10px}
+.banner{padding:10px 12px;border-radius:8px;margin-bottom:10px;font-weight:600;color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent)}
+.missing{display:flex;flex-wrap:wrap;gap:6px}
+.miss{border:1px solid var(--line);border-left:4px solid var(--c);background:var(--soft);color:var(--ink);border-radius:6px;padding:4px 8px;font-size:13px}
+.miss b{font-family:var(--f-mono);margin-right:4px}
+.allgood{color:var(--good);font-weight:600}
+.warnline{color:var(--warn);font-size:13px;font-weight:600;width:100%}
+.stepsbox{margin:12px 0;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--soft)}
+.stepstitle{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px}
+.stepsbox ol{margin:0;padding-left:22px;display:grid;gap:7px;font-size:15px}
+.key{display:inline-block;font-weight:600;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:1px 7px;background:var(--panel);white-space:nowrap}
+.panelpath{font-size:13px;color:var(--muted);margin:-4px 0 12px}
+.panelpath b{color:var(--ink)}
+.result .big{font-size:44px;line-height:1.05}
+.decision u{text-decoration-thickness:2px;text-underline-offset:4px}
+/* Half-screen (laptop split beside the bank panel): compact header, desk first, big numbers */
+@media (max-width:900px){
+  .brand small{display:none}
+  .top .wrap{gap:8px 14px;padding-block:8px}
+  .clock{font-size:22px}
+  .kpi b{font-size:16px}
+  .sync{width:100%}
+  main.wrap{padding-block:12px 32px;gap:12px}
+  .card{padding:12px}
+  .board{grid-template-columns:repeat(auto-fill,minmax(62px,1fr))}
+  .tile{min-height:56px}
+  .field label{min-width:8em;font-size:13px}
+}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:10px 16px;border-radius:10px;font-size:14px;z-index:20}
+@media (prefers-reduced-motion:no-preference){.tile{transition:background .25s,border-color .25s}}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">Loan Floor<small>Huntsman Bank · Team run</small></div>
+    <div class="clock num" id="clock">15:00</div>
+    <button class="btn primary" id="startBtn" type="button">Start 15:00</button>
+    <div class="kpis">
+      <div class="kpi"><b id="kDone">0</b><span>Submitted</span></div>
+      <div class="kpi"><b id="kPace">–</b><span>Pace / 15 min</span></div>
+      <div class="kpi"><b id="kLeft">49</b><span>Still open</span></div>
+    </div>
+    <div class="spacer"></div>
+    <div class="sync" id="sync"><i></i>Connecting…</div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="card desk" aria-label="My desk">
+    <h2>I am</h2>
+    <div class="who" id="names"></div>
+    <h2>My job</h2>
+    <div class="who roles" id="roles"></div>
+    <div class="hint" id="roleHint"></div>
+    <div class="actions"><button class="btn primary big" id="nextBtn" type="button">Get next loan →</button></div>
+    <div class="task" id="task"><div class="empty">Pick your name, then press <b>Get next loan</b>.</div></div>
+  </section>
+
+  <section style="min-width:0">
+    <div class="card">
+      <h2>Pipeline</h2>
+      <div class="pipeline" id="pipeline"></div>
+      <h2>All 49 loans</h2>
+      <div class="board" id="board"></div>
+      <div class="legend" id="legend"></div>
+    </div>
+    <div class="card" style="margin-top:18px">
+      <h2 id="missingTitle">Not yet entered in the bank panel</h2>
+      <div class="banner" id="banner" hidden></div>
+      <div class="missing" id="missing"></div>
+    </div>
+    <div class="split">
+      <div class="card">
+        <h2>Team output</h2>
+        <table><thead><tr><th>Person</th><th>LTV</th><th>Ratios</th><th>Puzzle</th><th>Entered</th><th>Avg s</th></tr></thead><tbody id="people"></tbody></table>
+      </div>
+      <div class="card">
+        <h2>Underwriting rules</h2>
+        <ul class="rules">
+          <li>LTV = L ÷ min(H, V)</li>
+          <li><b>LTV &lt; 85%</b> → approve, needs word puzzle</li>
+          <li><b>85% – 100%</b> → needs Front &lt; 25% and Back &lt; 35%, else reject</li>
+          <li><b>LTV &gt; 100%</b> → reject, no puzzle</li>
+          <li>Front = P ÷ (I + A) · Back = (DE + OT + P) ÷ (I + A)</li>
+          <li>Rate = number of FIRE / FLOOD / HEAT / SOIL / WIND found</li>
+        </ul>
+        <label class="toggle"><input type="checkbox" id="allTasks"> The panel won't open Decision until all 4 tasks are done (forces ratios + puzzle on every loan)</label>
+        <label class="toggle"><input type="checkbox" id="useRounded"> Decide using the rounded % (default: exact %). Borderline loans show ⚠ either way.</label>
+        <div class="actions"><button class="btn" id="demoBtn" type="button">Load demo loans</button><button class="btn danger" id="resetBtn" type="button">Reset board</button></div>
+        <div class="hint">Demo fills 24 made-up loans at different stages so you can see the board work. Reset before the real run.</div>
+      </div>
+    </div>
+  </section>
+</main>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(() => {
+const N = 49;
+const NAMES = ["Rishi","Senthil","Tobe","Gabrielle","Joe"];
+const ROLES = [
+  {id:"ltv", label:"LTV typing"},
+  {id:"ratios", label:"Front/Back"},
+  {id:"puzzsub", label:"Puzzle + Decision"},
+  {id:"submit", label:"Decision only"},
+  {id:"auto", label:"Wherever needed"},
+];
+const STAGE = {
+  ltv:{label:"Needs LTV", c:"--s-ltv"}, ratios:{label:"Needs Front/Back", c:"--s-ratios"},
+  puzzle:{label:"Needs puzzle", c:"--s-puzzle"}, submit:{label:"Ready for Decision", c:"--s-submit"},
+  done:{label:"Approved ✓", c:"--s-done"}, rej:{label:"Rejected ✓", c:"--s-rej"}
+};
+const WORDS = ["FIRE","FLOOD","HEAT","SOIL","WIND"];
+const CLAIM_MS = 120000;
+const ids = Array.from({length:N}, (_,i) => "L" + String(i+1).padStart(2,"0"));
+
+const ls = { get(k){ try{return localStorage.getItem(k)}catch(e){return null} }, set(k,v){ try{localStorage.setItem(k,v)}catch(e){} } };
+let me = ls.get("lf.me") || "";
+let role = ls.get("lf.role") || "ltv";
+let loans = {};          // id -> data
+let run = {};            // meta/run doc
+let db = null;
+let cur = null;          // {id, stage, t0, draft}
+const $ = s => document.querySelector(s);
+
+/* ---------- logic ---------- */
+const money = s => { const v = parseFloat(String(s ?? "").replace(/[^0-9.]/g,"")); return isFinite(v) ? v : null; };
+const pct = x => x == null ? "–" : (x*100).toFixed(2) + "%";
+const fmt$ = x => x == null ? "" : x.toLocaleString("en-US");
+// The bank panel takes whole percentages ("Round to nearest percentage: .031 -> 3%").
+const r100 = x => Math.round(x * 100 + 1e-9);
+const bigPct = x => x == null ? "–" : r100(x) + "%";
+const bandOf = ltv => ltv < 0.85 ? "low" : ltv <= 1 ? "mid" : "high";
+function verdict(d, rounded){
+  const f = x => x == null ? null : (rounded ? r100(x) / 100 : x);
+  const b = bandOf(f(d.ltv));
+  if (b === "low") return "approve";
+  if (b === "high") return "reject";
+  if (d.front == null || d.back == null) return null;
+  return (f(d.front) < 0.25 && f(d.back) < 0.35) ? "approve" : "reject";
+}
+function evaluate(d){
+  d = d || {};
+  const out = {stage:"ltv", decision:null, band:null, rate:null, borderline:false};
+  if (d.ltv == null) return out;
+  const R = !!run.useRounded, all = !!run.allTasks;
+  out.band = bandOf(R ? r100(d.ltv) / 100 : d.ltv);
+  if (bandOf(d.ltv) !== bandOf(r100(d.ltv) / 100)) out.borderline = true;
+  if (out.band === "high") out.decision = "reject";
+  if ((out.band === "mid" || all) && (d.front == null || d.back == null)) { out.stage = "ratios"; return out; }
+  out.decision = verdict(d, R);
+  const other = verdict(d, !R);
+  if (other && other !== out.decision) out.borderline = true;
+  if (out.decision === "approve" || all) {
+    if (!Array.isArray(d.words)) { out.stage = "puzzle"; return out; }
+    if (out.decision === "approve") out.rate = d.words.length;
+  }
+  out.stage = d.submitted ? (out.decision === "reject" ? "rej" : "done") : "submit";
+  return out;
+}
+function claimedByOther(d){
+  const c = d && d.claim; if (!c || !c.who || c.who === me) return false;
+  return Date.now() - (c.at||0) < CLAIM_MS;
+}
+function queue(stage){ return ids.filter(id => evaluate(loans[id]).stage === stage); }
+function order(){
+  if (role === "ltv") return ["ltv","ratios","puzzle","submit"];
+  if (role === "ratios") return ["ratios","ltv","puzzle","submit"];
+  if (role === "puzzsub") return ["puzzle","submit","ratios","ltv"];
+  if (role === "submit") return ["submit","puzzle","ratios","ltv"];
+  return ["ratios","puzzle","ltv","submit"];
+}
+
+/* ---------- storage ---------- */
+/* Every change goes into an outbox kept on this device until the team store confirms it.
+   Failed saves retry automatically; nothing typed is dropped if the network blips or the tab reloads. */
+let outbox = {};   // id -> merged patch not yet confirmed
+try { outbox = JSON.parse(ls.get("lf.outbox") || "{}") || {}; } catch(e){ outbox = {}; }
+let flushing = false, retryMs = 1000, lastSaveErr = "";
+function persistOutbox(){ ls.set("lf.outbox", JSON.stringify(outbox)); }
+function mergePatch(a, b){
+  const o = Object.assign({}, a || {});
+  for (const [k,v] of Object.entries(b)) o[k] = (k === "log" && v && typeof v === "object") ? Object.assign({}, o.log || {}, v) : v;
+  return o;
+}
+async function writeLoan(id, patch){
+  loans[id] = mergePatch(loans[id], patch);
+  outbox[id] = mergePatch(outbox[id], patch); persistOutbox();
+  render(); flush();
+}
+async function flush(){
+  if (!db || flushing) { syncStatus(); return; }
+  flushing = true; syncStatus();
+  for (const id of Object.keys(outbox)) {
+    const patch = outbox[id]; const ref = db.collection("loans").doc(id);
+    try {
+      try { await ref.update(patch); }
+      catch(e){ if (e && e.code === "invalid_argument") await ref.set(mergePatch(loans[id], patch)); else throw e; }
+      if (outbox[id] === patch) delete outbox[id];
+      persistOutbox(); retryMs = 1000; lastSaveErr = "";
+    } catch(e){
+      lastSaveErr = (e && (e.code || e.message)) || "error";
+      flushing = false; syncStatus();
+      setTimeout(flush, retryMs); retryMs = Math.min(retryMs * 2, 15000);
+      return;
+    }
+  }
+  flushing = false; syncStatus();
+}
+async function writeRun(patch){
+  run = Object.assign({}, run, patch); render(); ls.set("lf.run", JSON.stringify(run));
+  if (!db) return;
+  for (let i = 0; i < 4; i++) { try { await db.doc("meta/run").set(run); return; } catch(e){ await new Promise(r => setTimeout(r, 800 * (i+1))); } }
+  toast("Timer didn't sync — check connection");
+}
+let connected = false;
+function syncStatus(){
+  const n = Object.keys(outbox).length;
+  if (!db) return setSync("local", "Offline mode · saved on this device only");
+  if (n && lastSaveErr) return setSync("local", "Retrying " + n + " unsaved loan(s)…");
+  if (n) return setSync("live", "Saving " + n + "…");
+  setSync("live", connected ? "All saved · live with team" : "All saved");
+}
+window.addEventListener("beforeunload", e => { if (db && Object.keys(outbox).length) { e.preventDefault(); e.returnValue = ""; } });
+window.addEventListener("online", () => flush());
+async function tryLock(id, stage){
+  if (!db) return true;
+  try { const r = await db.doc("locks/" + id + "-" + stage).acquire({holder: me, ttlMs: CLAIM_MS}); return !!r.acquired; }
+  catch(e){ return true; }
+}
+
+/* ---------- task flow ---------- */
+async function nextTask(){
+  if (!me) { toast("Pick your name first"); return; }
+  if (cur) await release();
+  for (const st of order()) {
+    for (const id of queue(st)) {
+      if (claimedByOther(loans[id])) continue;
+      if (!(await tryLock(id, st))) continue;
+      if (evaluate(loans[id]).stage !== st || claimedByOther(loans[id])) continue;
+      return open(id, st);
+    }
+  }
+  cur = null; renderTask(); toast("Nothing waiting right now");
+}
+async function open(id, stage, keepClaim){
+  cur = {id, stage, t0: Date.now()};
+  if (!keepClaim) await writeLoan(id, {claim:{who:me, stage, at:Date.now()}});
+  renderTask(); render();
+  setTimeout(() => { const f = document.querySelector("#task input, #task .word, #task .primary"); f && f.focus(); }, 30);
+}
+async function release(){
+  if (!cur) return;
+  const d = loans[cur.id];
+  if (d && d.claim && d.claim.who === me) await writeLoan(cur.id, {claim:null});
+  cur = null;
+}
+function logPatch(id, stage){
+  const d = loans[id] || {};
+  const sec = cur ? Math.round((Date.now()-cur.t0)/1000) : null;
+  return {log: Object.assign({}, d.log || {}, {[stage]: {by: me, sec, at: Date.now()}}), claim:null};
+}
+async function finish(patch){
+  const {id, stage} = cur;
+  await writeLoan(id, Object.assign(patch, logPatch(id, stage)));
+  const ev = evaluate(loans[id]);
+  // Stay in the same application: LTV >= 85% -> same person does Front/Back;
+  // a rejected loan -> same person clicks Reject on Decision; puzzle person finishes their own Decision.
+  if (stage === "ltv" && ev.stage === "ratios") { cur = null; return open(id, "ratios"); }
+  cur = null;
+  nextTask();
+}
+
+/* ---------- task UI ---------- */
+function renderTask(){
+  const box = $("#task");
+  if (!cur) { box.innerHTML = '<div class="empty">' + (me ? 'Press <b>Get next loan</b>, or click any tile on the board.' : 'Pick your name, then press <b>Get next loan</b>.') + '</div>'; return; }
+  const d = loans[cur.id] || {}; const ev = evaluate(d); const st = cur.stage;
+  const n = Number(cur.id.slice(1));
+  const pillCls = st === "view" ? (ev.stage==="rej"?"st-rej":"st-"+ev.stage) : "st-" + st;
+  const pillTxt = st === "view" ? STAGE[ev.stage].label : STAGE[st].label;
+  let h = '<div class="taskhead"><span class="lid">Loan ' + n + '</span><span class="stagepill ' + pillCls + '">' + pillTxt + '</span></div>';
+  h += '<div class="panelpath">Bank panel: <b>Application ' + n + '</b> → ' + ({ltv:"Loan-to-Value", ratios:"Front Ratio, then Back Ratio", puzzle:"Risk Assessment", submit:"Decision"}[st] || "overview") + '</div>';
+  if (st === "ltv") {
+    h += field("L","Loan amount","L",d.L) + field("H","House price","H",d.H) + field("V","Appraisal value","V",d.V);
+    h += '<div class="result" id="live"></div><div id="steps"></div>';
+    h += actions("Selected in panel ✓ — next");
+  } else if (st === "ratios") {
+    h += '<div class="hint">LTV ' + bigPct(d.ltv) + '. Front page: I, A, P. Back page adds DE and OT.</div>';
+    h += field("I","Yearly income","I",d.I) + field("A","Additional income","A",d.A) + field("P","Yearly mortgage pmt","P",d.P);
+    h += '<div class="result" id="liveF"></div>';
+    h += field("DE","Debt expenses","DE",d.DE) + field("OT","Other taxes","OT",d.OT);
+    h += '<div class="result" id="liveB"></div><div id="steps"></div>';
+    h += actions("Both selected in panel ✓ — next");
+  } else if (st === "puzzle") {
+    const w = cur.draft || (Array.isArray(d.words) ? d.words.slice() : []); cur.draft = w;
+    h += '<div class="hint">Words run only left→right or top→bottom. Tap each word you find (keys 1–5); each appears once or not at all. Enter saves.</div>';
+    h += '<div class="words">' + WORDS.map((x,i) => '<button type="button" class="word" data-w="' + x + '" aria-pressed="' + w.includes(x) + '">' + x + '<small>' + (i+1) + '</small></button>').join("") + '</div>';
+    h += '<div class="result"><span class="hint">Words found = interest rate</span><span class="big" id="rate">' + w.length + '%</span></div><div id="steps"></div>';
+    h += actions("Approved in panel ✓ — next loan");
+  } else if (st === "submit") {
+    h += entryBlock(d, ev) + '<div id="steps"></div>';
+    h += actions("Decision entered ✓ — next loan");
+  } else {
+    h += entryBlock(d, ev);
+    h += '<div class="actions">' +
+      '<button class="btn" data-redo="ltv" type="button">Edit LTV</button>' +
+      ((ev.band === "mid" || run.allTasks || d.front != null) ? '<button class="btn" data-redo="ratios" type="button">Edit ratios</button>' : '') +
+      ((ev.decision === "approve" || run.allTasks || Array.isArray(d.words)) ? '<button class="btn" data-redo="puzzle" type="button">Edit puzzle</button>' : '') +
+      (ev.stage === "submit" ? '<button class="btn primary" data-redo="submit" type="button">Do Decision</button>' : '') +
+      (d.submitted ? '<button class="btn" data-unsubmit type="button">Mark decision not entered</button>' : '') +
+      '<button class="btn" data-close type="button">Close</button></div>';
+    h += logBlock(d);
+  }
+  box.innerHTML = h;
+  bindTask();
+  live();
+}
+function field(k, name, sym, val){
+  return '<div class="field"><label for="f_' + k + '">' + name + ' <b>(' + sym + ')</b></label><input id="f_' + k + '" data-k="' + k + '" inputmode="decimal" autocomplete="off" placeholder="$" value="' + fmt$(val) + '"></div>';
+}
+function actions(label){
+  return '<div class="actions"><button class="btn primary big" data-save type="button">' + label + '</button><button class="btn" data-skip type="button">Skip</button></div>';
+}
+function entryBlock(d, ev){
+  const dec = ev.decision;
+  let h = '';
+  if (dec === "approve") h += '<div class="decision ok">Click <span class="num">' + (ev.rate == null ? "?" : ev.rate + "%") + '</span> then <u>Approve Loan</u></div>';
+  else if (dec === "reject") h += '<div class="decision no">Click <u>Reject Loan</u></div>';
+  if (ev.borderline) h += '<div class="warnline">Borderline: the exact and the rounded % give different answers. Check with the team.</div>';
+  h += '<dl class="entry">';
+  h += '<dt>Loan-to-Value</dt><dd>' + bigPct(d.ltv) + ' <span class="hint">' + pct(d.ltv) + '</span></dd>';
+  if (d.front != null) h += '<dt>Front ratio</dt><dd>' + bigPct(d.front) + ' <span class="hint">' + pct(d.front) + '</span></dd><dt>Back ratio</dt><dd>' + bigPct(d.back) + ' <span class="hint">' + pct(d.back) + '</span></dd>';
+  if (Array.isArray(d.words)) h += '<dt>Risk words</dt><dd>' + (d.words.join(", ") || "none") + '</dd>';
+  h += '</dl>';
+  return h;
+}
+function logBlock(d){
+  const L = d.log || {}; const rows = Object.entries(L).map(([k,v]) => k + ": " + v.by + (v.sec!=null ? " (" + v.sec + "s)" : "")).join(" · ");
+  return rows ? '<div class="hint" style="margin-top:10px">' + rows + '</div>' : '';
+}
+function readInputs(){
+  const o = {}; document.querySelectorAll("#task input[data-k]").forEach(i => o[i.dataset.k] = money(i.value)); return o;
+}
+function resHTML(label, x, tail){
+  return '<span><span class="hint">' + label + ' — select in panel</span><br><span class="big">' + bigPct(x) + '</span>' +
+    (x == null ? '' : ' <span class="hint num">exact ' + pct(x) + '</span>') + '</span>' + (tail || '');
+}
+function live(){
+  if (!cur) return;
+  const v = readInputs(); const R = !!run.useRounded; const g = x => R ? r100(x)/100 : x;
+  if (cur.stage === "ltv") {
+    const el = $("#live"); if (!el) return;
+    const ok = v.L && v.H && v.V; const ltv = ok ? v.L / Math.min(v.H, v.V) : null;
+    let tail = '';
+    if (ltv != null) { const b = bandOf(g(ltv));
+      tail = b === "low" ? '<span class="verdict v-good">Qualified → puzzle</span>' : b === "mid" ? '<span class="verdict v-warn">85–100% → check ratios</span>' : '<span class="verdict v-bad">Over 100% → reject</span>';
+      if (bandOf(ltv) !== bandOf(r100(ltv)/100)) tail += '<span class="warnline">Borderline: rounding changes the band.</span>';
+      if (ltv > 1.6 || ltv < 0.3 || Math.max(v.H,v.V)/Math.min(v.H,v.V) > 1.6) tail += '<span class="warnline">Unusual numbers — double-check for a typo.</span>';
+    }
+    el.innerHTML = resHTML("Loan-to-Value", ltv, tail);
+  } else if (cur.stage === "ratios") {
+    const inc = (v.I||0) + (v.A||0);
+    const f = inc > 0 && v.P != null ? v.P/inc : null;
+    const b = f != null && v.DE != null && v.OT != null ? (v.DE+v.OT+v.P)/inc : null;
+    const ef = $("#liveF"), eb = $("#liveB");
+    let tf = '';
+    if (f != null) { tf = g(f) < .25 ? '<span class="verdict v-good">&lt; 25% ✓</span>' : '<span class="verdict v-bad">≥ 25% ✗</span>';
+      if ((f < .25) !== (r100(f)/100 < .25)) tf += '<span class="warnline">Borderline: rounding changes pass/fail.</span>'; }
+    let tb = '';
+    if (b != null) { const pass = g(f) < .25 && g(b) < .35;
+      tb = (g(b) < .35 ? '<span class="verdict v-good">&lt; 35% ✓</span>' : '<span class="verdict v-bad">≥ 35% ✗</span>') +
+           (pass ? '<span class="verdict v-good">Pass → puzzle</span>' : '<span class="verdict v-bad">Reject</span>');
+      if ((b < .35) !== (r100(b)/100 < .35)) tb += '<span class="warnline">Borderline: rounding changes pass/fail.</span>'; }
+    if (ef) ef.innerHTML = resHTML("Front ratio", f, tf);
+    if (eb) eb.innerHTML = resHTML("Back ratio", b, tb);
+  }
+  guide(v);
+}
+/* Click-by-click directions for the bank panel. Panel order: Front → Back → LTV → Risk → Decision. */
+const K = t => '<span class="key">' + t + '</span>';
+const TO_REJECT = [K("Next Task: Risk Assessment"), K("Next Task: Decision"), K("Reject Loan"), K("Next Application")];
+function guide(v){
+  const el = $("#steps"); if (!el || !cur) return;
+  const d = loans[cur.id] || {}; const n = Number(cur.id.slice(1));
+  const R = !!run.useRounded, all = !!run.allTasks; const g = x => R ? r100(x)/100 : x;
+  const sb = document.querySelector("#task [data-save]");
+  let steps = [], label = null, outcome = null, note = "";
+  if (cur.stage === "ltv") {
+    const ltv = v.L && v.H && v.V ? v.L / Math.min(v.H, v.V) : null;
+    if (ltv == null) steps = ["Open " + K("Application " + n) + " → " + K("Loan-to-Value"), "Type L, H and V above"];
+    else {
+      const b = bandOf(g(ltv)); const sel = "Select " + K(r100(ltv) + "%") + " → " + K("Submit");
+      if (b === "high" && !all) { outcome = "reject"; label = "Rejected in panel ✓ — next loan";
+        steps = [sel + ' <b class="warnline" style="width:auto">(three digits: ' + r100(ltv) + ', not ' + (r100(ltv) % 100) + ')</b>'].concat(TO_REJECT); note = "If a Next Task link won't open, use " + K("Back to Application") + " → " + K("Decision") + "."; }
+      else if (b === "low") { label = "LTV selected ✓ — next loan";
+        steps = [sel, "Done here. The puzzle person finishes this loan.", K("Next Application")]; }
+      else { label = "LTV selected ✓ → do Front/Back now";
+        steps = [sel, K("Back to Application") + " → " + K("Front Ratio"), "Press the button below. Front/Back for this same loan opens here."]; }
+    }
+  } else if (cur.stage === "ratios") {
+    const inc = (v.I||0) + (v.A||0);
+    const f = inc > 0 && v.P != null ? v.P/inc : null;
+    const b = f != null && v.DE != null && v.OT != null ? (v.DE+v.OT+v.P)/inc : null;
+    steps = [
+      "On " + K("Front Ratio") + ": type I, A, P above → select " + K(f == null ? "Front %" : r100(f) + "%") + " → " + K("Submit"),
+      K("Next Task: Back Ratio") + ": type DE, OT above → select " + K(b == null ? "Back %" : r100(b) + "%") + " → " + K("Submit")
+    ];
+    if (b != null) {
+      const pass = g(f) < .25 && g(b) < .35;
+      if (!pass && !all) { outcome = "reject"; label = "Rejected in panel ✓ — next loan";
+        steps = steps.concat([K("Next Task: Loan-to-Value")], TO_REJECT);
+        note = "If a Next Task link won't open, use " + K("Back to Application") + " → " + K("Decision") + "."; }
+      else { label = "Ratios selected ✓ — next loan";
+        steps = steps.concat([pass ? "Passed. The puzzle person finishes this loan." : "Puzzle still needed (all-tasks mode).", K("Next Application")]); }
+    }
+  } else if (cur.stage === "puzzle") {
+    const rate = (cur.draft || []).length; const dec = evaluate(d).decision;
+    steps = ["Open " + K("Application " + n) + " → " + K("Risk Assessment"), "Tap each word you find above → " + K("Submit"), K("Next Task: Decision")];
+    if (dec === "reject") { steps.push(K("Reject Loan")); label = "Rejected in panel ✓ — next loan"; }
+    else { steps.push("Click " + K(rate + "%") + " → " + K("Approve Loan")); label = "Approved " + rate + "% in panel ✓ — next loan"; }
+    steps.push(K("Next Application"));
+  } else if (cur.stage === "submit") {
+    const ev = evaluate(d);
+    steps = ["Open " + K("Application " + n) + " → " + K("Decision"),
+      ev.decision === "approve" ? "Click " + K(ev.rate + "%") + " → " + K("Approve Loan") : K("Reject Loan"), K("Next Application")];
+  }
+  cur.outcome = outcome;
+  if (sb && label) sb.textContent = label;
+  el.innerHTML = steps.length ? '<div class="stepsbox"><div class="stepstitle">Do this in the bank panel</div><ol>' +
+    steps.map(x => '<li>' + x + '</li>').join("") + '</ol>' + (note ? '<div class="hint">' + note + '</div>' : '') + '</div>' : '';
+}
+async function save(){
+  if (!cur) return;
+  const v = readInputs();
+  if (cur.stage === "ltv") {
+    if (!v.L || !v.H || !v.V) return toast("Fill in L, H and V");
+    const p = {L:v.L, H:v.H, V:v.V, ltv: v.L/Math.min(v.H,v.V)};
+    if (cur.outcome === "reject") Object.assign(p, {submitted:true, submittedAt:Date.now()});
+    return finish(p);
+  }
+  if (cur.stage === "ratios") {
+    const inc = (v.I||0)+(v.A||0);
+    if (!inc || [v.P,v.DE,v.OT].some(x => x == null)) return toast("Fill in all five amounts");
+    const p = {I:v.I, A:v.A, P:v.P, DE:v.DE, OT:v.OT, front: v.P/inc, back: (v.DE+v.OT+v.P)/inc};
+    if (cur.outcome === "reject") Object.assign(p, {submitted:true, submittedAt:Date.now()});
+    return finish(p);
+  }
+  if (cur.stage === "puzzle") return finish({words: WORDS.filter(w => cur.draft.includes(w)), submitted:true, submittedAt:Date.now()});
+  if (cur.stage === "submit") return finish({submitted:true, submittedAt:Date.now()});
+}
+function bindTask(){
+  const box = $("#task");
+  box.querySelectorAll("input[data-k]").forEach((inp, i, all) => {
+    inp.addEventListener("input", live);
+    inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); if (i < all.length-1) all[i+1].focus(); else save(); } });
+  });
+  box.querySelectorAll(".word").forEach(b => b.addEventListener("click", () => toggleWord(b.dataset.w)));
+  const s = box.querySelector("[data-save]"); s && s.addEventListener("click", save);
+  const k = box.querySelector("[data-skip]"); k && k.addEventListener("click", async () => { await release(); renderTask(); render(); });
+  box.querySelectorAll("[data-redo]").forEach(b => b.addEventListener("click", () => open(cur.id, b.dataset.redo)));
+  const u = box.querySelector("[data-unsubmit]"); u && u.addEventListener("click", async () => { await writeLoan(cur.id, {submitted:false}); renderTask(); });
+  const c = box.querySelector("[data-close]"); c && c.addEventListener("click", () => { cur = null; renderTask(); render(); });
+}
+function toggleWord(w){
+  if (!cur || cur.stage !== "puzzle") return;
+  const i = cur.draft.indexOf(w); i >= 0 ? cur.draft.splice(i,1) : cur.draft.push(w);
+  document.querySelectorAll("#task .word").forEach(b => b.setAttribute("aria-pressed", cur.draft.includes(b.dataset.w)));
+  $("#rate").textContent = cur.draft.length + "%"; live();
+}
+document.addEventListener("keydown", e => {
+  if (!cur || e.target.tagName === "INPUT") return;
+  if (cur.stage === "puzzle" && /^[1-5]$/.test(e.key)) { toggleWord(WORDS[+e.key-1]); e.preventDefault(); }
+  else if ((cur.stage === "puzzle" || cur.stage === "submit") && e.key === "Enter" && !e.target.closest("[data-skip]")) { e.preventDefault(); save(); }
+});
+
+/* ---------- board UI ---------- */
+function render(){
+  const counts = {ltv:0, ratios:0, puzzle:0, submit:0, done:0, rej:0};
+  let rejPending = 0;
+  $("#board").innerHTML = ids.map(id => {
+    const d = loans[id] || {}; const ev = evaluate(d); counts[ev.stage]++;
+    const isRej = ev.decision === "reject"; if (isRej && ev.stage === "submit") rejPending++;
+    const c = isRej ? "--s-rej" : STAGE[ev.stage].c;
+    const claim = claimedByOther(d) || (d.claim && d.claim.who === me && cur && cur.id === id) ? d.claim.who : null;
+    let sub = STAGE[ev.stage].label;
+    if (isRej) sub = ev.stage === "submit" ? "Reject · Decision" : ev.stage === "ratios" ? "Reject · ratios" : ev.stage === "puzzle" ? "Reject · puzzle" : "Rejected ✓";
+    let val = d.ltv != null ? bigPct(d.ltv) : "";
+    if (ev.borderline) val += " ⚠";
+    if (ev.rate != null) val += " · " + ev.rate + "%";
+    return '<button type="button" class="tile' + (isRej ? " rej" : "") + (ev.stage==="done" ? " done" : "") + (cur && cur.id===id ? " sel" : "") + '" style="--c:var(' + c + ')" data-id="' + id + '" title="Loan ' + Number(id.slice(1)) + '">' +
+      '<span class="n">' + Number(id.slice(1)) + '</span><span class="s">' + sub + '</span><span class="v">' + val + '</span>' +
+      (claim ? '<span class="who" title="' + claim + ' is on it">' + claim[0] + '</span>' : '') + '</button>';
+  }).join("");
+  const pipeDefs = [["ltv","Need LTV"],["ratios","Need ratios"],["puzzle","Need puzzle"],["submit","Need Decision"],["done","Approved ✓"],["rej","Rejected ✓"]];
+  $("#pipeline").innerHTML = pipeDefs.map(([k,l]) => '<div class="pipe" style="--c:var(' + STAGE[k].c + ')"><b>' + counts[k] + '</b><span>' + l + (k==="submit" && rejPending ? ' (' + rejPending + ' rejects)' : '') + '</span></div>').join("");
+  $("#legend").innerHTML = ["ltv","ratios","puzzle","submit","done","rej"].map(k => '<span><i style="--c:var(' + STAGE[k].c + ')"></i>' + STAGE[k].label + '</span>').join("");
+  const done = counts.done + counts.rej;
+  $("#kDone").textContent = done; $("#kLeft").textContent = N - done;
+  const el = run.startedAt ? (Date.now() - run.startedAt)/1000 : 0;
+  $("#kPace").textContent = el > 30 && done ? Math.min(N, Math.round(done / el * 900)) : "–";
+  renderPeople(); renderChips(); renderHint(counts); renderMissing();
+}
+function renderMissing(){
+  const open = ids.filter(id => !["done","rej"].includes(evaluate(loans[id]).stage));
+  $("#missingTitle").textContent = open.length ? "Not yet entered in the bank panel (" + open.length + ")" : "Not yet entered in the bank panel";
+  $("#missing").innerHTML = open.length ? open.map(id => {
+    const ev = evaluate(loans[id]); const rej = ev.decision === "reject";
+    return '<button type="button" class="miss tile-link" data-id="' + id + '" style="--c:var(' + (rej ? "--s-rej" : STAGE[ev.stage].c) + ')"><b>' + Number(id.slice(1)) + '</b>' + (rej ? "reject · " : "") + STAGE[ev.stage].label.toLowerCase() + '</button>';
+  }).join("") : '<span class="allgood">All 49 loans are entered in the bank panel ✓</span>';
+  const left = run.startedAt ? 900 - (Date.now() - run.startedAt)/1000 : null;
+  const ready = open.filter(id => evaluate(loans[id]).stage === "submit").length;
+  const b = $("#banner");
+  if (left != null && left < 180 && ready) { b.hidden = false; b.textContent = ready + " loan(s) are finished but not entered in the bank panel. Enter those first — they only count once submitted."; }
+  else b.hidden = true;
+}
+function renderPeople(){
+  const P = {};
+  NAMES.concat(me && !NAMES.includes(me) ? [me] : []).forEach(n => P[n] = {ltv:0, ratios:0, puzzle:0, submit:0, sec:0, k:0});
+  ids.forEach(id => { const L = (loans[id]||{}).log || {}; for (const [st,v] of Object.entries(L)) { if (!v || !v.by) continue; P[v.by] = P[v.by] || {ltv:0,ratios:0,puzzle:0,submit:0,sec:0,k:0}; P[v.by][st] = (P[v.by][st]||0)+1; if (v.sec != null) { P[v.by].sec += v.sec; P[v.by].k++; } } });
+  $("#people").innerHTML = Object.entries(P).map(([n,p]) => '<tr><td>' + n + (n===me?' (you)':'') + '</td><td>' + p.ltv + '</td><td>' + p.ratios + '</td><td>' + p.puzzle + '</td><td>' + p.submit + '</td><td>' + (p.k ? Math.round(p.sec/p.k) : "–") + '</td></tr>').join("");
+}
+function renderChips(){
+  $("#names").innerHTML = NAMES.map(n => '<button type="button" class="chip" data-name="' + n + '" aria-pressed="' + (n===me) + '">' + n + '</button>').join("");
+  $("#roles").innerHTML = ROLES.map(r => '<button type="button" class="chip" data-role="' + r.id + '" aria-pressed="' + (r.id===role) + '">' + r.label + '</button>').join("");
+}
+function renderHint(c){
+  const map = {ltv:"ltv", ratios:"ratios", puzzsub:"puzzle", submit:"submit"};
+  const mine = map[role]; let t = "";
+  if (mine && c[mine] === 0) {
+    const best = ["ratios","puzzle","ltv","submit"].filter(s => c[s] > 0).sort((a,b) => c[b]-c[a])[0];
+    t = best ? "Your queue is empty. Get next loan will pull from " + STAGE[best].label.toLowerCase() + " (" + c[best] + " waiting)." : "";
+  } else if (mine) t = c[mine] + " waiting in your queue.";
+  if (role === "puzzsub") t += " After each puzzle you'll enter that loan in the panel right away.";
+  $("#roleHint").textContent = t;
+}
+function tick(){
+  const c = $("#clock");
+  if (!run.startedAt) { c.textContent = "15:00"; c.classList.remove("over"); $("#startBtn").hidden = false; return; }
+  $("#startBtn").hidden = true;
+  const left = 900 - Math.floor((Date.now() - run.startedAt)/1000);
+  const a = Math.abs(left); c.textContent = (left < 0 ? "+" : "") + Math.floor(a/60) + ":" + String(a%60).padStart(2,"0");
+  c.classList.toggle("over", left < 0);
+}
+setInterval(() => { tick(); }, 500);
+setInterval(() => { render(); }, 15000);
+
+document.addEventListener("click", e => {
+  const n = e.target.closest("[data-name]"); if (n) { me = n.dataset.name; ls.set("lf.me", me); render(); renderTask(); return; }
+  const r = e.target.closest("[data-role]"); if (r) { role = r.dataset.role; ls.set("lf.role", role); render(); return; }
+  const t = e.target.closest(".tile, .tile-link"); if (t) { openTile(t.dataset.id); }
+});
+async function openTile(id){
+  if (cur && cur.id !== id) await release();
+  cur = {id, stage:"view", t0:Date.now()}; renderTask(); render();
+  if (window.innerWidth <= 900) $("#task").scrollIntoView({behavior:"smooth", block:"start"});
+}
+$("#nextBtn").addEventListener("click", nextTask);
+$("#startBtn").addEventListener("click", () => writeRun({startedAt: Date.now()}));
+$("#allTasks").addEventListener("change", e => writeRun({allTasks: e.target.checked}));
+$("#useRounded").addEventListener("change", e => writeRun({useRounded: e.target.checked}));
+$("#demoBtn").addEventListener("click", () => {
+  let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  const k = x => Math.round(x / 1) ;
+  for (let i = 0; i < 24; i++) {
+    const id = ids[i]; const H = k(90000 + rnd()*400000); const V = k(H * (0.8 + rnd()*0.3));
+    const L = k(Math.min(H, V) * (0.6 + rnd()*0.55)); const ltv = L / Math.min(H, V);
+    const p = {L, H, V, ltv, demo:true, log:{ltv:{by:NAMES[i % 5], sec: 12 + Math.round(rnd()*20), at:Date.now()}}};
+    const b = bandOf(ltv);
+    if (i < 18 && (b === "mid")) { const I = k(20000 + rnd()*80000), A = k(rnd()*40000), inc = I + A; const P = k(inc*(0.15+rnd()*0.15)), DE = k(inc*rnd()*0.06), OT = k(inc*rnd()*0.05);
+      Object.assign(p, {I, A, P, DE, OT, front:P/inc, back:(DE+OT+P)/inc}); p.log.ratios = {by:NAMES[(i+1)%5], sec: 25 + Math.round(rnd()*25), at:Date.now()}; }
+    const tmp = Object.assign({}, p); const dec = verdict(tmp, !!run.useRounded);
+    if (i < 12 && dec === "approve") { p.words = WORDS.filter(() => rnd() < 0.5); p.log.puzzle = {by:"Joe", sec: 35 + Math.round(rnd()*30), at:Date.now()}; }
+    if (i < 10 && dec) { if (dec === "reject" || p.words) p.submitted = true; }
+    writeLoan(id, p);
+  }
+  if (!run.startedAt) writeRun({startedAt: Date.now() - 300000});
+  toast("Demo loaded: 24 sample loans");
+});
+let resetArmed = 0;
+$("#resetBtn").addEventListener("click", async e => {
+  if (Date.now() - resetArmed > 4000) { resetArmed = Date.now(); e.target.textContent = "Click again to erase all 49 loans"; setTimeout(() => e.target.textContent = "Reset board", 4000); return; }
+  resetArmed = 0; e.target.textContent = "Reset board"; cur = null;
+  const had = Object.keys(loans); loans = {}; run = {allTasks: !!run.allTasks, useRounded: !!run.useRounded}; render(); renderTask();
+  outbox = {}; persistOutbox();
+  if (db) { for (const id of had) { try { await db.collection("loans").doc(id).delete(); } catch(_){} } try { await db.doc("meta/run").set(run); } catch(_){} }
+  syncStatus();
+  toast("Board cleared");
+});
+let toastT; function toast(m){ const t = $("#toast"); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 2600); }
+function setSync(cls, txt){ const s = $("#sync"); s.className = "sync " + cls; s.innerHTML = "<i></i>" + txt; }
+
+render(); renderTask(); tick();
+
+/* ---------- connect shared store ---------- */
+(async () => {
+  const timer = setTimeout(() => setSync("local", "Can't reach team data yet — working on this device only"), 10000);
+  try { db = window.claude && window.claude.use ? await window.claude.use("db") : null; } catch(e){ db = null; }
+  if (!db) {
+    clearTimeout(timer);
+    for (const [id, p] of Object.entries(outbox)) loans[id] = mergePatch(loans[id], p);
+    try { run = JSON.parse(ls.get("lf.run") || "{}") || {}; } catch(e){ run = {}; }
+    $("#allTasks").checked = !!run.allTasks; $("#useRounded").checked = !!run.useRounded;
+    syncStatus(); render(); tick(); return;
+  }
+  flush();
+  db.collection("loans").onSnapshot(snap => {
+    if (!snap.metadata.fromCache) { clearTimeout(timer); connected = true; syncStatus(); }
+    const next = {}; snap.docs.forEach(d => { next[d.id] = d.data(); });
+    // Keep this device's unconfirmed changes on top of what the store sends.
+    for (const [id, p] of Object.entries(outbox)) next[id] = mergePatch(next[id], p);
+    loans = next;
+    render();
+    if (cur && cur.stage === "view") renderTask();
+  }, err => { clearTimeout(timer); connected = false; setSync("local", "Team sync stopped (" + err.code + ") — reload the page; your unsaved work is kept"); });
+  db.doc("meta/run").onSnapshot(s => { run = s.exists ? s.data() : {}; $("#allTasks").checked = !!run.allTasks; $("#useRounded").checked = !!run.useRounded; tick(); render(); if (cur) { if (cur.stage === "view") renderTask(); else live(); } }, () => {});
+})();
+})();
+</script>
+
+</body></html>
