@@ -10,6 +10,7 @@
   --accent:#1f5fd6; --accent-ink:#ffffff;
   --s-ltv:#1f5fd6; --s-ratios:#c27a0e; --s-puzzle:#7a4bd1; --s-submit:#0f8a8a; --s-done:#1d8a4b; --s-rej:#8b93a1;
   --good:#1d8a4b; --bad:#c23b3b; --warn:#c27a0e;
+  --hl:#2d4fb8;
   --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
 }
@@ -172,6 +173,18 @@ td:first-child{font-family:var(--f-body);font-weight:600}
 .more[open] summary{margin-bottom:12px}
 .skip{display:block;margin:10px auto 0;background:none;border:0;color:var(--muted);text-decoration:underline;font-size:14px}
 .task:empty{display:none}
+.paste{position:relative;margin-bottom:12px}
+#pastebox{width:100%;resize:none;font:inherit;font-size:16px;font-weight:600;padding:14px;border:2px dashed var(--accent);border-radius:10px;background:color-mix(in srgb,var(--accent) 6%,var(--panel));color:var(--ink);text-align:center}
+#pastebox:focus{border-style:solid;outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}
+.howto{display:none;margin-top:8px;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--soft);font-size:14px}
+.paste.first .howto,.paste:hover .howto{display:block}
+.howto ol{margin:10px 0 4px;padding-left:20px;display:grid;gap:4px}
+.mock{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;display:grid;gap:4px;font-size:13px;color:var(--muted)}
+.mrow{display:flex;justify-content:space-between;gap:10px}
+.hl{background:var(--hl);color:#fff;font-family:var(--f-mono);padding:0 4px;border-radius:2px}
+.cursor{position:absolute;right:-4px;bottom:-10px;font-size:20px;color:var(--ink);transform:rotate(180deg)}
+@keyframes flash{from{background:color-mix(in srgb,var(--good) 30%,var(--bg))}to{background:var(--bg)}}
+.field input.flash{animation:flash 1.2s ease-out}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:10px 16px;border-radius:10px;font-size:14px;z-index:20}
 @media (prefers-reduced-motion:no-preference){.tile{transition:background .25s,border-color .25s}}
 </style>
@@ -380,7 +393,7 @@ async function open(id, stage, keepClaim){
   cur = {id, stage, t0: Date.now()};
   if (!keepClaim) await writeLoan(id, {claim:{who:me, stage, at:Date.now()}});
   renderTask(); render();
-  setTimeout(() => { const f = document.querySelector("#task input, #task .word, #task .primary"); f && f.focus(); }, 30);
+  setTimeout(() => { const f = document.querySelector("#task #pastebox, #task input, #task .word, #task .primary"); f && f.focus(); }, 30);
 }
 async function release(){
   if (!cur) return;
@@ -426,10 +439,12 @@ function renderTask(){
   const pillTxt = st === "view" ? STAGE[ev.stage].label : STAGE[st].label;
   let h = '<div class="taskhead"><span class="lid">Application ' + n + '</span><span class="stagepill ' + pillCls + '">' + pillTxt + '</span></div>';
   if (st === "ltv") {
+    h += pasteBox("ltv");
     h += field("L","Loan amount","L",d.L) + field("H","House price","H",d.H) + field("V","Appraisal value","V",d.V);
     h += '<div class="result" id="live"></div><div id="steps"></div>';
     h += actions("Selected in panel ✓ — next");
   } else if (st === "ratios") {
+    h += pasteBox("ratios");
     h += field("I","Yearly income","I",d.I) + field("A","Additional income","A",d.A) + field("P","Yearly mortgage pmt","P",d.P);
     h += '<div class="result" id="liveF"></div>';
     h += field("DE","Debt expenses","DE",d.DE) + field("OT","Other taxes","OT",d.OT);
@@ -464,6 +479,57 @@ function renderTask(){
   restoreDraft();
   live();
 }
+/* ---------- copy & paste from the bank panel ---------- */
+const EXAMPLE = {
+  ltv: [["Loan Amount (L):","$ 282,240"],["House Price (H):","$ 336,000"],["Appraisal Value (V):","$ 246,159"]],
+  ratios: [["Yearly Income (I):","$ 41,667"],["Additional Income (A):","$ 64,744"],["Yearly Mortgage Payment (P):","$ 14,491"],["Debt Expenses (DE):","$ 9,578"],["Other Taxes (OT):","$ 3,309"]]
+};
+function pasteBox(stage){
+  let seen = 0; try { seen = +(localStorage.getItem("lf.howto." + stage) || 0); localStorage.setItem("lf.howto." + stage, seen + 1); } catch(e){}
+  const where = stage === "ltv" ? "Loan-to-Value page" : "Front Ratio page (3 amounts), then Back Ratio page (all 5)";
+  return '<div class="paste' + (seen < 3 ? ' first' : '') + '">' +
+    '<textarea id="pastebox" rows="1" placeholder="Paste the $ amounts here  ·  Ctrl/⌘ + V" aria-label="Paste the dollar amounts from the bank panel"></textarea>' +
+    '<div class="howto"><div class="mock" aria-hidden="true">' +
+      EXAMPLE[stage].map(([l, v]) => '<div class="mrow"><span>' + l + '</span><span class="hl">' + v + '</span></div>').join("") +
+      '<span class="cursor">⇱</span></div>' +
+      '<ol><li>On the ' + where + ', drag down across the <b>$ amounts</b> so they turn blue (like this example)</li>' +
+      '<li>Copy: <span class="key">Ctrl/⌘ + C</span></li><li>Click the box above, paste: <span class="key">Ctrl/⌘ + V</span>. Every field fills at once.</li></ol>' +
+      '<div class="hint">Hover over the paste box to see this again.</div></div></div>';
+}
+function parseAmounts(t){
+  const byKey = {}; const re = /\((DE|OT|L|H|V|I|A|P)\)\s*:?\s*\$?\s*(\d[\d,]*(?:\.\d+)?)/g; let m;
+  while ((m = re.exec(t))) byKey[m[1]] = money(m[2]);
+  const list = (t.match(/\d[\d,]*(?:\.\d+)?/g) || []).map(money).filter(x => x != null && x > 0);
+  return {byKey, list};
+}
+function fillFromText(t, startIdx){
+  const inputs = [...document.querySelectorAll("#task input[data-k]")]; if (!inputs.length) return 0;
+  const {byKey, list} = parseAmounts(t); let n = 0;
+  if (Object.keys(byKey).length) inputs.forEach(i => { if (byKey[i.dataset.k] != null) { i.value = fmt$(byKey[i.dataset.k]); n++; } });
+  else list.slice(0, inputs.length - startIdx).forEach((v, j) => { inputs[startIdx + j].value = fmt$(v); n++; });
+  if (!n) return 0;
+  live(); saveDraft();
+  inputs.forEach(i => { if (i.value) { i.classList.remove("flash"); void i.offsetWidth; i.classList.add("flash"); } });
+  const empty = inputs.find(i => !i.value);
+  const box = $("#pastebox"); if (box) box.value = "";
+  if (!empty) { const sb = document.querySelector("#task [data-save]"); sb && sb.focus(); }
+  else if (box) box.focus();
+  toast("Pasted " + n + " amount" + (n > 1 ? "s" : ""));
+  return n;
+}
+document.addEventListener("paste", e => {
+  if (!cur || (cur.stage !== "ltv" && cur.stage !== "ratios")) return;
+  const t = (e.clipboardData || window.clipboardData)?.getData("text") || "";
+  const tgt = e.target;
+  if (tgt && tgt.matches && tgt.matches("#task input[data-k]")) {
+    if (parseAmounts(t).list.length < 2) return;   // a single number pastes normally
+    const idx = [...document.querySelectorAll("#task input[data-k]")].indexOf(tgt);
+    e.preventDefault(); fillFromText(t, idx); return;
+  }
+  if (tgt && tgt.tagName === "INPUT") return;
+  e.preventDefault(); fillFromText(t, 0);
+});
+document.addEventListener("input", e => { if (e.target && e.target.id === "pastebox" && e.target.value.trim()) fillFromText(e.target.value, 0); });
 function field(k, name, sym, val){
   return '<div class="field"><label for="f_' + k + '">' + name + ' <b>(' + sym + ')</b></label><input id="f_' + k + '" data-k="' + k + '" inputmode="decimal" autocomplete="off" placeholder="$" value="' + fmt$(val) + '"></div>';
 }
@@ -543,7 +609,7 @@ function guide(v){
   let steps = [], label = null, outcome = null, note = "";
   if (cur.stage === "ltv") {
     const ltv = v.L && v.H && v.V ? v.L / Math.min(v.H, v.V) : null;
-    if (ltv == null) steps = ["Open " + K("Application " + n) + " → " + K("Loan-to-Value"), "Type L, H and V above"];
+    if (ltv == null) steps = ["Open " + K("Application " + n) + " → " + K("Loan-to-Value"), "Highlight the 3 $ amounts → " + K("Ctrl/⌘ + C") + " → paste in the box above"];
     else {
       const b = bandOf(g(ltv)); const sel = "Select " + K(r100(ltv) + "%") + " → " + K("Submit");
       if (b === "high" && !all) { outcome = "reject"; label = "Rejected in panel ✓ — next loan";
@@ -558,8 +624,8 @@ function guide(v){
     const f = inc > 0 && v.P != null ? v.P/inc : null;
     const b = f != null && v.DE != null && v.OT != null ? (v.DE+v.OT+v.P)/inc : null;
     steps = [
-      "On " + K("Front Ratio") + ": type I, A, P above → select " + K(f == null ? "Front %" : r100(f) + "%") + " → " + K("Submit"),
-      K("Next Task: Back Ratio") + ": type DE, OT above → select " + K(b == null ? "Back %" : r100(b) + "%") + " → " + K("Submit")
+      "On " + K("Front Ratio") + ": copy the 3 $ amounts → paste above → select " + K(f == null ? "Front %" : r100(f) + "%") + " → " + K("Submit"),
+      K("Next Task: Back Ratio") + ": copy all 5 $ amounts → paste above → select " + K(b == null ? "Back %" : r100(b) + "%") + " → " + K("Submit")
     ];
     if (b != null) {
       const pass = g(f) < .25 && g(b) < .35;
