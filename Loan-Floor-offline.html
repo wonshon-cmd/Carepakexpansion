@@ -202,6 +202,12 @@ td:first-child{font-family:var(--f-body);font-weight:600}
 .wide{width:100%}
 .counts{display:flex;flex-wrap:wrap;gap:6px 16px;margin-bottom:12px;font-size:14px;color:var(--muted)}
 .counts span b{font-family:var(--f-mono);color:var(--ink);font-size:16px;margin-right:4px}
+.fast{color:var(--good)}
+.closeout{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;margin-top:10px;font-size:13px;color:var(--muted)}
+.closeout span{width:100%;text-align:center}
+.btn.ok{color:var(--good)}
+.wayrow{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted);margin:-4px 0 12px}
+.wayrow input{flex:1;min-width:0;font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
 .countbtn b{font-family:var(--f-mono);color:var(--ink);font-size:16px;margin-right:4px}
 .countbtn{font:inherit;color:var(--muted);background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:4px 10px;cursor:pointer}
 .countbtn:hover:not(:disabled){border-color:var(--accent);color:var(--ink)}
@@ -267,6 +273,7 @@ button.brand:hover{color:var(--accent)}
       <nav class="crumbs" id="crumbs" aria-label="Where you are"></nav>
       <div class="me"><button type="button" class="link" id="changeName"></button></div>
       <div class="seg" id="roles" role="group" aria-label="My job"></div>
+      <label class="wayrow">Way being tested <input id="wayInput" maxlength="20" placeholder="optional, e.g. A" autocomplete="off"></label>
       <button class="btn primary big wide" id="nextBtn" type="button">Next loan →</button>
       <div class="task" id="task"></div>
     </div>
@@ -282,7 +289,12 @@ button.brand:hover{color:var(--accent)}
       <summary>Step times, team, rules &amp; settings</summary>
       <h2 style="margin-top:4px">Step times (seconds)</h2>
       <div style="overflow-x:auto"><table><thead><tr><th>Step</th><th>Count</th><th>Average</th><th>Median</th><th>Fastest</th><th>Slowest</th></tr></thead><tbody id="times"></tbody></table></div>
-      <h2 style="margin-top:14px">Average seconds by person</h2>
+      <h2 style="margin-top:14px">Which way is faster (average seconds)</h2>
+      <div style="overflow-x:auto"><table id="timesWays"></table></div>
+      <p class="hint">Pasted vs typed is recorded automatically. Set "Way being tested" (next to your job) to compare other setups, e.g. A = one person per application, B = split by task. ✓ marks the fastest.</p>
+      <h2 style="margin-top:14px">Each person</h2>
+      <div style="overflow-x:auto"><table id="timesPeople"></table></div>
+      <h2 style="margin-top:14px">Average seconds by person and step</h2>
       <div style="overflow-x:auto"><table id="timesBy"></table></div>
       <div class="actions"><button class="btn" id="copyTimes" type="button">Copy all step times (CSV for Excel / Sheets)</button></div>
       <p class="hint">Each step is timed from opening the application to pressing the blue button. Demo loans are left out.</p>
@@ -332,6 +344,7 @@ const ids = Array.from({length:N}, (_,i) => "L" + String(i+1).padStart(2,"0"));
 const ls = { get(k){ try{return localStorage.getItem(k)}catch(e){return null} }, set(k,v){ try{localStorage.setItem(k,v)}catch(e){} } };
 let me = ls.get("lf.me") || "";
 let role = ls.get("lf.role") === "puzzsub" ? "puzzsub" : "ltv";
+let way = ls.get("lf.way") || "";
 let loans = {};          // id -> data
 let run = {};            // meta/run doc
 let db = null;
@@ -357,6 +370,10 @@ function verdict(d, rounded){
 function evaluate(d){
   d = d || {};
   const out = {stage:"ltv", decision:null, band:null, rate:null, borderline:false};
+  if (d.manual === "approve" || d.manual === "reject") {
+    out.decision = d.manual; out.stage = d.manual === "approve" ? "done" : "rej"; out.rate = foundOf(d);
+    if (d.ltv != null) out.band = bandOf(d.ltv); return out;
+  }
   if (d.ltv == null) return out;
   const R = !!run.useRounded, all = !!run.allTasks;
   out.band = bandOf(R ? r100(d.ltv) / 100 : d.ltv);
@@ -485,7 +502,8 @@ function logPatch(id, stage){
 const STEP_NAMES = {
   "ltv|qualified": "LTV → qualified (under 85%)", "ltv|to ratios": "LTV → needs ratios (85–100%)", "ltv|reject": "LTV + Reject (over 100%)",
   "ratios|pass": "Front + Back → pass", "ratios|reject": "Front + Back + Reject",
-  "puzzle|approve": "Puzzle + Approve", "puzzle|reject": "Puzzle + Reject", "submit|decision": "Decision only"
+  "puzzle|approve": "Puzzle + Approve", "puzzle|reject": "Puzzle + Reject", "submit|decision": "Decision only",
+  "closeout|approve": "Closed out: Approved", "closeout|reject": "Closed out: Rejected"
 };
 const STEP_ORDER = Object.keys(STEP_NAMES);
 function outcomeOf(stage, next){
@@ -500,24 +518,43 @@ function allTimes(){
     (Array.isArray(d.times) ? d.times : []).forEach(t => { if (t && t.sec != null) rows.push(Object.assign({app: Number(id.slice(1))}, t)); }); });
   return rows.sort((a, b) => (a.at || 0) - (b.at || 0));
 }
+const esc = t => String(t).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const median = a => { if (!a.length) return null; const s = a.slice().sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m-1] + s[m]) / 2; };
 const r1 = x => x == null ? "–" : (Math.round(x * 10) / 10).toFixed(1);
 function renderTimes(){
   const rows = allTimes(); const el = $("#times"); if (!el) return;
-  if (!rows.length) { el.innerHTML = '<tr><td colspan="6" style="text-align:left;font-family:inherit;font-weight:400;color:var(--muted)">No steps timed yet. Every step you finish is timed from opening the application to pressing the blue button.</td></tr>'; $("#timesBy").innerHTML = ""; return; }
+  if (!rows.length) { el.innerHTML = '<tr><td colspan="6" style="text-align:left;font-family:inherit;font-weight:400;color:var(--muted)">No steps timed yet. Every step you finish is timed from opening the application to pressing the blue button.</td></tr>'; $("#timesBy").innerHTML = ""; $("#timesPeople").innerHTML = ""; $("#timesWays").innerHTML = ""; return; }
   const by = {}; rows.forEach(t => { const k = t.stage + "|" + t.outcome; (by[k] = by[k] || []).push(t.sec); });
   el.innerHTML = STEP_ORDER.filter(k => by[k]).map(k => { const a = by[k], avg = a.reduce((x, y) => x + y, 0) / a.length;
     return '<tr><td>' + STEP_NAMES[k] + '</td><td>' + a.length + '</td><td><b>' + r1(avg) + '</b></td><td>' + r1(median(a)) + '</td><td>' + r1(Math.min(...a)) + '</td><td>' + r1(Math.max(...a)) + '</td></tr>'; }).join("");
   const people = [...new Set(rows.map(t => t.by))];
   const cols = STEP_ORDER.filter(k => by[k]);
+  const avg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
+  // per person: totals
+  $("#timesPeople").innerHTML = '<thead><tr><th>Person</th><th>Steps</th><th>Applications</th><th>Total s</th><th>Avg per step</th><th>Way(s)</th></tr></thead><tbody>' +
+    people.map(p => { const mine = rows.filter(t => t.by === p); const secs = mine.map(t => t.sec);
+      return '<tr><td>' + p + '</td><td>' + mine.length + '</td><td>' + new Set(mine.map(t => t.app)).size + '</td><td>' + r1(secs.reduce((x, y) => x + y, 0)) +
+        '</td><td><b>' + r1(avg(secs)) + '</b></td><td style="font-family:inherit">' + ([...new Set(mine.map(t => t.way).filter(Boolean))].join(", ") || "–") + '</td></tr>'; }).join("") + '</tbody>';
+  // which way is faster: paste vs typed, and each "way" label
+  const groups = [];
+  [...new Set(rows.map(t => t.input).filter(x => x && x !== "—"))].forEach(m => groups.push({fam: "input", label: m === "paste" ? "Pasted" : m === "typed" ? "Typed" : "Paste + typed", f: t => t.input === m}));
+  [...new Set(rows.map(t => t.way).filter(Boolean))].forEach(w => groups.push({fam: "way", label: "Way " + w, f: t => t.way === w}));
+  if (groups.length) {
+    $("#timesWays").innerHTML = '<thead><tr><th>Step</th>' + groups.map(g => '<th>' + esc(g.label) + '</th>').join("") + '</tr></thead><tbody>' +
+      cols.map(k => { const cells = groups.map(g => rows.filter(t => t.stage + "|" + t.outcome === k && g.f(t)).map(t => t.sec));
+        const avgs = cells.map(avg);
+        const isBest = i => { const fam = groups.map((g, j) => g.fam === groups[i].fam && avgs[j] != null ? avgs[j] : null).filter(x => x != null);
+          return fam.length > 1 && avgs[i] === Math.min(...fam); };
+        return '<tr><td>' + STEP_NAMES[k].replace(/ \(.*\)/, "") + '</td>' + cells.map((a, i) => '<td>' + (a.length ? (isBest(i) ? '<b class="fast">' + r1(avgs[i]) + ' ✓</b>' : r1(avgs[i])) + ' <span class="hint">×' + a.length + '</span>' : "–") + '</td>').join("") + '</tr>'; }).join("") + '</tbody>';
+  } else $("#timesWays").innerHTML = '<tbody><tr><td style="text-align:left;font-family:inherit;color:var(--muted)">Nothing to compare yet. Paste on some applications and type on others, or set a "Way being tested" label.</td></tr></tbody>';
   $("#timesBy").innerHTML = '<thead><tr><th>Person</th>' + cols.map(k => '<th>' + STEP_NAMES[k].replace(/ \(.*\)/, "") + '</th>').join("") + '</tr></thead><tbody>' +
     people.map(p => '<tr><td>' + p + '</td>' + cols.map(k => { const a = rows.filter(t => t.by === p && t.stage + "|" + t.outcome === k).map(t => t.sec);
       return '<td>' + (a.length ? r1(a.reduce((x, y) => x + y, 0) / a.length) + ' <span class="hint">×' + a.length + '</span>' : "–") + '</td>'; }).join("") + '</tr>').join("") + '</tbody>';
 }
 function timesCsv(){
   const rows = allTimes();
-  return ["application,step,outcome,person,seconds,finished_at"].concat(rows.map(t =>
-    [t.app, t.stage, t.outcome, t.by, t.sec, new Date(t.at).toLocaleTimeString()].join(","))).join("\n");
+  return ["application,step,outcome,person,seconds,input,way,finished_at"].concat(rows.map(t =>
+    [t.app, t.stage, t.outcome, t.by, t.sec, t.input || "", (t.way || "").replace(/,/g, " "), new Date(t.at).toLocaleTimeString()].join(","))).join("\n");
 }
 async function finish(patch){
   const {id, stage} = cur;
@@ -526,7 +563,8 @@ async function finish(patch){
   // Stay in the same application: LTV 85%+ -> the same person does Front/Back.
   // The claim is handed over in the same save, so the loan never shows up free in between.
   const next = evaluate(mergePatch(loans[id], patch));
-  const step = {stage, outcome: outcomeOf(stage, next), by: me, sec: patch.log[stage].sec, at: Date.now()};
+  const input = (stage === "ltv" || stage === "ratios") ? (cur.pasted && cur.typed ? "mixed" : cur.pasted ? "paste" : cur.typed ? "typed" : "—") : "—";
+  const step = {stage, outcome: outcomeOf(stage, next), by: me, sec: patch.log[stage].sec, at: Date.now(), input, way: way || ""};
   patch.log[stage].outcome = step.outcome;
   patch.times = (Array.isArray((loans[id] || {}).times) ? loans[id].times : []).concat([step]);
   const chain = stage === "ltv" && next.stage === "ratios";
@@ -535,6 +573,21 @@ async function finish(patch){
   cur = null;
   if (chain) return open(id, "ratios", true);
   nextTask();
+}
+/* Close out from the queue: the decision was entered in the bank panel. Timed like any other step. */
+async function closeOut(kind){
+  if (!cur) return;
+  const {id} = cur; const wasView = cur.stage === "view";
+  clearDraft();
+  const d = loans[id] || {};
+  const sec = Math.round((Date.now() - cur.t0) / 100) / 10;
+  const step = {stage: "closeout", outcome: kind, by: me, sec, at: Date.now(), input: "—", way: way || ""};
+  await writeLoan(id, {manual: kind, submitted: true, submittedAt: Date.now(), claim: null,
+    log: Object.assign({}, d.log || {}, {closeout: {by: me, sec, at: Date.now(), outcome: kind}}),
+    times: (Array.isArray(d.times) ? d.times : []).concat([step])});
+  toast("Application " + Number(id.slice(1)) + " closed out as " + (kind === "approve" ? "Approved" : "Rejected"));
+  cur = null;
+  if (wasView) { renderTask(); render(); } else nextTask();
 }
 // Heartbeat: while you have an application open, keep your name on it.
 setInterval(() => {
@@ -551,7 +604,7 @@ function renderTask(){
   $("#crumbs").innerHTML = cur
     ? '<button type="button" class="crumb" data-home>Home</button><span>›</span><b>Application ' + Number(cur.id.slice(1)) + '</b>'
     : '<b class="hometitle">Home</b>';
-  $("#roles").hidden = !!cur;
+  $("#roles").hidden = !!cur; document.querySelector(".wayrow").hidden = !!cur;
   pushNav(cur ? {id: cur.id, stage: cur.stage} : {home: true});
   if (!cur) { box.innerHTML = ''; return; }
   const d = loans[cur.id] || {}; const ev = evaluate(d); const st = cur.stage;
@@ -590,6 +643,7 @@ function renderTask(){
       (ev.stage === "submit" ? '<button class="btn primary" data-redo="submit" type="button">Do Decision</button>' : '') +
       (d.submitted ? '<button class="btn" data-unsubmit type="button">Mark decision not entered</button>' : '') +
       '<button class="btn" data-close type="button">Close</button></div>';
+    if (!d.submitted) h += CLOSE_OUT;
     h += logBlock(d);
   }
   box.innerHTML = h;
@@ -643,6 +697,7 @@ function smartParse(text, keys){
 function fillFromText(t, startIdx){
   const inputs = [...document.querySelectorAll("#task input[data-k]")]; if (!inputs.length) return 0;
   const map = smartParse(t, inputs.slice(startIdx).map(i => i.dataset.k)); let n = 0;
+  if (cur) cur.pasted = true;
   inputs.forEach(i => { if (map[i.dataset.k] != null) { i.value = fmt$(map[i.dataset.k]); n++; } });
   if (!n) return 0;
   live(); saveDraft();
@@ -670,8 +725,9 @@ document.addEventListener("input", e => { if (e.target && e.target.id === "paste
 function field(k, name, sym, val){
   return '<div class="field"><label for="f_' + k + '">' + name + ' <b>(' + sym + ')</b></label><input id="f_' + k + '" data-k="' + k + '" inputmode="decimal" autocomplete="off" placeholder="$" value="' + fmt$(val) + '"></div>';
 }
+const CLOSE_OUT = '<div class="closeout"><span>Already entered in the bank panel? Close it out:</span><button class="btn ok" data-closeout="approve" type="button">✓ Approved</button><button class="btn danger" data-closeout="reject" type="button">✗ Rejected</button></div>';
 function actions(label){
-  return '<button class="btn primary big wide" data-save type="button">' + label + '</button><button class="skip" data-skip type="button">Skip this loan</button>';
+  return '<button class="btn primary big wide" data-save type="button">' + label + '</button>' + CLOSE_OUT + '<button class="skip" data-skip type="button">Skip this loan</button>';
 }
 function entryBlock(d, ev){
   const dec = ev.decision;
@@ -840,13 +896,14 @@ async function save(){
 function bindTask(){
   const box = $("#task");
   box.querySelectorAll("input[data-k]").forEach((inp, i, all) => {
-    inp.addEventListener("input", () => { live(); saveDraft(); });
+    inp.addEventListener("input", e => { if (cur && e.isTrusted && e.inputType !== "insertFromPaste") cur.typed = true; live(); saveDraft(); });
     inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); if (i < all.length-1) all[i+1].focus(); else save(); } });
   });
   const s = box.querySelector("[data-save]"); s && s.addEventListener("click", save);
   const k = box.querySelector("[data-skip]"); k && k.addEventListener("click", async () => { await release(); renderTask(); render(); });
   box.querySelectorAll("[data-redo]").forEach(b => b.addEventListener("click", () => open(cur.id, b.dataset.redo)));
-  const u = box.querySelector("[data-unsubmit]"); u && u.addEventListener("click", async () => { await writeLoan(cur.id, {submitted:false}); renderTask(); });
+  const u = box.querySelector("[data-unsubmit]"); u && u.addEventListener("click", async () => { await writeLoan(cur.id, {submitted:false, manual:null}); renderTask(); });
+  box.querySelectorAll("[data-closeout]").forEach(b => b.addEventListener("click", () => closeOut(b.dataset.closeout)));
   const to = box.querySelector("[data-takeover]"); to && to.addEventListener("click", () => { cur.takeover = true; renderTask(); });
   const c = box.querySelector("[data-close]"); c && c.addEventListener("click", () => { cur = null; renderTask(); render(); });
 }
@@ -958,6 +1015,8 @@ async function goHome(){ if (cur) { await release(); } cur = null; renderTask();
 $("#backBtn").addEventListener("click", () => { if (navPos > 0) goNav(navHist[--navPos]); });
 $("#fwdBtn").addEventListener("click", () => { if (navPos < navHist.length - 1) goNav(navHist[++navPos]); });
 $("#homeLogo").addEventListener("click", goHome);
+$("#wayInput").value = way;
+$("#wayInput").addEventListener("input", e => { way = e.target.value.trim(); ls.set("lf.way", way); });
 $("#copyTimes").addEventListener("click", () => {
   const t = timesCsv(); const n = t.split("\n").length - 1;
   const done = () => toast("Copied " + n + " timed steps. Paste into Excel or Google Sheets.");
