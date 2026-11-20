@@ -237,7 +237,8 @@ const STAGE = {
   done:{label:"Approved ✓", c:"--s-done"}, rej:{label:"Rejected ✓", c:"--s-rej"}
 };
 const WORDS = ["FIRE","FLOOD","HEAT","SOIL","WIND"];
-const CLAIM_MS = 120000;
+const CLAIM_MS = 90000;      // a claim lapses 90 s after its holder last checked in
+const LOCK_MS = 15000;       // short lock that settles two people clicking at once
 const ids = Array.from({length:N}, (_,i) => "L" + String(i+1).padStart(2,"0"));
 
 const ls = { get(k){ try{return localStorage.getItem(k)}catch(e){return null} }, set(k,v){ try{localStorage.setItem(k,v)}catch(e){} } };
@@ -317,6 +318,8 @@ async function writeLoan(id, patch){
 async function flush(){
   if (!db || flushing) { syncStatus(); return; }
   flushing = true; syncStatus();
+  // Keep sending until nothing is waiting, including changes made while a save was in flight.
+  while (Object.keys(outbox).length) {
   for (const id of Object.keys(outbox)) {
     const patch = outbox[id]; const ref = db.collection("loans").doc(id);
     try {
@@ -330,6 +333,7 @@ async function flush(){
       setTimeout(flush, retryMs); retryMs = Math.min(retryMs * 2, 15000);
       return;
     }
+  }
   }
   flushing = false; syncStatus();
 }
@@ -352,7 +356,7 @@ window.addEventListener("online", () => flush());
 async function tryLock(id, stage){
   if (!db) return true;
   try {
-    const r = await Promise.race([db.doc("locks/" + id + "-" + stage).acquire({holder: me, ttlMs: CLAIM_MS}), new Promise(res => setTimeout(() => res({acquired:true}), 1500))]);
+    const r = await Promise.race([db.doc("locks/" + id).acquire({holder: me, ttlMs: LOCK_MS}), new Promise(res => setTimeout(() => res({acquired:true}), 1500))]);
     return !!r.acquired;
   }
   catch(e){ return true; }
@@ -392,14 +396,24 @@ function logPatch(id, stage){
 async function finish(patch){
   const {id, stage} = cur;
   clearDraft();
-  await writeLoan(id, Object.assign(patch, logPatch(id, stage)));
-  const ev = evaluate(loans[id]);
-  // Stay in the same application: LTV >= 85% -> same person does Front/Back;
-  // a rejected loan -> same person clicks Reject on Decision; puzzle person finishes their own Decision.
-  if (stage === "ltv" && ev.stage === "ratios") { cur = null; return open(id, "ratios"); }
+  Object.assign(patch, logPatch(id, stage));
+  // Stay in the same application: LTV 85%+ -> the same person does Front/Back.
+  // The claim is handed over in the same save, so the loan never shows up free in between.
+  const next = evaluate(mergePatch(loans[id], patch));
+  const chain = stage === "ltv" && next.stage === "ratios";
+  if (chain) patch.claim = {who:me, stage:"ratios", at:Date.now()};
+  await writeLoan(id, patch);
   cur = null;
+  if (chain) return open(id, "ratios", true);
   nextTask();
 }
+// Heartbeat: while you have an application open, keep your name on it.
+setInterval(() => {
+  if (!cur || cur.stage === "view" || !me) return;
+  const d = loans[cur.id];
+  if (d && d.claim && d.claim.who === me && Date.now() - (d.claim.at || 0) > 30000)
+    writeLoan(cur.id, {claim:{who:me, stage:cur.stage, at:Date.now()}});
+}, 10000);
 
 /* ---------- task UI ---------- */
 function renderTask(){
@@ -430,6 +444,10 @@ function renderTask(){
   } else if (st === "submit") {
     h += entryBlock(d, ev) + '<div id="steps"></div>';
     h += actions("Decision entered ✓ — next loan");
+  } else if (claimedByOther(d) && !cur.takeover) {
+    h += '<div class="banner">' + d.claim.who + ' is working on this application right now.</div>';
+    h += entryBlock(d, ev);
+    h += '<div class="actions"><button class="btn" data-close type="button">Close</button><button class="btn danger" data-takeover type="button">Take it over</button></div>';
   } else {
     h += entryBlock(d, ev);
     h += '<div class="actions">' +
@@ -597,6 +615,7 @@ function bindTask(){
   const k = box.querySelector("[data-skip]"); k && k.addEventListener("click", async () => { await release(); renderTask(); render(); });
   box.querySelectorAll("[data-redo]").forEach(b => b.addEventListener("click", () => open(cur.id, b.dataset.redo)));
   const u = box.querySelector("[data-unsubmit]"); u && u.addEventListener("click", async () => { await writeLoan(cur.id, {submitted:false}); renderTask(); });
+  const to = box.querySelector("[data-takeover]"); to && to.addEventListener("click", () => { cur.takeover = true; renderTask(); });
   const c = box.querySelector("[data-close]"); c && c.addEventListener("click", () => { cur = null; renderTask(); render(); });
 }
 function toggleWord(w){
