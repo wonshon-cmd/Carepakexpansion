@@ -9,21 +9,25 @@
 .lfnav .real{color:#fecaca;border:1px solid #7f1d1d}
 .lfnav .test{color:#bbf7d0;border:1px solid #14532d}
 .lfnav .sp{flex:1}
+.lfnav .back{font:inherit;color:#fff;background:#1f2937;border:1px solid #374151;border-radius:8px;padding:6px 12px;cursor:pointer;margin-right:4px}
+.lfnav .back:hover{background:#374151}
 </style>
 <nav class="lfnav" aria-label="Loan Floor menu">
+  <button type="button" class="back" id="lfBack" title="Back to the previous page">← Back</button>
   <a class="brand" href="Loan-Floor-offline.html">Loan Floor</a>
   <a href="Loan-Floor-offline.html" data-page="program">Program</a>
-  <a href="Practice.html#web" data-page="web">Manual · Program</a>
-  <a href="Practice.html#sheet" data-page="sheet">Manual · Google Sheet</a>
+  <a href="Practice.html#web" data-page="web">How to use · Program</a>
+  <a href="Practice.html#sheet" data-page="sheet">How to use · Google Sheet</a>
   <span class="sp"></span>
-  <a class="real" href="https://docs.google.com/spreadsheets/d/1rxMJrqUcFL1y4Q-48_IiZNxnorFBIMfMP-exQzGFRN0/edit?usp=sharing" target="_blank" rel="noopener" title="The real sheet for the 15-minute run">Google Sheet · REAL (do not touch) ↗</a>
   <a class="test" href="https://docs.google.com/spreadsheets/d/1OKJ-hPE26-xSvTBSW-o1qQ8YTFYOuiuua8sOu9V7qJk/edit?usp=sharing" target="_blank" rel="noopener" title="Practice copy, type anything">Google Sheet · TEST &amp; PRACTICE ↗</a>
+  <a class="real" href="https://docs.google.com/spreadsheets/d/1rxMJrqUcFL1y4Q-48_IiZNxnorFBIMfMP-exQzGFRN0/edit?usp=sharing" target="_blank" rel="noopener" title="The real sheet for the 15-minute run">Google Sheet · REAL (do not touch) ↗</a>
 </nav>
 <script>(function(){var p=location.pathname.indexOf("Practice")>-1?(location.hash==="#sheet"?"sheet":"web"):"program";
 function mark(){var q=location.pathname.indexOf("Practice")>-1?(location.hash==="#sheet"?"sheet":"web"):"program";
 document.querySelectorAll(".lfnav [data-page]").forEach(function(a){a.toggleAttribute("aria-current",a.dataset.page===q);if(a.dataset.page===q)a.setAttribute("aria-current","page");});}
-mark();window.addEventListener("hashchange",mark);})();</script>
-<title>Loan Floor Practice</title>
+mark();window.addEventListener("hashchange",mark);
+document.getElementById("lfBack").addEventListener("click",function(){if(history.length>1)history.back();else location.href="Loan-Floor-offline.html";});})();</script>
+<title>How to Use Loan Floor</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Roboto:wght@400;500&display=swap">
 <style>
@@ -102,6 +106,9 @@ button:focus-visible,select:focus-visible,input:focus-visible,[contenteditable]:
 .vrow{display:flex;justify-content:space-between;gap:10px;padding:3px 0;color:var(--muted);font-size:15px}
 .vrow .v{color:var(--bank);font-variant-numeric:tabular-nums}
 .vrow .v::selection{background:#2d4fb8;color:#fff}
+/* only the $ amounts can be highlighted; labels, titles and buttons stay unselected */
+.bank{-webkit-user-select:none;user-select:none}
+.bank .vrow .v{-webkit-user-select:text;user-select:text}
 .formula{text-align:center;font-weight:500;color:var(--ink);margin:12px 0 4px}
 .task .foot{border-top:1px solid var(--line);padding:12px 18px;display:grid;gap:8px;justify-items:center}
 .task .foot .note{font-size:13px;color:var(--muted)}
@@ -169,7 +176,7 @@ button:focus-visible,select:focus-visible,input:focus-visible,[contenteditable]:
 </style>
 
 <div class="wrap">
-  <h1>Loan Floor Practice</h1>
+  <h1>How to use Loan Floor</h1>
   <p class="lede">Practice on made-up loans before the real run. The left side is a practice copy of the bank panel: highlight the $ amounts and copy them for real. The right side is the tool you will use. The coach at the top ticks off each step as you do it.</p>
   <p class="tip"><b>Tip for the real bank panel:</b> <span class="kbd">Ctrl</span>+click (Mac: <span class="kbd">⌘</span>+click) an application to open it in a new tab. Keep the list in one tab and work each application in its own tab. When it is done, <span class="kbd">Ctrl</span>+<span class="kbd">W</span> (Mac: <span class="kbd">⌘</span>+<span class="kbd">W</span>) closes that tab.</p>
 
