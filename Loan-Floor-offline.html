@@ -552,11 +552,30 @@ function parseAmounts(t){
   const list = (t.match(/\d[\d,]*(?:\.\d+)?/g) || []).map(money).filter(x => x != null && x > 0);
   return {byKey, list};
 }
+
+/* Reads a paste the way a person would: a number right after its label goes to that field
+   ("House Price (H): $ 336,000", on one line or the next); unlabeled numbers fill the next empty field in order. */
+const LABEL_RE = {L:/\(L\)|loan amount/i, H:/\(H\)|house price/i, V:/\(V\)|appraisal/i, I:/\(I\)|yearly income/i,
+  A:/\(A\)|additional income/i, P:/\(P\)|mortgage payment/i, DE:/\(DE\)|debt exp/i, OT:/\(OT\)|other tax/i};
+function smartParse(text, keys){
+  const out = {}; let pending = null;
+  const nextFree = () => keys.find(k => out[k] == null);
+  const t = String(text).replace(/application\s*\d+/gi, " ").replace(/round to nearest percentage[^%]*%/gi, " ").replace(/\d+\s*%/g, " ").replace(/(\d),(?=\d)/g, "$1");
+  const re = /(\((?:L|H|V|I|A|P|DE|OT)\)|loan amount|house price|appraisal|yearly income|additional income|mortgage payment|debt exp\w*|other tax\w*)|(\d+(?:\.\d+)?)/gi;
+  let m;
+  while ((m = re.exec(t))) {
+    if (m[1]) { const k = Object.keys(LABEL_RE).find(x => LABEL_RE[x].test(m[1])); if (k && keys.includes(k)) pending = k; else if (k) pending = "skip"; continue; }
+    const num = Number(m[2]); if (!(num > 0)) continue;
+    if (pending === "skip") { pending = null; continue; }        // a number that belongs to a field not on this form
+    const k = pending && out[pending] == null ? pending : nextFree();
+    if (k) out[k] = num; pending = null;
+  }
+  return out;
+}
 function fillFromText(t, startIdx){
   const inputs = [...document.querySelectorAll("#task input[data-k]")]; if (!inputs.length) return 0;
-  const {byKey, list} = parseAmounts(t); let n = 0;
-  if (Object.keys(byKey).length) inputs.forEach(i => { if (byKey[i.dataset.k] != null) { i.value = fmt$(byKey[i.dataset.k]); n++; } });
-  else list.slice(0, inputs.length - startIdx).forEach((v, j) => { inputs[startIdx + j].value = fmt$(v); n++; });
+  const map = smartParse(t, inputs.slice(startIdx).map(i => i.dataset.k)); let n = 0;
+  inputs.forEach(i => { if (map[i.dataset.k] != null) { i.value = fmt$(map[i.dataset.k]); n++; } });
   if (!n) return 0;
   live(); saveDraft();
   inputs.forEach(i => { if (i.value) { i.classList.remove("flash"); void i.offsetWidth; i.classList.add("flash"); } });

@@ -23,10 +23,16 @@ function clean_(ref) {
   const t = 'SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(TRIM(' + ref + '),"$",""),",","")," ",""),CHAR(160),"")';
   return '=IF(' + ref + '="","",IFERROR(VALUE(' + t + '),""))';
 }
-// k-th number found in a cleaned helper column (blanks and text skipped)
-function nth_(col, k) {
-  const r = '$' + col + '$' + Z1 + ':$' + col + '$' + Z2;
-  return '=IFERROR(INDEX(FILTER(' + r + ',ISNUMBER(' + r + ')),' + k + '),"")';
+// Everything pasted in a zone (two columns, all rows) joined into one text, with "282,240" → "282240" and "$" removed.
+// Works whether the paste lands in one cell, in separate rows, or label | number side by side.
+function joined_(c1, c2) {
+  return '=REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(TEXTJOIN(" ",TRUE,' + c1 + Z1 + ':' + c2 + Z2 + '),"(?i)application\\s*\\d+|round to nearest percentage[^%]*%|\\d+\\s*%"," "),"(\\d),(\\d)","$1$2"),"\\$","")';
+}
+// Value for one field: the number right after its label if the label was pasted too,
+// otherwise the k-th number in reading order (labels contain no digits, so they are skipped).
+function pick_(cell, k, labelRe) {
+  const nth = 'INDEX(SPLIT(TRIM(REGEXREPLACE(' + cell + ',"[^0-9.]+"," "))," "),1,' + k + ')';
+  return '=IF(' + cell + '="","",IFERROR(VALUE(REGEXEXTRACT(' + cell + ',"(?i)(?:' + labelRe + ')[^0-9]*([0-9.]+)")),IFERROR(VALUE(' + nth + '),"")))';
 }
 function head_(sh, a1, text) {
   const r = sh.getRange(a1).merge().setBackground(HEAD_BG).setFontColor("#FFFFFF").setFontWeight("bold").setFontSize(12);
@@ -37,6 +43,8 @@ function cf_(sh, a1, formula, colors) {
     .setBackground(colors[0]).setFontColor(colors[1]).setRanges([sh.getRange(a1)]).build();
 }
 function pasteZone_(sh, col, label) {
+  const col2 = String.fromCharCode(col.charCodeAt(0) + 1);   // the column to the right catches "label | number" pastes
+  sh.getRange(col2 + Z1 + ":" + col2 + Z2).setBackground(PASTE_BG).setFontColor(MUTED);
   const z = sh.getRange(col + Z1 + ":" + col + Z2);
   z.setBackground(PASTE_BG).setHorizontalAlignment("center")
    .setBorder(true, true, true, true, null, null, BLUE, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
@@ -45,7 +53,7 @@ function pasteZone_(sh, col, label) {
 
 function buildTemplate_(sh) {
   // A label | B value | C PASTE ZONE | D gap | E label | F value | G PASTE ZONE | H gap | I state | J,K helpers
-  [180, 95, 120, 16, 200, 95, 120, 16, 30, 60, 60].forEach((w, i) => sh.setColumnWidth(i + 1, w));
+  [180, 95, 130, 70, 200, 95, 130, 70, 30, 60, 60].forEach((w, i) => sh.setColumnWidth(i + 1, w));
   sh.getRange("A1").setValue("Application 1").setFontSize(20).setFontWeight("bold");
   sh.getRange("A2:G2").merge().setFontColor(MUTED).setFontSize(10);
   sh.getRange("A2").setValue("Copy the blue $ amounts in the bank panel → click the TOP cell of the blue paste box → Ctrl/⌘+Shift+V. Blank lines are fine.");
@@ -61,23 +69,21 @@ function buildTemplate_(sh) {
   pasteZone_(sh, "C", "▼ PASTE HERE (top cell)");
   ["Loan Amount (L)", "House Price (H)", "Appraisal Value (V)"].forEach((lab, i) => {
     sh.getRange("A" + (Z1 + i)).setValue(lab);
-    sh.getRange("B" + (Z1 + i)).setFormula(nth_("J", i + 1)).setNumberFormat("#,##0").setBackground(CALC_BG).setHorizontalAlignment("right");
+    sh.getRange("B" + (Z1 + i)).setFormula(pick_("$J$" + Z1, i + 1, ["\\(L\\)|loan amount", "\\(H\\)|house price", "\\(V\\)|appraisal"][i])).setNumberFormat("#,##0").setBackground(CALC_BG).setHorizontalAlignment("right");
   });
   // STEP 2 · Front / Back
   head_(sh, "E4:G4", "STEP 2 · Front / Back Ratio pages (only if YELLOW)");
   pasteZone_(sh, "G", "▼ PASTE HERE (top cell)");
   ["Yearly Income (I)", "Additional Income (A)", "Yearly Mortgage Payment (P)", "Debt Expenses (DE)", "Other Taxes (OT)"].forEach((lab, i) => {
     sh.getRange("E" + (Z1 + i)).setValue(lab);
-    sh.getRange("F" + (Z1 + i)).setFormula(nth_("K", i + 1)).setNumberFormat("#,##0").setBackground(CALC_BG).setHorizontalAlignment("right");
+    sh.getRange("F" + (Z1 + i)).setFormula(pick_("$K$" + Z1, i + 1, ["\\(I\\)|yearly income", "\\(A\\)|additional income", "\\(P\\)|mortgage payment", "\\(DE\\)|debt expense", "\\(OT\\)|other tax"][i])).setNumberFormat("#,##0").setBackground(CALC_BG).setHorizontalAlignment("right");
   });
   sh.getRange("E12").setValue("Front page: paste 3 amounts.\nBack page: paste all 5 (replaces the 3).").setFontColor(BLUE).setFontSize(9).setWrap(true);
-  sh.getRange("A10").setValue("The numbers are read in order;\nblank cells and labels are skipped.").setFontColor(BLUE).setFontSize(9).setWrap(true);
+  sh.getRange("A10").setValue("Paste anything: labels, blank lines or one cell.\nEach number goes to its label (L, H, V).").setFontColor(BLUE).setFontSize(9).setWrap(true);
 
   // hidden helpers: cleaned paste zones
-  const hj = [], hk = [];
-  for (let r = Z1; r <= Z2; r++) { hj.push([clean_("C" + r)]); hk.push([clean_("G" + r)]); }
-  sh.getRange("J" + Z1 + ":J" + Z2).setFormulas(hj);
-  sh.getRange("K" + Z1 + ":K" + Z2).setFormulas(hk);
+  sh.getRange("J" + Z1).setFormula(joined_("C", "D"));
+  sh.getRange("K" + Z1).setFormula(joined_("G", "H"));
 
   // results
   sh.getRange("A" + RES).setValue("LTV → type in panel").setFontWeight("bold");
