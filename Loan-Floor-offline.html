@@ -1,4 +1,28 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}[hidden]{display:none!important}</style></head><body>
+<style>
+.lfnav{background:#111827;color:#e5e7eb;font:500 14px "IBM Plex Sans",system-ui,sans-serif;display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;
+  padding:8px max(16px,env(safe-area-inset-right,0px)) 8px max(16px,env(safe-area-inset-left,0px))}
+.lfnav a{color:#e5e7eb;text-decoration:none;padding:6px 10px;border-radius:8px;white-space:nowrap}
+.lfnav a:hover{background:#1f2937}
+.lfnav a[aria-current="page"]{background:#1f5fd6;color:#fff}
+.lfnav .brand{font-weight:700;color:#fff;margin-right:6px}
+.lfnav .real{color:#fecaca;border:1px solid #7f1d1d}
+.lfnav .test{color:#bbf7d0;border:1px solid #14532d}
+.lfnav .sp{flex:1}
+</style>
+<nav class="lfnav" aria-label="Loan Floor menu">
+  <a class="brand" href="Loan-Floor-offline.html">Loan Floor</a>
+  <a href="Loan-Floor-offline.html" data-page="program">Program</a>
+  <a href="Practice.html#web" data-page="web">Manual · Program</a>
+  <a href="Practice.html#sheet" data-page="sheet">Manual · Google Sheet</a>
+  <span class="sp"></span>
+  <a class="real" href="https://docs.google.com/spreadsheets/d/1rxMJrqUcFL1y4Q-48_IiZNxnorFBIMfMP-exQzGFRN0/edit?usp=sharing" target="_blank" rel="noopener" title="The real sheet for the 15-minute run">Google Sheet · REAL (do not touch) ↗</a>
+  <a class="test" href="https://docs.google.com/spreadsheets/d/1OKJ-hPE26-xSvTBSW-o1qQ8YTFYOuiuua8sOu9V7qJk/edit?usp=sharing" target="_blank" rel="noopener" title="Practice copy, type anything">Google Sheet · TEST &amp; PRACTICE ↗</a>
+</nav>
+<script>(function(){var p=location.pathname.indexOf("Practice")>-1?(location.hash==="#sheet"?"sheet":"web"):"program";
+function mark(){var q=location.pathname.indexOf("Practice")>-1?(location.hash==="#sheet"?"sheet":"web"):"program";
+document.querySelectorAll(".lfnav [data-page]").forEach(function(a){a.toggleAttribute("aria-current",a.dataset.page===q);if(a.dataset.page===q)a.setAttribute("aria-current","page");});}
+mark();window.addEventListener("hashchange",mark);})();</script>
 <title>Huntsman Loan Floor</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -33,7 +57,7 @@ button{font:inherit;cursor:pointer}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* top strip */
-.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--panel);border-bottom:1px solid var(--line)}
+.top{position:sticky;top:0;z-index:5;background:var(--panel);border-bottom:1px solid var(--line)}
 .top .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;padding-block:10px}
 .brand{font-weight:700;letter-spacing:.01em;font-size:16px}
 .brand small{display:block;font-weight:500;color:var(--muted);font-size:12px;letter-spacing:.04em;text-transform:uppercase}
@@ -654,7 +678,7 @@ function guide(v){
   let steps = [], label = null, outcome = null, note = "";
   if (cur.stage === "ltv") {
     const ltv = v.L && v.H && v.V ? v.L / Math.min(v.H, v.V) : null;
-    if (ltv == null) steps = ["Open " + K("Application " + n) + " → " + K("Loan-to-Value"), "Highlight the 3 $ amounts → " + K("Ctrl/⌘ + C") + " → paste in the box above"];
+    if (ltv == null) steps = ["Open " + K("Application " + n) + " → " + K("Loan-to-Value") + ' <span class="hint">(Ctrl/⌘+click opens it in a new tab · Ctrl/⌘+W closes it when done)</span>', "Highlight the 3 $ amounts → " + K("Ctrl/⌘ + C") + " → paste in the box above"];
     else {
       const b = bandOf(g(ltv)); const sel = "Select " + K(r100(ltv) + "%") + " → " + K("Submit");
       if (b === "high" && !all) { outcome = "reject"; label = "Rejected in panel ✓ — next loan";
@@ -682,7 +706,7 @@ function guide(v){
     }
   } else if (cur.stage === "puzzle") {
     const rate = (cur.draft || []).length; const dec = evaluate(d).decision;
-    steps = ["Open " + K("Application " + n) + " → " + K("Risk Assessment"), "Tap each word you find above → " + K("Submit"), K("Next Task: Decision")];
+    steps = ["Open " + K("Application " + n) + " → " + K("Risk Assessment") + ' <span class="hint">(Ctrl/⌘+click opens it in a new tab · Ctrl/⌘+W closes it when done)</span>', "Tap each word you find above → " + K("Submit"), K("Next Task: Decision")];
     if (dec === "reject") { steps.push(K("Reject Loan")); label = "Rejected in panel ✓ — next loan"; }
     else { steps.push("Click " + K(rate + "%") + " → " + K("Approve Loan")); label = "Approved " + rate + "% in panel ✓ — next loan"; }
     steps.push(K("Next Application"));

@@ -1,0 +1,522 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}[hidden]{display:none!important}</style></head><body>
+<style>
+.lfnav{background:#111827;color:#e5e7eb;font:500 14px "IBM Plex Sans",system-ui,sans-serif;display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;
+  padding:8px max(16px,env(safe-area-inset-right,0px)) 8px max(16px,env(safe-area-inset-left,0px))}
+.lfnav a{color:#e5e7eb;text-decoration:none;padding:6px 10px;border-radius:8px;white-space:nowrap}
+.lfnav a:hover{background:#1f2937}
+.lfnav a[aria-current="page"]{background:#1f5fd6;color:#fff}
+.lfnav .brand{font-weight:700;color:#fff;margin-right:6px}
+.lfnav .real{color:#fecaca;border:1px solid #7f1d1d}
+.lfnav .test{color:#bbf7d0;border:1px solid #14532d}
+.lfnav .sp{flex:1}
+</style>
+<nav class="lfnav" aria-label="Loan Floor menu">
+  <a class="brand" href="Loan-Floor-offline.html">Loan Floor</a>
+  <a href="Loan-Floor-offline.html" data-page="program">Program</a>
+  <a href="Practice.html#web" data-page="web">Manual · Program</a>
+  <a href="Practice.html#sheet" data-page="sheet">Manual · Google Sheet</a>
+  <span class="sp"></span>
+  <a class="real" href="https://docs.google.com/spreadsheets/d/1rxMJrqUcFL1y4Q-48_IiZNxnorFBIMfMP-exQzGFRN0/edit?usp=sharing" target="_blank" rel="noopener" title="The real sheet for the 15-minute run">Google Sheet · REAL (do not touch) ↗</a>
+  <a class="test" href="https://docs.google.com/spreadsheets/d/1OKJ-hPE26-xSvTBSW-o1qQ8YTFYOuiuua8sOu9V7qJk/edit?usp=sharing" target="_blank" rel="noopener" title="Practice copy, type anything">Google Sheet · TEST &amp; PRACTICE ↗</a>
+</nav>
+<script>(function(){var p=location.pathname.indexOf("Practice")>-1?(location.hash==="#sheet"?"sheet":"web"):"program";
+function mark(){var q=location.pathname.indexOf("Practice")>-1?(location.hash==="#sheet"?"sheet":"web"):"program";
+document.querySelectorAll(".lfnav [data-page]").forEach(function(a){a.toggleAttribute("aria-current",a.dataset.page===q);if(a.dataset.page===q)a.setAttribute("aria-current","page");});}
+mark();window.addEventListener("hashchange",mark);})();</script>
+<title>Loan Floor Practice</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Roboto:wght@400;500&display=swap">
+<style>
+/* Layout: coach strip on top (steps tick off as you do them); below, two panes side by side — a practice copy of the bank panel (left) and the tool you will use (right). Stacks on phones. */
+:root{
+  --bg:#f3f5f8; --panel:#ffffff; --ink:#18202c; --muted:#5d6878; --line:#dde2ea; --soft:#eef1f5;
+  --accent:#1f5fd6; --accent-ink:#ffffff; --paste:#eaf1ff;
+  --bank:#4a7ee8; --bank-bg:#e9eef6; --pending:#f2c94c;
+  --good:#1d8a4b; --bad:#c23b3b; --warn:#b06d00;
+  --g-bg:#c6efce; --g-fg:#006100; --y-bg:#ffeb9c; --y-fg:#8a4d00; --r-bg:#ffc7ce; --r-fg:#9c0006;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --f-bank:"Roboto",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f141b; --panel:#171e28; --ink:#e6ebf2; --muted:#9aa5b5; --line:#2a3442; --soft:#1e2733;
+  --accent:#6b9af2; --accent-ink:#0b1220; --paste:#1c2a44; --bank:#5b8cf0; --bank-bg:#1a2230; --pending:#d9b23e;
+  --good:#4cc27e; --bad:#ef6b6b; --warn:#e0a23c;
+  --g-bg:#173d24; --g-fg:#8fe0a8; --y-bg:#463a12; --y-fg:#f3d27a; --r-bg:#4a1e24; --r-fg:#ffb3bc; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f141b; --panel:#171e28; --ink:#e6ebf2; --muted:#9aa5b5; --line:#2a3442; --soft:#1e2733;
+  --accent:#6b9af2; --accent-ink:#0b1220; --paste:#1c2a44; --bank:#5b8cf0; --bank-bg:#1a2230; --pending:#d9b23e;
+  --good:#4cc27e; --bad:#ef6b6b; --warn:#e0a23c;
+  --g-bg:#173d24; --g-fg:#8fe0a8; --y-bg:#463a12; --y-fg:#f3d27a; --r-bg:#4a1e24; --r-fg:#ffb3bc; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45}
+.wrap{max-width:1200px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1{font-size:26px;margin:0 0 4px}
+.lede{color:var(--muted);margin:0 0 10px;max-width:70ch}
+.tip{margin:0 0 14px;padding:10px 12px;border-radius:10px;background:var(--paste);max-width:80ch;font-size:14px}
+button{font:inherit;cursor:pointer}
+button:focus-visible,select:focus-visible,input:focus-visible,[contenteditable]:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.kbd{display:inline-block;font-family:var(--f-mono);font-size:.85em;font-weight:600;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:0 6px;background:var(--panel);white-space:nowrap}
+
+/* controls */
+.controls{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin-bottom:12px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel)}
+.seg button{border:0;background:none;color:var(--ink);padding:9px 14px;font-weight:600}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.lab{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+
+/* coach */
+.coach{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:14px}
+.coach .now{display:flex;gap:12px;align-items:flex-start}
+.coach .num{flex:none;width:34px;height:34px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-weight:700}
+.coach .num.done{background:var(--good)}
+.coach .txt{font-size:17px;font-weight:600}
+.coach .sub{color:var(--muted);font-size:14px;margin-top:2px}
+.prog{display:flex;flex-wrap:wrap;gap:4px;margin-top:12px}
+.prog i{height:6px;flex:1 1 18px;border-radius:3px;background:var(--line)}
+.prog i.d{background:var(--good)} .prog i.c{background:var(--accent)}
+.coach details{margin-top:8px;font-size:14px;color:var(--muted)}
+.coach ol{margin:6px 0 0;padding-left:22px}
+.coach li.d{color:var(--good)} .coach li.c{color:var(--ink);font-weight:600}
+.oops{margin-top:8px;color:var(--bad);font-weight:600;font-size:14px}
+.win{margin-top:8px;color:var(--good);font-weight:700}
+
+.panes{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:900px){.panes{grid-template-columns:minmax(0,1fr)}}
+.pane{background:var(--panel);border:1px solid var(--line);border-radius:14px;min-width:0;overflow:hidden}
+.pane > .ph{padding:8px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.pane > .ph b{font-size:14px}
+.pane > .ph span{font-size:12px;color:var(--muted)}
+.glow{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 45%,transparent)}
+
+/* ---------- practice bank panel ---------- */
+.bank{background:var(--bank-bg);padding:18px;font-family:var(--f-bank);min-height:520px}
+.apphead{display:flex;gap:14px;align-items:center;margin:0 0 14px}
+.house{width:54px;height:54px;border-radius:50%;background:var(--pending);display:grid;place-items:center;font-size:26px}
+.apphead h3{margin:0;font-size:24px;font-weight:500}
+.pend{display:inline-block;background:var(--pending);color:#fff;font-weight:700;border-radius:6px;padding:2px 12px;margin-top:4px}
+.task{background:var(--panel);border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.12);overflow:hidden}
+.task .tt{background:var(--bank);color:#fff;text-align:center;font-size:18px;padding:8px}
+.task .body{padding:14px 18px}
+.vrow{display:flex;justify-content:space-between;gap:10px;padding:3px 0;color:var(--muted);font-size:15px}
+.vrow .v{color:var(--bank);font-variant-numeric:tabular-nums}
+.vrow .v::selection{background:#2d4fb8;color:#fff}
+.formula{text-align:center;font-weight:500;color:var(--ink);margin:12px 0 4px}
+.task .foot{border-top:1px solid var(--line);padding:12px 18px;display:grid;gap:8px;justify-items:center}
+.task .foot .note{font-size:13px;color:var(--muted)}
+.task select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);font:inherit}
+.bbtn{border:1px solid var(--bank);color:var(--bank);background:var(--panel);border-radius:6px;padding:6px 16px}
+.bbtn.on{background:var(--bank);color:#fff}
+.navrow{display:flex;justify-content:space-between;gap:10px;margin-top:12px;flex-wrap:wrap}
+.navrow button{background:none;border:0;color:var(--ink);padding:6px 4px;text-decoration:none}
+.navrow button:hover{text-decoration:underline}
+.navrow .next{border:1px solid var(--ink);border-radius:6px;padding:6px 10px}
+.sub-ok{color:var(--good);font-size:13px;font-weight:600}
+.sub-bad{color:var(--bad);font-size:13px;font-weight:600}
+.wgrid{display:grid;grid-template-columns:repeat(8,30px);margin:8px auto;width:max-content;border:1px solid #999}
+.wgrid span{width:30px;height:30px;display:grid;place-items:center;border:1px solid #bbb;font-size:15px}
+.words-head{text-align:center;font-weight:600;color:var(--muted)}
+.rates{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;text-align:center;font-size:14px;margin-bottom:8px}
+.dgrid b{color:#3b7a46;display:block}
+.overview{display:grid;gap:8px}
+.overview button{text-align:left;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:6px;padding:8px 12px}
+.overview button .st{float:right;font-size:12px;color:var(--good)}
+.copyhelp{font-size:12px;color:var(--muted);text-align:right;margin-top:6px}
+.copyhelp button{background:none;border:0;color:var(--accent);text-decoration:underline;padding:0}
+
+/* ---------- web board mini ---------- */
+.board{padding:14px;display:grid;gap:10px}
+.bh{display:flex;align-items:baseline;gap:10px}
+.bh .lid{font-family:var(--f-mono);font-size:22px;font-weight:600}
+.pill{font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;color:#fff;background:var(--accent)}
+#pastebox{width:100%;resize:none;font:inherit;font-size:16px;font-weight:600;padding:12px;border:2px dashed var(--accent);border-radius:10px;background:var(--paste);color:var(--ink);text-align:center}
+.field{display:grid;grid-template-columns:10em minmax(0,1fr);gap:8px;align-items:center}
+.field label{font-size:13px;color:var(--muted)}
+.field input{width:100%;font-family:var(--f-mono);font-size:16px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);text-align:right}
+.res{padding:10px 12px;border-radius:10px;background:var(--soft);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.res .big{font-family:var(--f-mono);font-size:36px;font-weight:600;line-height:1}
+.verdict{font-weight:700;font-size:13px;padding:4px 10px;border-radius:6px}
+.v-good{color:var(--g-fg);background:var(--g-bg)} .v-bad{color:var(--r-fg);background:var(--r-bg)} .v-warn{color:var(--y-fg);background:var(--y-bg)}
+.go{border:0;border-radius:10px;background:var(--accent);color:var(--accent-ink);padding:12px;font-weight:700;font-size:15px;width:100%}
+.go:disabled{opacity:.4;cursor:default}
+.words{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.word{border:2px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:12px 2px;font-family:var(--f-mono);font-weight:600;font-size:13px}
+.word[aria-pressed="true"]{border-color:#7a4bd1;background:color-mix(in srgb,#7a4bd1 18%,transparent)}
+.donecard{padding:16px;border-radius:10px;background:var(--g-bg);color:var(--g-fg);font-weight:700;text-align:center}
+
+/* ---------- sheet mini ---------- */
+.sheet{padding:12px;font-size:13px;overflow-x:auto}
+.sgrid{display:grid;grid-template-columns:150px 78px 110px;border-left:1px solid var(--line);border-top:1px solid var(--line);width:max-content}
+.sgrid > div{border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-height:24px;padding:2px 6px;display:flex;align-items:center}
+.sgrid .h{grid-column:1 / -1;background:#18202c;color:#fff;font-weight:600}
+.sgrid .h.need{background:var(--y-bg);color:var(--y-fg)}
+.sgrid .v{background:var(--soft);justify-content:flex-end;font-family:var(--f-mono)}
+.sgrid .p{background:var(--paste);justify-content:center;font-family:var(--f-mono);white-space:nowrap;overflow:hidden}
+.sgrid .p.top{box-shadow:inset 0 0 0 2px var(--accent)}
+.sgrid .p:focus{box-shadow:inset 0 0 0 2px #188038;outline:none}
+.sgrid .ptitle{grid-column:3;color:var(--accent);font-weight:700;font-size:11px;justify-content:center}
+.sblock{display:grid;gap:10px;margin-bottom:12px}
+.bignum{font-family:var(--f-mono);font-size:30px;font-weight:600;padding:2px 14px;border-radius:6px;background:var(--soft);min-width:90px;text-align:center}
+.bignum.g{background:var(--g-bg);color:var(--g-fg)} .bignum.y{background:var(--y-bg);color:var(--y-fg)} .bignum.r{background:var(--r-bg);color:var(--r-fg)}
+.srow{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.status{font-weight:700;text-align:center;padding:12px;border-radius:8px;font-size:16px;background:var(--soft)}
+.status.g{background:var(--g-bg);color:var(--g-fg)} .status.y{background:var(--y-bg);color:var(--y-fg)} .status.r{background:var(--r-bg);color:var(--r-fg)}
+.sheet input,.sheet select{font:inherit;padding:4px 8px;border:1px solid var(--line);border-radius:4px;background:var(--paste);color:var(--ink)}
+.clr{font-size:12px;background:none;border:0;color:var(--muted);text-decoration:underline;padding:0}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:10px 16px;border-radius:10px;font-size:14px;z-index:20}
+</style>
+
+<div class="wrap">
+  <h1>Loan Floor Practice</h1>
+  <p class="lede">Practice on made-up loans before the real run. The left side is a practice copy of the bank panel: highlight the $ amounts and copy them for real. The right side is the tool you will use. The coach at the top ticks off each step as you do it.</p>
+  <p class="tip"><b>Tip for the real bank panel:</b> <span class="kbd">Ctrl</span>+click (Mac: <span class="kbd">⌘</span>+click) an application to open it in a new tab. Keep the list in one tab and work each application in its own tab. When it is done, <span class="kbd">Ctrl</span>+<span class="kbd">W</span> (Mac: <span class="kbd">⌘</span>+<span class="kbd">W</span>) closes that tab.</p>
+
+  <div class="controls">
+    <span class="lab">Tool</span>
+    <div class="seg" id="modeSeg"><button type="button" data-mode="web" aria-pressed="true">Web board</button><button type="button" data-mode="sheet" aria-pressed="false">Google Sheet</button></div>
+    <span class="lab">Practice loan</span>
+    <div class="seg" id="scenSeg"></div>
+  </div>
+
+  <section class="coach" aria-live="polite" id="coach"></section>
+
+  <div class="panes">
+    <section class="pane" id="bankPane"><div class="ph"><b>Bank panel</b><span>practice copy · sample data</span></div><div class="bank" id="bank"></div></section>
+    <section class="pane" id="toolPane"><div class="ph"><b id="toolTitle">Web board</b><span id="toolSub">what your teammate sees</span></div><div id="tool"></div></section>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(() => {
+const $ = s => document.querySelector(s);
+const money = s => { const v = parseFloat(String(s ?? "").replace(/[^0-9.]/g, "")); return isFinite(v) ? v : null; };
+const fmt$ = v => "$ " + Math.round(v).toLocaleString("en-US");
+const r100 = x => Math.round(x * 100 + 1e-9);
+const KEYS = ["L","H","V","I","A","P","DE","OT"];
+const WORDS = ["FIRE","FLOOD","HEAT","SOIL","WIND"];
+const GRID = ["KBFIREQM","TZXWINDP","SUCJOYLV","OGMPQATB","IYKCXZUJ","LNVBGMQY","DQJUPYCX","ZKVGBNMQ"]; // FIRE, WIND across; SOIL down
+
+const SCEN = [
+  { id: 1, app: 19, label: "1 · Over 100% (reject)", L: 282240, H: 336000, V: 246159, I: 41667, A: 64744, P: 14491, DE: 9578, OT: 3309, words: 3 },
+  { id: 2, app: 7,  label: "2 · 85–100% (ratios)",   L: 270000, H: 300000, V: 310000, I: 41667, A: 64744, P: 14491, DE: 9578, OT: 3309, words: 3 },
+  { id: 3, app: 3,  label: "3 · Under 85% (qualified)", L: 150000, H: 300000, V: 290000, I: 52000, A: 18000, P: 15100, DE: 4000, OT: 2500, words: 3 },
+];
+SCEN.forEach(s => { s.ltv = s.L / Math.min(s.H, s.V); s.front = s.P / (s.I + s.A); s.back = (s.DE + s.OT + s.P) / (s.I + s.A); });
+
+let mode = "web", sc = SCEN[0], S;
+function reset(){
+  S = { page: "ltv", visited: {ltv: true}, copied: {}, sub: {}, risk: false, rate: null, decision: null, nextApp: false,
+        t: {L:null,H:null,V:null,I:null,A:null,P:null,DE:null,OT:null}, stage: "ltv", marked: false, words: new Set(),
+        z1: Array(8).fill(""), z2: Array(10).fill(""), sWords: "", clicked: "", oops: "", step: 0, started: Date.now() };
+  renderAll();
+}
+
+/* ---------------- steps ---------------- */
+const want = k => sc[k];
+const eqTool = keys => keys.every(k => S.t[k] != null && Math.round(S.t[k]) === Math.round(sc[k]));
+function steps(){
+  const web = mode === "web";
+  const L = r100(sc.ltv), F = r100(sc.front), B = r100(sc.back);
+  const copyLTV = { t: "Highlight the 3 blue $ amounts in the bank panel and press Ctrl/⌘+C.", s: "Drag from the first $ down to the last number. Amounts only.", c: () => S.copied.ltv, pane: "bank" };
+  const pasteLTV = { t: web ? "On the web board, press Ctrl/⌘+V." : "Click the top blue cell of STEP 1 and press Ctrl/⌘+V.",
+                     s: web ? "The paste box is already selected. Every field fills at once." : "Blank lines are fine. The sheet skips them and reads the numbers in order.",
+                     c: () => eqTool(["L","H","V"]), pane: "tool" };
+  const typeLTV = { t: "In the bank panel dropdown, type " + L + " and press Submit.", s: "The tool shows " + L + " in big type. Click the dropdown and type the digits.", c: () => S.sub.ltv === L, pane: "bank" };
+  const mark = web ? { t: "Press the blue button on the web board.", s: "One click saves the loan and opens your next one.", c: () => S.marked, pane: "tool" }
+                   : { t: "Set \"Clicked in bank panel?\" to Yes.", s: "The Summary tab counts it as done.", c: () => S.clicked === "Yes", pane: "tool" };
+  if (sc.id === 1) return [copyLTV, pasteLTV, typeLTV,
+    { t: "Red means reject. Click \"Next Task: Risk Assessment\".", s: "You stay in the same application.", c: () => S.visited.risk, pane: "bank" },
+    { t: "Click \"Next Task: Decision\".", c: () => S.visited.decision, pane: "bank" },
+    { t: "Click \"Reject Loan\".", s: "No rate needed for a rejected loan.", c: () => S.decision === "reject", pane: "bank" }, mark];
+  if (sc.id === 3) return [copyLTV, pasteLTV, typeLTV,
+    web ? { t: "Green means qualified. Press the blue button on the web board.", s: "The puzzle person finishes this loan.", c: () => S.marked, pane: "tool" }
+        : { t: "Green means qualified. Leave the rest to the puzzle person.", s: "Nothing else to fill in on this tab for you.", c: () => true, pane: "tool" },
+    { t: "Click \"Back to Application\", then \"Next Application\".", s: "On to your next loan.", c: () => S.nextApp, pane: "bank" }];
+  const out = [copyLTV, pasteLTV, typeLTV];
+  if (web) out.push({ t: "Yellow: press \"LTV selected → do Front/Back now\" on the web board.", s: "The ratio form opens for this same application.", c: () => S.stage !== "ltv", pane: "tool" });
+  out.push(
+    { t: "In the bank panel click \"Back to Application\", then \"Front Ratio\".", c: () => S.visited.front, pane: "bank" },
+    { t: "Highlight the 3 $ amounts on the Front Ratio page and press Ctrl/⌘+C.", c: () => S.copied.front, pane: "bank" },
+    { t: web ? "Paste on the web board: Ctrl/⌘+V." : "Click the top blue cell of STEP 2 and press Ctrl/⌘+V.", c: () => eqTool(["I","A","P"]), pane: "tool" },
+    { t: "Type " + F + " in the Front Ratio dropdown and press Submit.", c: () => S.sub.front === F, pane: "bank" },
+    { t: "Click \"Next Task: Back Ratio\".", c: () => S.visited.back, pane: "bank" },
+    { t: "Highlight all 5 $ amounts and press Ctrl/⌘+C.", c: () => S.copied.back, pane: "bank" },
+    { t: web ? "Paste on the web board again: Ctrl/⌘+V." : "Paste into the top cell of STEP 2 again.", s: "The 5 amounts replace the 3.", c: () => eqTool(["I","A","P","DE","OT"]), pane: "tool" },
+    { t: "Type " + B + " in the Back Ratio dropdown and press Submit.", s: "Both ratios pass, so the loan is qualified.", c: () => S.sub.back === B, pane: "bank" });
+  if (web) out.push({ t: "Press \"Ratios selected ✓\" on the web board.", s: "Next you practise the puzzle person's job.", c: () => S.stage === "puzzle" || S.stage === "done", pane: "tool" });
+  out.push(
+    { t: "Now be the puzzle person. Click \"Next Task: Loan-to-Value\", then \"Next Task: Risk Assessment\".", c: () => S.visited.risk, pane: "bank" },
+    { t: web ? "Find the words in the grid. Tap each one you find on the web board." : "Find the words in the grid. Type how many you found in STEP 3.",
+      s: "Words go left→right or top→bottom only. This grid has 3.", c: () => (web ? S.words.size : Number(S.sWords)) === sc.words && (!web || true) && (web ? ["FIRE","SOIL","WIND"].every(w => S.words.has(w)) : true), pane: "tool" },
+    { t: "Click Submit on the Risk Assessment page.", c: () => S.risk, pane: "bank" },
+    { t: "Click \"Next Task: Decision\".", c: () => S.visited.decision, pane: "bank" },
+    { t: "Click " + sc.words + "% then \"Approve Loan\".", c: () => S.decision === "approve" && S.rate === sc.words, pane: "bank" },
+    mark);
+  return out;
+}
+function advance(){
+  const st = steps();
+  while (S.step < st.length && st[S.step].c()) { S.step++; S.oops = ""; }
+  renderCoach(st);
+}
+
+/* ---------------- coach ---------------- */
+function renderCoach(st){
+  st = st || steps();
+  const done = S.step >= st.length;
+  const cur = st[Math.min(S.step, st.length - 1)];
+  let h = '<div class="now"><div class="num' + (done ? ' done' : '') + '">' + (done ? "✓" : (S.step + 1)) + '</div><div>';
+  if (done) {
+    const secs = Math.round((Date.now() - S.started) / 1000);
+    h += '<div class="txt">Practice ' + sc.id + ' done in ' + secs + ' s.</div><div class="sub">Try another practice loan, or switch tools at the top. In the real run you repeat this for each application.</div>';
+  } else {
+    h += '<div class="txt">' + esc(cur.t) + '</div>' + (cur.s ? '<div class="sub">' + esc(cur.s) + '</div>' : '');
+  }
+  if (S.oops) h += '<div class="oops">' + esc(S.oops) + '</div>';
+  h += '</div></div><div class="prog">' + st.map((_, i) => '<i class="' + (i < S.step ? 'd' : i === S.step ? 'c' : '') + '"></i>').join("") + '</div>';
+  h += '<details><summary>All steps for this loan</summary><ol>' + st.map((x, i) => '<li class="' + (i < S.step ? 'd' : i === S.step ? 'c' : '') + '">' + esc(x.t) + '</li>').join("") + '</ol></details>';
+  $("#coach").innerHTML = h;
+  $("#bankPane").classList.toggle("glow", !done && cur.pane === "bank");
+  $("#toolPane").classList.toggle("glow", !done && cur.pane === "tool");
+}
+const esc = t => String(t).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+
+/* ---------------- bank panel ---------------- */
+const NEXT = { front: ["back", "Next Task: Back Ratio"], back: ["ltv", "Next Task: Loan-to-Value"], ltv: ["risk", "Next Task: Risk Assessment"], risk: ["decision", "Next Task: Decision"] };
+const TITLE = { front: "Front Ratio", back: "Back Ratio", ltv: "Loan-to-Value", risk: "Risk Assessment", decision: "Decision" };
+const ROWS = { ltv: [["Loan Amount (L):","L"],["House Price (H):","H"],["Appraisal Value (V):","V"]],
+               front: [["Yearly Income (I):","I"],["Additional Income (A):","A"],["Yearly Mortgage Payment (P):","P"]],
+               back: [["Yearly Income (I):","I"],["Additional Income (A):","A"],["Yearly Mortgage Payment (P):","P"],["Debt Expenses (DE):","DE"],["Other Taxes (OT):","OT"]] };
+const FORM = { ltv: "Loan-to-Value: L / Minimum of(H, V)", front: "Front Ratio: P / (I+A)", back: "Back Ratio: (DE+OT+P) / (I+A)" };
+function renderBank(){
+  const p = S.page;
+  let h = '<div class="apphead"><div class="house" aria-hidden="true">🏠</div><div><h3>Application ' + sc.app + '</h3><span class="pend">' + (S.decision ? (S.decision === "approve" ? "Approved" : "Rejected") : "Pending") + '</span></div></div>';
+  if (p === "overview") {
+    h += '<div class="task"><div class="tt">Application ' + sc.app + '</div><div class="body overview">' +
+      ["front","back","ltv","risk","decision"].map(k => '<button type="button" data-go="' + k + '">' + TITLE[k] + (S.sub[k] != null || (k === "risk" && S.risk) ? '<span class="st">submitted</span>' : '') + '</button>').join("") +
+      '</div></div><div class="navrow"><span></span><button type="button" class="next" data-nextapp>→ Next Application</button></div>';
+  } else {
+    h += '<div class="task"><div class="tt">Task: ' + TITLE[p] + '</div><div class="body">';
+    if (ROWS[p]) {
+      h += ROWS[p].map(([lab, k]) => '<div class="vrow"><span>' + lab + '</span><span class="v">' + fmt$(sc[k]) + '</span></div>').join("");
+      h += '<div class="formula">' + FORM[p] + '</div></div><div class="foot"><span class="note">Round to nearest percentage: .031 → 3%</span>' +
+        '<select id="dd" aria-label="Select a value"><option value="">Select a value</option>' + Array.from({length: 151}, (_, i) => '<option value="' + i + '"' + (S.sub[p] === i ? ' selected' : '') + '>' + i + '%</option>').join("") + '</select>' +
+        '<button type="button" class="bbtn" data-submit>Submit</button>' + subNote(p) + '</div>';
+    } else if (p === "risk") {
+      h += '<div class="words-head">Fire | Flood | Heat | Soil | Wind</div><div class="wgrid" aria-label="Word grid">' + GRID.join("").split("").map(c => '<span>' + c + '</span>').join("") + '</div>' +
+        '</div><div class="foot"><button type="button" class="bbtn' + (S.risk ? ' on' : '') + '" data-risk>Submit</button>' + (S.risk ? '<span class="sub-ok">Submitted</span>' : '') + '</div>';
+    } else {
+      const show = k => S.sub[k] != null ? S.sub[k] + "%" : "-";
+      h += '<div style="text-align:center;color:var(--muted);margin-bottom:8px">Review the results of your due diligence and make a decision.</div>' +
+        '<div class="dgrid"><div><b>Front-Ratio</b>' + show("front") + '</div><div><b>Loan-to-Value</b>' + show("ltv") + '</div><div><b>Back-Ratio</b>' + show("back") + '</div><div><b>Risk Assessment</b>' + (S.risk ? "done" : "-") + '</div></div>' +
+        '<div style="text-align:center;margin:6px 0">Set an appropriate interest rate:</div><div class="rates">' +
+        [1,2,3,4,5].map(r => '<button type="button" class="bbtn' + (S.rate === r ? ' on' : '') + '" data-rate="' + r + '">' + r + '%</button>').join("") + '</div></div>' +
+        '<div class="foot"><span>Accept/Reject the application:</span><div class="rates"><button type="button" class="bbtn' + (S.decision === "reject" ? ' on' : '') + '" data-dec="reject">Reject Loan</button><button type="button" class="bbtn' + (S.decision === "approve" ? ' on' : '') + '" data-dec="approve">Approve Loan</button></div></div>';
+    }
+    h += '</div><div class="navrow"><button type="button" data-go="overview">🗋 Back to Application</button>' +
+      (NEXT[p] ? '<button type="button" class="next" data-go="' + NEXT[p][0] + '">→ ' + NEXT[p][1] + '</button>' : '<button type="button" class="next" data-nextapp>→ Next Application</button>') + '</div>';
+    if (ROWS[p]) h += '<div class="copyhelp">On a phone? <button type="button" data-copyfor="' + p + '">Copy the amounts for me</button></div>';
+  }
+  $("#bank").innerHTML = h;
+}
+function subNote(p){
+  if (S.sub[p] == null) return "";
+  const want = r100(p === "ltv" ? sc.ltv : p === "front" ? sc.front : sc.back);
+  return S.sub[p] === want ? '<span class="sub-ok">Submitted ' + S.sub[p] + '% ✓</span>' : '<span class="sub-bad">Submitted ' + S.sub[p] + '%. The tool says ' + want + '%. Pick again.</span>';
+}
+document.addEventListener("click", e => {
+  const g = e.target.closest("[data-go]"); if (g) { S.page = g.dataset.go; S.visited[S.page] = true; renderBank(); advance(); return; }
+  if (e.target.closest("[data-nextapp]")) { S.nextApp = true; toast("Next application (practice)"); advance(); return; }
+  if (e.target.closest("[data-submit]")) {
+    const v = $("#dd").value; if (v === "") { toast("Pick a value first"); return; }
+    S.sub[S.page] = Number(v); renderBank();
+    const want = r100(S.page === "ltv" ? sc.ltv : S.page === "front" ? sc.front : sc.back);
+    S.oops = S.sub[S.page] === want ? "" : "That's " + v + "%. The tool says " + want + ". Pick " + want + " and Submit again.";
+    advance(); return;
+  }
+  if (e.target.closest("[data-risk]")) { S.risk = true; renderBank(); advance(); return; }
+  const r = e.target.closest("[data-rate]"); if (r) { S.rate = Number(r.dataset.rate); renderBank(); advance(); return; }
+  const d = e.target.closest("[data-dec]");
+  if (d) {
+    const right = verdict(sc) ? "approve" : "reject";
+    if (d.dataset.dec !== right) { S.oops = "Not this one. The tool's status says " + (right === "approve" ? "APPROVED" : "NOT QUALIFIED") + "."; renderCoach(); return; }
+    if (right === "approve" && S.rate !== sc.words) { S.oops = "Click " + sc.words + "% first, then Approve Loan."; renderCoach(); return; }
+    S.decision = d.dataset.dec; renderBank(); advance(); return;
+  }
+  const cf = e.target.closest("[data-copyfor]");
+  if (cf) { const t = ROWS[cf.dataset.copyfor].map(([, k]) => fmt$(sc[k])).join("\n\n");
+    try { navigator.clipboard.writeText(t).then(() => toast("Copied. Now paste on the right."), () => toast("Copy blocked here. Highlight and use Ctrl/⌘+C.")); } catch(_) {}
+    S.copied[cf.dataset.copyfor] = true; advance(); }
+});
+const verdict = s => s.ltv < 0.85 || (s.ltv <= 1 && s.front < 0.25 && s.back < 0.35);
+
+/* copy detection: highlight + Ctrl/⌘+C inside the practice panel */
+document.addEventListener("copy", () => {
+  const sel = String(window.getSelection() || ""); if (!sel) return;
+  const nums = (sel.match(/\d[\d,]*/g) || []).map(money).filter(x => x > 99);
+  const need = ROWS[S.page] ? ROWS[S.page].length : 0;
+  if (!need) return;
+  if (nums.length >= need) { S.copied[S.page] = true; toast("Copied " + nums.length + " amounts. Now paste on the right."); }
+  else { S.oops = "That copied " + nums.length + " amount" + (nums.length === 1 ? "" : "s") + ". Drag across all " + need + "."; }
+  advance();
+});
+
+/* ---------------- tool: web board ---------------- */
+function parseList(t){ return (String(t).match(/\d[\d,]*(?:\.\d+)?/g) || []).map(money).filter(x => x != null && x > 0); }
+function renderWeb(){
+  const st = S.stage; const t = S.t;
+  let h = '<div class="board"><div class="bh"><span class="lid">Application ' + sc.app + '</span><span class="pill">' +
+    ({ltv: "Needs LTV", ratios: "Needs Front/Back", puzzle: "Needs puzzle", done: "Done"}[st]) + '</span></div>';
+  if (st === "done") { h += '<div class="donecard">✓ Saved. In the real run the next loan opens here.</div></div>'; $("#tool").innerHTML = h; return; }
+  if (st === "ltv" || st === "ratios") {
+    h += '<textarea id="pastebox" rows="1" placeholder="Paste the $ amounts here · Ctrl/⌘+V" aria-label="Paste the amounts"></textarea>';
+    const keys = st === "ltv" ? ["L","H","V"] : ["I","A","P","DE","OT"];
+    const names = {L:"Loan amount",H:"House price",V:"Appraisal value",I:"Yearly income",A:"Additional income",P:"Mortgage payment",DE:"Debt expenses",OT:"Other taxes"};
+    h += keys.map(k => '<div class="field"><label for="f_' + k + '">' + names[k] + ' (' + k + ')</label><input id="f_' + k + '" data-k="' + k + '" value="' + (t[k] != null ? Math.round(t[k]).toLocaleString("en-US") : "") + '" inputmode="decimal"></div>').join("");
+    if (st === "ltv") {
+      const ltv = t.L && t.H && t.V ? t.L / Math.min(t.H, t.V) : null;
+      const band = ltv == null ? null : ltv < .85 ? "low" : ltv <= 1 ? "mid" : "high";
+      h += '<div class="res"><span><span style="font-size:12px;color:var(--muted)">Loan-to-Value — type in panel</span><br><span class="big">' + (ltv == null ? "–" : r100(ltv) + "%") + '</span></span>' +
+        (band ? '<span class="verdict ' + ({low:"v-good",mid:"v-warn",high:"v-bad"}[band]) + '">' + ({low:"Qualified → puzzle", mid:"85–100% → ratios", high:"Over 100% → reject"}[band]) + '</span>' : '') + '</div>';
+      h += '<button type="button" class="go" data-web="ltv"' + (band ? '' : ' disabled') + '>' + ({low:"LTV selected ✓ — next loan", mid:"LTV selected ✓ → do Front/Back now", high:"Rejected in panel ✓ — next loan"}[band] || "Paste the amounts first") + '</button>';
+    } else {
+      const inc = (t.I||0) + (t.A||0); const f = inc && t.P != null ? t.P / inc : null; const b = f != null && t.DE != null && t.OT != null ? (t.DE + t.OT + t.P) / inc : null;
+      h += '<div class="res"><span><span style="font-size:12px;color:var(--muted)">Front — type in panel</span><br><span class="big">' + (f == null ? "–" : r100(f) + "%") + '</span></span>' +
+        '<span><span style="font-size:12px;color:var(--muted)">Back — type in panel</span><br><span class="big">' + (b == null ? "–" : r100(b) + "%") + '</span></span>' +
+        (b != null ? '<span class="verdict ' + (f < .25 && b < .35 ? "v-good" : "v-bad") + '">' + (f < .25 && b < .35 ? "Pass → puzzle" : "Reject") + '</span>' : '') + '</div>';
+      h += '<button type="button" class="go" data-web="ratios"' + (b != null ? '' : ' disabled') + '>' + (b == null ? "Paste all 5 amounts first" : (f < .25 && b < .35 ? "Ratios selected ✓ — next loan" : "Rejected in panel ✓ — next loan")) + '</button>';
+    }
+  } else {
+    h += '<div style="color:var(--muted);font-size:13px">Puzzle person: tap each word you find in the grid. Words go left→right or top→bottom.</div><div class="words">' +
+      WORDS.map(w => '<button type="button" class="word" data-word="' + w + '" aria-pressed="' + S.words.has(w) + '">' + w + '</button>').join("") + '</div>' +
+      '<div class="res"><span>Words found = interest rate</span><span class="big">' + S.words.size + '%</span></div>' +
+      '<button type="button" class="go" data-web="puzzle">Approved ' + S.words.size + '% in panel ✓ — next loan</button>';
+  }
+  h += '</div>';
+  $("#tool").innerHTML = h;
+  const pb = $("#pastebox"); if (pb) pb.focus({preventScroll: true});
+}
+function fillWeb(text){
+  const keys = S.stage === "ltv" ? ["L","H","V"] : ["I","A","P","DE","OT"];
+  const nums = parseList(text); if (!nums.length) return;
+  nums.slice(0, keys.length).forEach((v, i) => S.t[keys[i]] = v);
+  renderWeb(); toast("Pasted " + Math.min(nums.length, keys.length) + " amounts"); advance();
+}
+document.addEventListener("paste", e => {
+  const tgt = e.target;
+  const inField = tgt && tgt.tagName === "INPUT";
+  if (mode === "web" && (S.stage === "ltv" || S.stage === "ratios") && !inField) {
+    e.preventDefault(); fillWeb((e.clipboardData || window.clipboardData).getData("text")); return;
+  }
+  const cell = tgt && tgt.closest && tgt.closest("[data-z]");
+  if (mode === "sheet" && cell) {
+    e.preventDefault();
+    const lines = (e.clipboardData || window.clipboardData).getData("text").replace(/\r/g, "").split("\n");
+    while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
+    const z = cell.dataset.z, i0 = Number(cell.dataset.i), arr = z === "1" ? S.z1 : S.z2;
+    lines.forEach((ln, j) => { if (i0 + j < arr.length) arr[i0 + j] = ln.trim(); });
+    sheetRecalc(); renderSheet(); toast("Pasted " + lines.length + " lines"); advance();
+  }
+});
+document.addEventListener("input", e => {
+  if (e.target.id === "pastebox" && e.target.value.trim()) { fillWeb(e.target.value); return; }
+  if (e.target.matches && e.target.matches("#tool input[data-k]")) { S.t[e.target.dataset.k] = money(e.target.value); advance(); }
+  if (e.target.id === "sWords") { S.sWords = e.target.value; renderSheetStatus(); advance(); }
+});
+document.addEventListener("change", e => {
+  if (e.target.matches && e.target.matches("#tool input[data-k]")) renderWeb();
+  if (e.target.id === "sClicked") { S.clicked = e.target.value; advance(); }
+});
+document.addEventListener("click", e => {
+  const w = e.target.closest("[data-word]");
+  if (w) { const x = w.dataset.word; S.words.has(x) ? S.words.delete(x) : S.words.add(x); renderWeb(); advance(); return; }
+  const g = e.target.closest("[data-web]");
+  if (g) {
+    if (g.dataset.web === "ltv") { const band = S.t.L / Math.min(S.t.H, S.t.V); if (band >= .85 && band <= 1) S.stage = "ratios"; else { S.stage = "done"; S.marked = true; } }
+    else if (g.dataset.web === "ratios") S.stage = "puzzle";
+    else { S.stage = "done"; S.marked = true; }
+    renderWeb(); advance(); return;
+  }
+  const c = e.target.closest("[data-clear]");
+  if (c) { if (c.dataset.clear === "1") S.z1.fill(""); else S.z2.fill(""); sheetRecalc(); renderSheet(); advance(); }
+});
+
+/* ---------------- tool: google sheet ---------------- */
+function sheetRecalc(){
+  const a = S.z1.map(money).filter(x => x != null && x > 0), b = S.z2.map(money).filter(x => x != null && x > 0);
+  ["L","H","V"].forEach((k, i) => S.t[k] = a[i] ?? null);
+  ["I","A","P","DE","OT"].forEach((k, i) => S.t[k] = b[i] ?? null);
+}
+function sheetState(){
+  const t = S.t; const ltv = t.L && t.H && t.V ? t.L / Math.min(t.H, t.V) : null;
+  const inc = (t.I||0) + (t.A||0); const f = inc && t.P != null ? t.P / inc : null; const b = f != null && t.DE != null && t.OT != null ? (t.DE + t.OT + t.P) / inc : null;
+  let st = ""; if (ltv != null) st = ltv > 1 ? "r" : ltv < .85 ? "g" : (b == null ? "y" : (f < .25 && b < .35 ? "g" : "r"));
+  return {ltv, f, b, st};
+}
+function zone(z, arr, labels, valKeys){
+  let h = '';
+  arr.forEach((v, i) => {
+    h += '<div>' + (labels[i] || "") + '</div><div class="v">' + (valKeys[i] && S.t[valKeys[i]] != null ? Math.round(S.t[valKeys[i]]).toLocaleString("en-US") : "") + '</div>' +
+      '<div class="p' + (i === 0 ? ' top' : '') + '" contenteditable="true" spellcheck="false" data-z="' + z + '" data-i="' + i + '" aria-label="Paste cell ' + (i + 1) + '">' + esc(v) + '</div>';
+  });
+  return h;
+}
+function renderSheet(){
+  const ss = sheetState();
+  let h = '<div class="sheet"><div class="sblock"><div class="srow"><b>Application ' + sc.app + '</b><span style="color:var(--muted)">Owner</span><select aria-label="Owner"><option>Tobe</option><option>Rishi</option><option>Senthil</option><option>Gabriela</option><option>Joe</option></select></div></div>';
+  h += '<div class="sblock"><div class="sgrid"><div class="h">STEP 1 · Loan-to-Value page</div><div></div><div></div><div class="ptitle">▼ PASTE (top cell)</div>' +
+    zone("1", S.z1, ["Loan Amount (L)","House Price (H)","Appraisal Value (V)"], ["L","H","V"]) + '</div>' +
+    '<div class="srow"><span>LTV → type in panel</span><span class="bignum ' + (ss.ltv == null ? "" : ss.ltv > 1 ? "r" : ss.ltv >= .85 ? "y" : "g") + '">' + (ss.ltv == null ? "–" : r100(ss.ltv)) + '</span><button type="button" class="clr" data-clear="1">clear</button></div></div>';
+  h += '<div class="sblock"><div class="sgrid"><div class="h' + (ss.st === "y" ? " need" : "") + '">STEP 2 · Front / Back Ratio pages (only if YELLOW)</div><div></div><div></div><div class="ptitle">▼ PASTE (top cell)</div>' +
+    zone("2", S.z2, ["Yearly Income (I)","Additional Income (A)","Mortgage Payment (P)","Debt Expenses (DE)","Other Taxes (OT)"], ["I","A","P","DE","OT"]) + '</div>' +
+    '<div class="srow"><span>Front</span><span class="bignum ' + (ss.f == null ? "" : ss.f < .25 ? "g" : "r") + '">' + (ss.f == null ? "–" : r100(ss.f)) + '</span><span>Back</span><span class="bignum ' + (ss.b == null ? "" : ss.b < .35 ? "g" : "r") + '">' + (ss.b == null ? "–" : r100(ss.b)) + '</span><button type="button" class="clr" data-clear="2">clear</button></div></div>';
+  h += '<div class="status" id="sStatus"></div>';
+  h += '<div class="sblock" style="margin-top:12px"><div class="sgrid" style="grid-template-columns:150px 78px"><div class="h">STEP 3 · Risk Assessment + Decision</div><div>Words found (0–5)</div><div class="p top" style="padding:0"><input id="sWords" type="number" min="0" max="5" value="' + esc(S.sWords) + '" style="width:100%;border:0;background:transparent;text-align:center"></div></div><div id="sStep3" style="font-weight:700"></div>' +
+    '<div class="srow"><span>Clicked in bank panel?</span><select id="sClicked" aria-label="Clicked in bank panel"><option value=""></option><option' + (S.clicked === "Yes" ? " selected" : "") + '>Yes</option><option' + (S.clicked === "No" ? " selected" : "") + '>No</option></select></div></div></div>';
+  $("#tool").innerHTML = h; renderSheetStatus();
+}
+function renderSheetStatus(){
+  const ss = sheetState(); const el = $("#sStatus"); if (!el) return;
+  el.className = "status " + ss.st;
+  el.textContent = ({"": "PASTE L, H, V ABOVE", g: "✓ APPROVED — click Approve Loan", y: "NEED DATA — paste Front/Back in STEP 2", r: "✗ NOT QUALIFIED — click Reject Loan"})[ss.st];
+  const w = S.sWords; $("#sStep3").textContent = ss.st !== "g" ? "" : (w === "" ? "Do the puzzle, type words found" : "Click " + w + "% → Approve Loan → Next Application");
+}
+// typing straight into a sheet cell
+document.addEventListener("input", e => {
+  const cell = e.target.closest && e.target.closest("[data-z]"); if (!cell) return;
+  const arr = cell.dataset.z === "1" ? S.z1 : S.z2; arr[Number(cell.dataset.i)] = cell.textContent.trim();
+  sheetRecalc(); renderSheetStatus(); advance();
+});
+document.addEventListener("focusout", e => {
+  if (!(e.target.closest && e.target.closest("[data-z]")) || mode !== "sheet") return;
+  setTimeout(() => { const a = document.activeElement; if (mode === "sheet" && !(a && a.closest && a.closest("[data-z]"))) renderSheet(); }, 0);
+});
+
+/* ---------------- shell ---------------- */
+function renderTool(){
+  $("#toolTitle").textContent = mode === "web" ? "Web board" : "Google Sheet · Paste & Go";
+  $("#toolSub").innerHTML = mode === "web" ? "the Loan Floor program" : 'one tab per application · <a href="https://docs.google.com/spreadsheets/d/1OKJ-hPE26-xSvTBSW-o1qQ8YTFYOuiuua8sOu9V7qJk/edit?usp=sharing" target="_blank" rel="noopener">try it in the TEST &amp; PRACTICE sheet ↗</a>';
+  mode === "web" ? renderWeb() : renderSheet();
+}
+function renderAll(){
+  $("#scenSeg").innerHTML = SCEN.map(s => '<button type="button" data-scen="' + s.id + '" aria-pressed="' + (s === sc) + '">' + s.label + '</button>').join("");
+  renderBank(); renderTool(); advance();
+}
+$("#modeSeg").addEventListener("click", e => { const b = e.target.closest("[data-mode]"); if (!b) return; mode = b.dataset.mode;
+  document.querySelectorAll("#modeSeg button").forEach(x => x.setAttribute("aria-pressed", x === b)); reset(); });
+document.addEventListener("click", e => { const b = e.target.closest("[data-scen]"); if (!b) return; sc = SCEN.find(s => s.id === Number(b.dataset.scen)); reset(); });
+let tt; function toast(m){ const t = $("#toast"); t.textContent = m; t.hidden = false; clearTimeout(tt); tt = setTimeout(() => t.hidden = true, 2200); }
+function fromHash(){
+  const m = (location.hash || "").replace("#", "");
+  if (m === "web" || m === "sheet") { mode = m; document.querySelectorAll("#modeSeg button").forEach(x => x.setAttribute("aria-pressed", x.dataset.mode === m)); }
+}
+window.addEventListener("hashchange", () => { fromHash(); reset(); });
+fromHash();
+reset();
+})();
+</script>
+
+</body></html>
