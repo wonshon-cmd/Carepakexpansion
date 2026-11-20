@@ -173,6 +173,14 @@ td:first-child{font-family:var(--f-body);font-weight:600}
 .more[open] summary{margin-bottom:12px}
 .skip{display:block;margin:10px auto 0;background:none;border:0;color:var(--muted);text-decoration:underline;font-size:14px}
 .task:empty{display:none}
+.navbtns{display:flex;gap:4px}
+.navbtn{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--soft);color:var(--ink);font-size:17px;font-weight:700;line-height:1}
+.navbtn:disabled{opacity:.35;cursor:default}
+button.brand{background:none;border:0;padding:0;color:var(--ink);font:inherit;font-weight:700;font-size:16px;cursor:pointer}
+button.brand:hover{color:var(--accent)}
+.crumbs{display:flex;align-items:center;gap:8px;margin:0 0 10px;font-size:14px;color:var(--muted)}
+.crumb{background:none;border:0;padding:0;color:var(--accent);font:inherit;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.hometitle{font-size:22px;color:var(--ink)}
 .paste{position:relative;margin-bottom:12px}
 #pastebox{width:100%;resize:none;font:inherit;font-size:16px;font-weight:600;padding:14px;border:2px dashed var(--accent);border-radius:10px;background:color-mix(in srgb,var(--accent) 6%,var(--panel));color:var(--ink);text-align:center}
 #pastebox:focus{border-style:solid;outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}
@@ -191,7 +199,11 @@ td:first-child{font-family:var(--f-body);font-weight:600}
 
 <header class="top">
   <div class="wrap">
-    <div class="brand">Loan Floor</div>
+    <div class="navbtns">
+      <button class="navbtn" id="backBtn" type="button" title="Back (Alt+←)" aria-label="Back">←</button>
+      <button class="navbtn" id="fwdBtn" type="button" title="Forward (Alt+→)" aria-label="Forward">→</button>
+    </div>
+    <button class="brand" id="homeLogo" type="button" title="Go to Home">Loan Floor</button>
     <div class="clock num" id="clock">15:00</div>
     <button class="btn primary" id="startBtn" type="button">Start</button>
     <div class="kpi"><b id="kDone">0</b><span>of 49 done</span></div>
@@ -207,6 +219,7 @@ td:first-child{font-family:var(--f-body);font-weight:600}
       <div class="namegrid" id="names"></div>
     </div>
     <div id="working" hidden>
+      <nav class="crumbs" id="crumbs" aria-label="Where you are"></nav>
       <div class="me"><button type="button" class="link" id="changeName"></button></div>
       <div class="seg" id="roles" role="group" aria-label="My job"></div>
       <button class="btn primary big wide" id="nextBtn" type="button">Next loan →</button>
@@ -432,6 +445,11 @@ setInterval(() => {
 function renderTask(){
   const box = $("#task");
   $("#nextBtn").hidden = !!cur;
+  $("#crumbs").innerHTML = cur
+    ? '<button type="button" class="crumb" data-home>Home</button><span>›</span><b>Application ' + Number(cur.id.slice(1)) + '</b>'
+    : '<b class="hometitle">Home</b>';
+  $("#roles").hidden = !!cur;
+  pushNav(cur ? {id: cur.id, stage: cur.stage} : {home: true});
   if (!cur) { box.innerHTML = ''; return; }
   const d = loans[cur.id] || {}; const ev = evaluate(d); const st = cur.stage;
   const n = Number(cur.id.slice(1));
@@ -766,6 +784,34 @@ document.addEventListener("click", e => {
   if (e.target.closest("#changeName")) { release().then(() => { me = ""; ls.set("lf.me", ""); cur = null; render(); renderTask(); }); return; }
   const r = e.target.closest("[data-role]"); if (r) { role = r.dataset.role; ls.set("lf.role", role); render(); return; }
   const t = e.target.closest(".tile, .tile-link"); if (t) { openTile(t.dataset.id); }
+});
+/* ---------- Back / Forward / Home ---------- */
+let navHist = [{home: true}], navPos = 0, navBusy = false;
+const sameNav = (a, b) => a && b && (a.home ? !!b.home : (a.id === b.id && a.stage === b.stage));
+function pushNav(e){
+  if (navBusy || sameNav(navHist[navPos], e)) return navButtons();
+  navHist = navHist.slice(0, navPos + 1); navHist.push(e);
+  if (navHist.length > 100) navHist.shift();
+  navPos = navHist.length - 1; navButtons();
+}
+function navButtons(){ $("#backBtn").disabled = navPos <= 0; $("#fwdBtn").disabled = navPos >= navHist.length - 1; }
+async function goNav(e){
+  navBusy = true;
+  try {
+    if (e.home) { await release(); cur = null; renderTask(); render(); window.scrollTo({top:0, behavior:"smooth"}); }
+    else if (e.stage === "view") await openTile(e.id);
+    else { if (cur && cur.id !== e.id) await release(); await open(e.id, e.stage); }
+  } finally { navBusy = false; navButtons(); }
+}
+async function goHome(){ if (cur) { await release(); } cur = null; renderTask(); render(); window.scrollTo({top:0, behavior:"smooth"}); }
+$("#backBtn").addEventListener("click", () => { if (navPos > 0) goNav(navHist[--navPos]); });
+$("#fwdBtn").addEventListener("click", () => { if (navPos < navHist.length - 1) goNav(navHist[++navPos]); });
+$("#homeLogo").addEventListener("click", goHome);
+document.addEventListener("click", e => { if (e.target.closest("[data-home]")) goHome(); });
+document.addEventListener("keydown", e => {
+  if (!e.altKey) return;
+  if (e.key === "ArrowLeft") { e.preventDefault(); $("#backBtn").click(); }
+  else if (e.key === "ArrowRight") { e.preventDefault(); $("#fwdBtn").click(); }
 });
 async function openTile(id){
   if (cur && cur.id !== id) await release();
