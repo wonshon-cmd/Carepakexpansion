@@ -209,6 +209,7 @@ td:first-child{font-family:var(--f-body);font-weight:600}
 .btn.ok{color:var(--good)}
 .myblock{font-size:13px;color:var(--muted);margin:-4px 0 10px}
 .myblock b{color:var(--ink);font-family:var(--f-mono)}
+.online{color:var(--good);font-size:12px;font-weight:600}
 .teamblocks{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:14px}
 .tm{display:inline-flex;gap:6px;align-items:center}
 .wayrow{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted);margin:-4px 0 12px}
@@ -314,7 +315,7 @@ button.brand:hover{color:var(--accent)}
       <label class="toggle"><input type="checkbox" id="useRounded"> Decide on the rounded % (⚠ marks loans where it matters)</label>
       <h2 style="margin-top:14px">Number blocks (who starts where)</h2>
       <div class="teamblocks" id="teamBlocks"></div>
-      <p class="hint">Tick the people working today. The 49 applications are split into one run of numbers each, in this order.</p>
+      <p class="hint">Tick the people working today. Joe takes 30–49, or 30–40 when Rishi is signed in (Rishi then takes 41–49). Everyone else splits 1–29.</p>
       <div class="actions"><button class="btn" id="demoBtn" type="button">Load demo loans</button><button class="btn danger" id="resetBtn" type="button">Reset board</button></div>
     </details>
   </section>
@@ -482,9 +483,23 @@ async function tryLock(id, stage){
    "Next Application" lines up). When your block has nothing left, you help whoever has the most
    left, starting from the BACK of their block, so you meet them in the middle. */
 function team(){ const t = Array.isArray(run.team) ? run.team.filter(n => NAMES.includes(n)) : []; return t.length ? t : NAMES.slice(); }
+// Who has the program open right now (each laptop checks in every 30 s).
+const isOnline = name => { const t = ((loans.presence || {}).seen || {})[name] || 0; return Date.now() - t < 120000 || name === me; };
+function split_(names, from, to, out){
+  const k = names.length; if (!k) return; const n = to - from + 1, base = Math.floor(n / k), extra = n % k;
+  names.forEach((name, i) => { const size = base + (i < extra ? 1 : 0); out[name] = [from, from + size - 1]; from += size; });
+}
 function blocks(){
-  const t = team(), k = t.length, base = Math.floor(N / k), extra = N % k; const out = {}; let from = 1;
-  t.forEach((name, i) => { const size = base + (i < extra ? 1 : 0); out[name] = [from, from + size - 1]; from += size; });
+  const t = team(), out = {};
+  // Team rule: Joe takes 30–49, or 30–40 when Rishi is signed in (Rishi then takes 41–49). Everyone else splits 1–29.
+  if (t.includes("Joe")) {
+    const rishiOn = t.includes("Rishi") && isOnline("Rishi");
+    out.Joe = [30, rishiOn ? 40 : 49];
+    if (rishiOn) out.Rishi = [41, 49];
+    split_(t.filter(n => n !== "Joe" && n !== "Rishi"), 1, 29, out);
+    return out;
+  }
+  split_(t, 1, N, out);
   return out;
 }
 const numOf = id => Number(id.slice(1));
@@ -623,6 +638,10 @@ async function closeOut(kind){
   cur = null;
   if (wasView) { renderTask(); render(); } else nextTask();
 }
+// Presence: say "I'm here" every 30 s so the number blocks know who is signed in.
+function checkIn(){ if (me) writeLoan("presence", {seen: {[me]: Date.now()}}); }
+setInterval(checkIn, 30000);
+setTimeout(checkIn, 1500);
 // Heartbeat: while you have an application open, keep your name on it.
 setInterval(() => {
   if (!cur || cur.stage === "view" || !me) return;
@@ -1004,7 +1023,7 @@ function renderChips(){
   $("#myBlock").innerHTML = b ? 'Your numbers: <b>' + b[0] + '–' + b[1] + '</b> in order. When they are done you help the slowest, from the back.' : 'You are not in a number block: you help the slowest, from the back.';
   $("#myBlock").hidden = !!cur;
   $("#teamBlocks").innerHTML = NAMES.map(n => '<label class="tm"><input type="checkbox" data-team="' + n + '"' + (team().includes(n) ? ' checked' : '') + '> ' + n +
-    (B[n] ? ' <span class="hint">' + B[n][0] + '–' + B[n][1] + '</span>' : '') + '</label>').join("");
+    (B[n] ? ' <span class="hint">' + B[n][0] + '–' + B[n][1] + '</span>' : '') + (isOnline(n) ? ' <span class="online">● signed in</span>' : '') + '</label>').join("");
 }
 function renderHint(c){
   const map = {ltv:"ltv", ratios:"ratios", puzzsub:"puzzle", submit:"submit"};
@@ -1028,7 +1047,7 @@ setInterval(() => { tick(); }, 500);
 setInterval(() => { render(); }, 15000);
 
 document.addEventListener("click", e => {
-  const n = e.target.closest("[data-name]"); if (n) { me = n.dataset.name; ls.set("lf.me", me); render(); renderTask(); return; }
+  const n = e.target.closest("[data-name]"); if (n) { me = n.dataset.name; ls.set("lf.me", me); checkIn(); render(); renderTask(); return; }
   if (e.target.closest("#changeName")) { release().then(() => { me = ""; ls.set("lf.me", ""); cur = null; render(); renderTask(); }); return; }
   const t = e.target.closest(".tile, .tile-link"); if (t) { openTile(t.dataset.id); }
 });
