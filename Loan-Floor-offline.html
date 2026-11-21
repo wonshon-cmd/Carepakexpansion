@@ -168,6 +168,13 @@ td:first-child{font-family:var(--f-body);font-weight:600}
 .warnline{color:var(--warn);font-size:13px;font-weight:600;width:100%}
 .btn.primary.green{background:var(--good);border-color:var(--good);color:#fff}
 .backltv{margin:-4px 0 10px}
+.recmodal{position:fixed;inset:0;z-index:70;background:rgba(15,20,27,.55);display:grid;place-items:center;padding:16px}
+.recmodal[hidden]{display:none}
+.reccard{background:var(--panel);color:var(--ink);border-radius:14px;padding:20px;width:min(420px,100%);display:grid;gap:10px;box-shadow:0 14px 40px rgba(0,0,0,.35)}
+.reccard h3{margin:0 0 4px;font-size:20px}
+.recrow{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-weight:600;font-size:16px}
+.recrow b{font-family:var(--f-mono);font-size:24px}
+.btn.wide{width:100%}
 .rejectbanner{margin:12px 0 0;padding:14px;border-radius:10px;background:color-mix(in srgb,var(--bad) 14%,var(--panel));border:2px solid var(--bad);color:var(--bad);display:grid;gap:4px;text-align:center}
 .rejectbanner b{font-size:22px}
 .rejectbanner span{font-size:15px;font-weight:600;color:var(--ink)}
@@ -328,6 +335,15 @@ button.brand:hover{color:var(--accent)}
   <input id="pwInput" type="password" inputmode="numeric" autocomplete="off" placeholder="Password">
   <div class="actions"><button class="btn danger" id="pwGo" type="button">Erase everything</button><button class="btn" id="pwCancel" type="button">Cancel</button></div>
   <span class="pwmsg" id="pwMsg"></span>
+</div>
+<div class="recmodal" id="recModal" hidden role="dialog" aria-modal="true" aria-labelledby="recTitle">
+  <div class="reccard">
+    <h3 id="recTitle">Did you record both on the bank site?</h3>
+    <div class="recrow">Back Ratio <b id="recBack">–</b></div>
+    <div class="recrow">Front Ratio <b id="recFront">–</b></div>
+    <button class="btn primary big wide" id="recYes" type="button">Yes, both recorded → next loan</button>
+    <button class="btn wide" id="recNo" type="button">Not yet, go back</button>
+  </div>
 </div>
 <div class="toast" id="toast" hidden></div>
 
@@ -859,7 +875,7 @@ function live(){
 
     if (b != null) { const pass = g(f) < .25 && g(b) < .35;
       tb = (g(b) < .35 ? '<span class="verdict v-good">&lt; 35% ✓</span>' : '<span class="verdict v-bad">≥ 35% ✗</span>') +
-           (pass ? '<span class="verdict v-good">Pass → puzzle</span>' : '<span class="verdict v-bad">Reject</span>');
+           (pass ? '<span class="verdict v-good">Pass → word find + approve</span>' : '<span class="verdict v-bad">Reject</span>');
       if ((b < .35) !== (r100(b)/100 < .35)) tb += '<span class="warnline">Borderline: rounding changes pass/fail.</span>'; }
     if (ef) ef.innerHTML = resHTML("Front ratio", f, tf);
     if (eb) eb.innerHTML = resHTML("Back ratio", b, tb);
@@ -922,6 +938,17 @@ function guide(v){
   el.innerHTML = banner + (steps.length ? '<div class="stepsbox"><ol>' +
     steps.map(x => '<li>' + x + '</li>').join("") + '</ol>' + (note ? '<div class="hint">' + note + '</div>' : '') + '</div>' : '');
 }
+function confirmRecorded(back, front){
+  return new Promise(resolve => {
+    const m = $("#recModal"); $("#recBack").textContent = bigPct(back); $("#recFront").textContent = bigPct(front);
+    m.hidden = false; setTimeout(() => $("#recYes").focus(), 30);
+    const done = ok => { m.hidden = true; document.removeEventListener("keydown", key, true); $("#recYes").onclick = $("#recNo").onclick = null; resolve(ok); };
+    const key = e => { if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); done(false); } };
+    document.addEventListener("keydown", key, true);
+    $("#recYes").onclick = () => done(true);
+    $("#recNo").onclick = () => done(false);
+  });
+}
 async function save(){
   if (!cur) return;
   const v = readInputs();
@@ -939,6 +966,8 @@ async function save(){
     const hasBack = v.DE != null && v.OT != null;
     if (!hasBack && !(frontFails && !run.allTasks)) return toast("Front passes, so paste all 5 from the Back Ratio page");
     const p = {I:v.I, A:v.A, P:v.P, DE:v.DE ?? null, OT:v.OT ?? null, front, back: hasBack ? (v.DE+v.OT+v.P)/inc : null};
+    // Reminder: you are on the Back Ratio page, so it is easy to forget the Front Ratio entry.
+    if (cur.outcome === "approve" && hasBack && !(await confirmRecorded(p.back, p.front))) return;
     if (cur.outcome === "reject") Object.assign(p, {submitted:true, submittedAt:Date.now()});
     if (cur.outcome === "approve") Object.assign(p, {puzzleDone:true, submitted:true, submittedAt:Date.now()});
     return finish(p);
