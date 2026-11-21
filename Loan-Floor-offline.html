@@ -167,6 +167,7 @@ td:first-child{font-family:var(--f-body);font-weight:600}
 .allgood{color:var(--good);font-weight:600}
 .warnline{color:var(--warn);font-size:13px;font-weight:600;width:100%}
 .btn.primary.green{background:var(--good);border-color:var(--good);color:#fff}
+.backltv{margin:-4px 0 10px}
 .rejectbanner{margin:12px 0 0;padding:14px;border-radius:10px;background:color-mix(in srgb,var(--bad) 14%,var(--panel));border:2px solid var(--bad);color:var(--bad);display:grid;gap:4px;text-align:center}
 .rejectbanner b{font-size:22px}
 .rejectbanner span{font-size:15px;font-weight:600;color:var(--ink)}
@@ -339,7 +340,7 @@ const ROLES = [
   {id:"puzzsub", label:"Puzzle + Decision"},
 ];
 const STAGE = {
-  ltv:{label:"Needs LTV", c:"--s-ltv"}, ratios:{label:"Needs Back/Front", c:"--s-ratios"},
+  ltv:{label:"Needs LTV", c:"--s-ltv"}, ratios:{label:"ONLY BACK", c:"--s-ratios"},
   puzzle:{label:"Needs puzzle", c:"--s-puzzle"}, submit:{label:"Ready for Decision", c:"--s-submit"},
   done:{label:"Approved ✓", c:"--s-done"}, rej:{label:"Rejected ✓", c:"--s-rej"}
 };
@@ -671,11 +672,12 @@ function renderTask(){
     h += '<div class="result" id="live"></div><div id="steps"></div>';
     h += actions("Selected in panel ✓ — next");
   } else if (st === "ratios") {
+    h += '<button type="button" class="btn backltv" data-backltv>← Back to LTV' + (d.ltv != null ? ' (' + bigPct(d.ltv) + ')' : '') + '</button>';
     h += pasteBox("ratios");
     h += field("I","Yearly income","I",d.I) + field("A","Additional income","A",d.A) + field("P","Yearly mortgage pmt","P",d.P);
     h += field("DE","Debt expenses","DE",d.DE) + field("OT","Other taxes","OT",d.OT);
     h += '<div class="result" id="liveB"></div><div class="result" id="liveF"></div><div id="steps"></div>';
-    h += actions("Both selected in panel ✓ — next");
+    h += actions("Paste Back Ratio first");
   } else if (st === "puzzle") {
     h += '<div class="result"><span><b>Qualified.</b> Do the word puzzle and the Decision in the bank panel.<br><span class="hint">Interest rate = how many of FIRE, FLOOD, HEAT, SOIL, WIND you find.</span></span></div><div id="steps"></div>';
     h += actions("Approved in panel ✓ — next loan");
@@ -885,7 +887,7 @@ function guide(v){
       const b = bandOf(g(ltv));
       if (b === "high" && !all) { outcome = "reject"; label = "Rejected in panel ✓ — next loan"; steps = REJ(SEL(ltv)); }
       else if (b === "low") { outcome = "approve"; label = "Word find done ✓ Approved — next loan"; steps = []; }
-      else { label = "LTV selected ✓ → do Back/Front now"; steps = []; }
+      else { label = "Need more info · Input BACK now"; steps = []; }
     }
   } else if (cur.stage === "ratios") {
     const inc = (v.I||0) + (v.A||0);
@@ -955,6 +957,8 @@ function bindTask(){
   const s = box.querySelector("[data-save]"); s && s.addEventListener("click", save);
   const k = box.querySelector("[data-skip]"); k && k.addEventListener("click", async () => { await release(); renderTask(); render(); });
   box.querySelectorAll("[data-redo]").forEach(b => b.addEventListener("click", () => open(cur.id, b.dataset.redo)));
+  // Forgot to enter the LTV in the bank panel? Go back to this application's LTV screen (your claim is kept).
+  const bl = box.querySelector("[data-backltv]"); bl && bl.addEventListener("click", () => { const id = cur.id; cur = null; open(id, "ltv", true); });
   const u = box.querySelector("[data-unsubmit]"); u && u.addEventListener("click", async () => { await writeLoan(cur.id, {submitted:false, manual:null}); renderTask(); });
   box.querySelectorAll("[data-closeout]").forEach(b => b.addEventListener("click", () => closeOut(b.dataset.closeout)));
   const to = box.querySelector("[data-takeover]"); to && to.addEventListener("click", () => { cur.takeover = true; renderTask(); });
