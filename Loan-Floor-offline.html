@@ -278,7 +278,6 @@ button.brand:hover{color:var(--accent)}
       <div class="me"><button type="button" class="link" id="changeName"></button></div>
       <div class="seg" id="roles" role="group" aria-label="My job"></div>
       <div class="myblock" id="myBlock"></div>
-      <label class="wayrow">Way being tested <input id="wayInput" maxlength="20" placeholder="optional, e.g. A" autocomplete="off"></label>
       <button class="btn primary big wide" id="nextBtn" type="button">Next loan →</button>
       <div class="task" id="task"></div>
     </div>
@@ -296,7 +295,7 @@ button.brand:hover{color:var(--accent)}
       <div style="overflow-x:auto"><table><thead><tr><th>Step</th><th>Count</th><th>Average</th><th>Median</th><th>Fastest</th><th>Slowest</th></tr></thead><tbody id="times"></tbody></table></div>
       <h2 style="margin-top:14px">Which way is faster (average seconds)</h2>
       <div style="overflow-x:auto"><table id="timesWays"></table></div>
-      <p class="hint">Pasted vs typed is recorded automatically. Set "Way being tested" (next to your job) to compare other setups, e.g. A = one person per application, B = split by task. ✓ marks the fastest.</p>
+      <p class="hint">Pasted vs typed is recorded automatically. ✓ marks the faster one.</p>
       <h2 style="margin-top:14px">Each person</h2>
       <div style="overflow-x:auto"><table id="timesPeople"></table></div>
       <h2 style="margin-top:14px">Average seconds by person and step</h2>
@@ -352,7 +351,7 @@ const ids = Array.from({length:N}, (_,i) => "L" + String(i+1).padStart(2,"0"));
 const ls = { get(k){ try{return localStorage.getItem(k)}catch(e){return null} }, set(k,v){ try{localStorage.setItem(k,v)}catch(e){} } };
 let me = ls.get("lf.me") || "";
 let role = ls.get("lf.role") === "puzzsub" ? "puzzsub" : "ltv";
-let way = ls.get("lf.way") || "";
+const way = "";
 let loans = {};          // id -> data
 let run = {};            // meta/run doc
 let db = null;
@@ -580,7 +579,7 @@ function renderTimes(){
         const isBest = i => { const fam = groups.map((g, j) => g.fam === groups[i].fam && avgs[j] != null ? avgs[j] : null).filter(x => x != null);
           return fam.length > 1 && avgs[i] === Math.min(...fam); };
         return '<tr><td>' + STEP_NAMES[k].replace(/ \(.*\)/, "") + '</td>' + cells.map((a, i) => '<td>' + (a.length ? (isBest(i) ? '<b class="fast">' + r1(avgs[i]) + ' ✓</b>' : r1(avgs[i])) + ' <span class="hint">×' + a.length + '</span>' : "–") + '</td>').join("") + '</tr>'; }).join("") + '</tbody>';
-  } else $("#timesWays").innerHTML = '<tbody><tr><td style="text-align:left;font-family:inherit;color:var(--muted)">Nothing to compare yet. Paste on some applications and type on others, or set a "Way being tested" label.</td></tr></tbody>';
+  } else $("#timesWays").innerHTML = '<tbody><tr><td style="text-align:left;font-family:inherit;color:var(--muted)">Nothing to compare yet. Paste on some applications and type on others.</td></tr></tbody>';
   $("#timesBy").innerHTML = '<thead><tr><th>Person</th>' + cols.map(k => '<th>' + STEP_NAMES[k].replace(/ \(.*\)/, "") + '</th>').join("") + '</tr></thead><tbody>' +
     people.map(p => '<tr><td>' + p + '</td>' + cols.map(k => { const a = rows.filter(t => t.by === p && t.stage + "|" + t.outcome === k).map(t => t.sec);
       return '<td>' + (a.length ? r1(a.reduce((x, y) => x + y, 0) / a.length) + ' <span class="hint">×' + a.length + '</span>' : "–") + '</td>'; }).join("") + '</tr>').join("") + '</tbody>';
@@ -638,7 +637,7 @@ function renderTask(){
   $("#crumbs").innerHTML = cur
     ? '<button type="button" class="crumb" data-home>Home</button><span>›</span><b>Application ' + Number(cur.id.slice(1)) + '</b>'
     : '<b class="hometitle">Home</b>';
-  $("#roles").hidden = !!cur; document.querySelector(".wayrow").hidden = !!cur;
+  $("#roles").hidden = !!cur;
   pushNav(cur ? {id: cur.id, stage: cur.stage} : {home: true});
   if (!cur) { box.innerHTML = ''; return; }
   const d = loans[cur.id] || {}; const ev = evaluate(d); const st = cur.stage;
@@ -1068,8 +1067,7 @@ document.addEventListener("change", e => {
   const t = NAMES.filter(n => { const el = document.querySelector('[data-team="' + n + '"]'); return el && el.checked; });
   writeRun({team: t.length ? t : NAMES.slice()});
 });
-$("#wayInput").value = way;
-$("#wayInput").addEventListener("input", e => { way = e.target.value.trim(); ls.set("lf.way", way); });
+
 $("#copyTimes").addEventListener("click", () => {
   const t = timesCsv(); const n = t.split("\n").length - 1;
   const done = () => toast("Copied " + n + " timed steps. Paste into Excel or Google Sheets.");
