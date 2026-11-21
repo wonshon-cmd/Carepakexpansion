@@ -16,8 +16,8 @@ const N = 49;
 const NAMES = ["Rishi", "Senthil", "Tobe", "Gabriela", "Joe"];
 const GREEN = ["#C6EFCE", "#006100"], YELLOW = ["#FFEB9C", "#9C5700"], RED = ["#FFC7CE", "#9C0006"];
 const PASTE_BG = "#EAF1FF", CALC_BG = "#F3F5F8", HEAD_BG = "#18202C", BLUE = "#1F5FD6", MUTED = "#5D6878";
-const Z1 = 6, Z2 = 19;                 // paste zone rows 6..19
-const RES = 21, STATUS = 24, STEP3 = 27;
+const Z1 = 6, Z2 = 31;                 // paste zone rows 6..31 (a Back Ratio copy with blank lines is ~19 lines)
+const RES = 33, STATUS = 36, STEP3 = 39;
 
 function clean_(ref) {
   const t = 'SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(TRIM(' + ref + '),"$",""),",","")," ",""),CHAR(160),"")';
