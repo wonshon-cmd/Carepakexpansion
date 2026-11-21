@@ -351,7 +351,7 @@ const LOCK_MS = 15000;       // short lock that settles two people clicking at o
 const ids = Array.from({length:N}, (_,i) => "L" + String(i+1).padStart(2,"0"));
 
 const ls = { get(k){ try{return localStorage.getItem(k)}catch(e){return null} }, set(k,v){ try{localStorage.setItem(k,v)}catch(e){} } };
-let me = ls.get("lf.me") || "";
+let me = "";   // every time the program opens, it first asks "Who are you?"
 const role = "ltv";   // everyone does LTV + ratios; the word find and decision are part of that job now
 const way = "";
 let loans = {};          // id -> data
