@@ -689,16 +689,8 @@ const EXAMPLE = {
   ratios: [["Yearly Income (I):","$ 41,667"],["Additional Income (A):","$ 64,744"],["Yearly Mortgage Payment (P):","$ 14,491"],["Debt Expenses (DE):","$ 9,578"],["Other Taxes (OT):","$ 3,309"]]
 };
 function pasteBox(stage){
-  let seen = 0; try { seen = +(localStorage.getItem("lf.howto." + stage) || 0); localStorage.setItem("lf.howto." + stage, seen + 1); } catch(e){}
-  const where = stage === "ltv" ? "Loan-to-Value page" : "Back Ratio page (it has all 5 amounts, so no Front Ratio paste is needed)";
-  return '<div class="paste' + (seen < 3 ? ' first' : '') + '">' +
-    '<textarea id="pastebox" rows="1" placeholder="' + (stage === "ltv" ? "Paste LTV here" : "Paste Back Ratio here") + '" aria-label="Paste the dollar amounts from the bank panel"></textarea>' +
-    '<div class="howto"><div class="mock" aria-hidden="true">' +
-      EXAMPLE[stage].map(([l, v]) => '<div class="mrow"><span>' + l + '</span><span class="hl">' + v + '</span></div>').join("") +
-      '<span class="cursor">⇱</span></div>' +
-      '<ol><li>On the ' + where + ', drag down across the <b>$ amounts</b> so they turn blue (like this example)</li>' +
-      '<li>Copy: <span class="key">Ctrl/⌘ + C</span></li><li>Click the box above, paste: <span class="key">Ctrl/⌘ + V</span>. Every field fills at once.</li></ol>' +
-      '<div class="hint">Hover over the paste box to see this again.</div></div></div>';
+  return '<div class="paste"><textarea id="pastebox" rows="1" placeholder="' + (stage === "ltv" ? "Paste LTV here" : "Paste Back Ratio here") +
+    '" aria-label="Paste the dollar amounts from the bank panel"></textarea></div>';
 }
 function parseAmounts(t){
   const byKey = {}; const re = /\((DE|OT|L|H|V|I|A|P)\)\s*:?\s*\$?\s*(\d[\d,]*(?:\.\d+)?)/g; let m;
@@ -869,7 +861,7 @@ function guide(v){
   const OK = (sel) => [ONE(sel, "next application")];
   if (cur.stage === "ltv") {
     const ltv = v.L && v.H && v.V ? v.L / Math.min(v.H, v.V) : null;
-    if (ltv == null) steps = ["Loan-to-Value page: copy the 3 $ amounts → paste above"];
+    if (ltv == null) steps = [];
     else {
       const b = bandOf(g(ltv));
       if (b === "high" && !all) { outcome = "reject"; label = "Rejected in panel ✓ — next loan"; steps = REJ(SEL(ltv)); }
@@ -881,7 +873,7 @@ function guide(v){
     const f = inc > 0 && v.P != null ? v.P/inc : null;
     const b = f != null && v.DE != null && v.OT != null ? (v.DE+v.OT+v.P)/inc : null;
     const BOTH = () => ONE(SEL(b, "Back Ratio"), SEL(f, "Front Ratio"));
-    if (f == null) steps = [K("Back to Application") + " → " + K("Back Ratio") + " page: copy all 5 $ amounts → paste above"];
+    if (f == null) steps = [];
     else if (b == null) {
       if (g(f) >= .25 && !all) { outcome = "reject"; label = "Rejected in panel ✓ — next loan"; steps = REJ(SEL(f, "Front Ratio")); }
       else steps = [K("Back Ratio") + " page: copy all 5 $ amounts → paste above"];
