@@ -766,7 +766,7 @@ document.addEventListener("input", e => { if (e.target && e.target.id === "paste
 function field(k, name, sym, val){
   return '<div class="field"><label for="f_' + k + '">' + name + ' <b>(' + sym + ')</b></label><input id="f_' + k + '" data-k="' + k + '" inputmode="decimal" autocomplete="off" placeholder="$" value="' + fmt$(val) + '"></div>';
 }
-const CLOSE_OUT = '<div class="closeout"><span>Already entered in the bank panel? Close it out:</span><button class="btn ok" data-closeout="approve" type="button">✓ Approved</button><button class="btn danger" data-closeout="reject" type="button">✗ Rejected</button></div>';
+const CLOSE_OUT = '<div class="closeout" id="closeoutRow"><span>Already entered in the bank panel? Close it out:</span><button class="btn ok" data-closeout="approve" type="button">✓ Approved</button><button class="btn danger" data-closeout="reject" type="button">✗ Rejected</button></div>';
 function actions(label){
   return '<button class="btn primary big wide" data-save type="button">' + label + '</button>' + CLOSE_OUT + '<button class="skip" data-skip type="button">Skip this loan</button>';
 }
@@ -800,10 +800,7 @@ function readInputs(){
 function resHTML(label, x, tail){
   const big = x == null ? '<span class="big">–</span>'
     : '<button type="button" class="big copyable" data-copy="' + r100(x) + '" title="Click or Ctrl/⌘+C to copy">' + bigPct(x) + '</button>';
-  return '<span><span class="hint">' + label + ' — select in panel</span><br>' + big +
-    (x == null ? '' : ' <span class="hint num">exact ' + pct(x) + '</span>') +
-    (x == null ? '' : '<br><span class="hint">Copy: <span class="key">Ctrl/⌘ + C</span> · in the panel dropdown just type <b>' + r100(x) + '</b> to jump to it</span>') +
-    '</span>' + (tail || '');
+  return '<span><span class="hint">' + label + ' — select in panel</span><br>' + big + '</span>' + (tail || '');
 }
 /* ---------- Ctrl/⌘+C copies the answer you need next ---------- */
 function currentAnswer(){
@@ -904,10 +901,13 @@ function guide(v){
     steps = [K("Decision") + ": " + (ev.decision === "approve" ? "click " + K(ev.rate + "%") + " → " + K("Approve Loan") : K("Reject Loan")), NEXT];
   }
   cur.outcome = outcome;
+  // Approved / Rejected close-out only once the result is decided (not while ratios still need checking)
+  const decided = outcome === "reject" || (label && /next loan/.test(label));
+  const co = document.getElementById("closeoutRow"); if (co) co.hidden = !decided;
   if (sb && label) sb.textContent = label;
   const banner = outcome === "reject"
     ? '<div class="rejectbanner"><b>✗ NOT QUALIFIED</b><span>Submit <u>Reject Loan</u> in the bank panel. This application is complete: close the tab and go to the next one.</span></div>' : '';
-  el.innerHTML = banner + (steps.length ? '<div class="stepsbox"><div class="stepstitle">In the bank panel</div><ol>' +
+  el.innerHTML = banner + (steps.length ? '<div class="stepsbox"><ol>' +
     steps.map(x => '<li>' + x + '</li>').join("") + '</ol>' + (note ? '<div class="hint">' + note + '</div>' : '') + '</div>' : '');
 }
 async function save(){
