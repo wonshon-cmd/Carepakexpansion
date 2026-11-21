@@ -166,6 +166,7 @@ td:first-child{font-family:var(--f-body);font-weight:600}
 .miss b{font-family:var(--f-mono);margin-right:4px}
 .allgood{color:var(--good);font-weight:600}
 .warnline{color:var(--warn);font-size:13px;font-weight:600;width:100%}
+.btn.primary.green{background:var(--good);border-color:var(--good);color:#fff}
 .rejectbanner{margin:12px 0 0;padding:14px;border-radius:10px;background:color-mix(in srgb,var(--bad) 14%,var(--panel));border:2px solid var(--bad);color:var(--bad);display:grid;gap:4px;text-align:center}
 .rejectbanner b{font-size:22px}
 .rejectbanner span{font-size:15px;font-weight:600;color:var(--ink)}
@@ -533,8 +534,8 @@ function logPatch(id, stage){
 }
 /* Step timing: every finished step is kept (who, how long, what happened) so averages can be worked out later. */
 const STEP_NAMES = {
-  "ltv|qualified": "LTV → qualified (under 85%)", "ltv|to ratios": "LTV → needs ratios (85–100%)", "ltv|reject": "LTV + Reject (over 100%)",
-  "ratios|pass": "Front + Back → pass", "ratios|reject": "Front + Back + Reject",
+  "ltv|qualified": "LTV + word find + Approve (under 85%)", "ltv|to ratios": "LTV → needs ratios (85–100%)", "ltv|reject": "LTV + Reject (over 100%)",
+  "ratios|pass": "Back + Front + word find + Approve", "ratios|reject": "Front + Back + Reject",
   "puzzle|approve": "Puzzle + Approve", "puzzle|reject": "Puzzle + Reject", "submit|decision": "Decision only",
   "closeout|approve": "Closed out: Approved", "closeout|reject": "Closed out: Rejected"
 };
@@ -821,7 +822,7 @@ function live(){
     const ok = v.L && v.H && v.V; const ltv = ok ? v.L / Math.min(v.H, v.V) : null;
     let tail = '';
     if (ltv != null) { const b = bandOf(g(ltv));
-      tail = b === "low" ? '<span class="verdict v-good">Qualified → puzzle</span>' : b === "mid" ? '<span class="verdict v-warn">85–100% → check ratios</span>' : '<span class="verdict v-bad">Over 100% → reject</span>';
+      tail = b === "low" ? '<span class="verdict v-good">Qualified → word find + approve</span>' : b === "mid" ? '<span class="verdict v-warn">85–100% → check ratios</span>' : '<span class="verdict v-bad">Over 100% → reject</span>';
       if (bandOf(ltv) !== bandOf(r100(ltv)/100)) tail += '<span class="warnline">Borderline: rounding changes the band.</span>';
       if (ltv > 1.6 || ltv < 0.3 || Math.max(v.H,v.V)/Math.min(v.H,v.V) > 1.6) tail += '<span class="warnline">Unusual numbers — double-check for a typo.</span>';
     }
@@ -865,7 +866,7 @@ function guide(v){
     else {
       const b = bandOf(g(ltv));
       if (b === "high" && !all) { outcome = "reject"; label = "Rejected in panel ✓ — next loan"; steps = REJ(SEL(ltv)); }
-      else if (b === "low") { label = "LTV selected ✓ — next loan"; steps = OK(SEL(ltv)); }
+      else if (b === "low") { outcome = "approve"; label = "Word find done ✓ Approved — next loan"; steps = []; }
       else { label = "LTV selected ✓ → do Back/Front now"; steps = []; }
     }
   } else if (cur.stage === "ratios") {
@@ -880,7 +881,7 @@ function guide(v){
     } else {
       const pass = g(f) < .25 && g(b) < .35;
       if (!pass && !all) { outcome = "reject"; label = "Rejected in panel ✓ — next loan"; steps = REJ(BOTH()); }
-      else { label = "Ratios selected ✓ — next loan"; steps = OK(BOTH()); }
+      else { outcome = "approve"; label = "Word find done ✓ Approved — next loan"; steps = []; }
     }
   } else if (cur.stage === "puzzle") {
     const dec = evaluate(d).decision;
@@ -895,6 +896,7 @@ function guide(v){
   const decided = outcome === "reject" || (label && /next loan/.test(label));
   const co = document.getElementById("closeoutRow"); if (co) co.hidden = !decided;
   if (sb && label) sb.textContent = label;
+  if (sb) sb.classList.toggle("green", outcome === "approve");
   const banner = outcome === "reject"
     ? '<div class="rejectbanner"><b>✗ NOT QUALIFIED</b><span>Submit <u>Reject Loan</u> in the bank panel. This application is complete: close the tab and go to the next one.</span></div>' : '';
   el.innerHTML = banner + (steps.length ? '<div class="stepsbox"><ol>' +
@@ -907,6 +909,7 @@ async function save(){
     if (!v.L || !v.H || !v.V) return toast("Fill in L, H and V");
     const p = {L:v.L, H:v.H, V:v.V, ltv: v.L/Math.min(v.H,v.V)};
     if (cur.outcome === "reject") Object.assign(p, {submitted:true, submittedAt:Date.now()});
+    if (cur.outcome === "approve") Object.assign(p, {puzzleDone:true, submitted:true, submittedAt:Date.now()});
     return finish(p);
   }
   if (cur.stage === "ratios") {
@@ -917,6 +920,7 @@ async function save(){
     if (!hasBack && !(frontFails && !run.allTasks)) return toast("Front passes, so paste all 5 from the Back Ratio page");
     const p = {I:v.I, A:v.A, P:v.P, DE:v.DE ?? null, OT:v.OT ?? null, front, back: hasBack ? (v.DE+v.OT+v.P)/inc : null};
     if (cur.outcome === "reject") Object.assign(p, {submitted:true, submittedAt:Date.now()});
+    if (cur.outcome === "approve") Object.assign(p, {puzzleDone:true, submitted:true, submittedAt:Date.now()});
     return finish(p);
   }
   if (cur.stage === "puzzle") {
