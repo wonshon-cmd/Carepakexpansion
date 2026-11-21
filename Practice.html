@@ -246,16 +246,13 @@ function steps(){
         : { t: "Green means qualified. Leave the rest to the puzzle person.", s: "Nothing else to fill in on this tab for you.", c: () => true, pane: "tool" },
     { t: "Click \"Back to Application\", then \"Next Application\".", s: "On to your next loan.", c: () => S.nextApp, pane: "bank" }];
   const out = [copyLTV, pasteLTV, typeLTV];
-  if (web) out.push({ t: "Yellow: press \"LTV selected → do Front/Back now\" on the web board.", s: "The ratio form opens for this same application.", c: () => S.stage !== "ltv", pane: "tool" });
+  if (web) out.push({ t: "Yellow: press \"LTV selected → do Back/Front now\" on the web board.", s: "The ratio form opens for this same application.", c: () => S.stage !== "ltv", pane: "tool" });
   out.push(
-    { t: "In the bank panel click \"Back to Application\", then \"Front Ratio\".", c: () => S.visited.front, pane: "bank" },
-    { t: "Highlight the 3 $ amounts on the Front Ratio page and press Ctrl/⌘+C.", c: () => S.copied.front, pane: "bank" },
-    { t: web ? "Paste on the web board: Ctrl/⌘+V." : "Click the top blue cell of STEP 2 and press Ctrl/⌘+V.", c: () => eqTool(["I","A","P"]), pane: "tool" },
-    { t: "Type " + F + " in the Front Ratio dropdown and press Submit.", c: () => S.sub.front === F, pane: "bank" },
-    { t: "Click \"Next Task: Back Ratio\".", c: () => S.visited.back, pane: "bank" },
+    { t: "In the bank panel click \"Back to Application\", then \"Back Ratio\".", s: "The Back Ratio page has all 5 amounts, so you only paste once.", c: () => S.visited.back, pane: "bank" },
     { t: "Highlight all 5 $ amounts and press Ctrl/⌘+C.", c: () => S.copied.back, pane: "bank" },
-    { t: web ? "Paste on the web board again: Ctrl/⌘+V." : "Paste into the top cell of STEP 2 again.", s: "The 5 amounts replace the 3.", c: () => eqTool(["I","A","P","DE","OT"]), pane: "tool" },
-    { t: "Type " + B + " in the Back Ratio dropdown and press Submit.", s: "Both ratios pass, so the loan is qualified.", c: () => S.sub.back === B, pane: "bank" });
+    { t: web ? "Paste on the web board: Ctrl/⌘+V." : "Click the top blue cell of STEP 2 and press Ctrl/⌘+V.", s: "Back ratio and Front ratio both appear.", c: () => eqTool(["I","A","P","DE","OT"]), pane: "tool" },
+    { t: "Type " + B + " in the Back Ratio dropdown and press Submit.", c: () => S.sub.back === B, pane: "bank" },
+    { t: "Click \"Back to Application\", then \"Front Ratio\". Type " + F + " and press Submit.", s: "Both ratios pass, so the loan is qualified.", c: () => S.sub.front === F, pane: "bank" });
   if (web) out.push({ t: "Press \"Ratios selected ✓\" on the web board.", s: "Next you practise the puzzle person's job.", c: () => S.stage === "puzzle" || S.stage === "done", pane: "tool" });
   out.push(
     { t: "Now be the puzzle person. Click \"Next Task: Loan-to-Value\", then \"Next Task: Risk Assessment\".", c: () => S.visited.risk, pane: "bank" },
@@ -390,11 +387,11 @@ function renderWeb(){
       const band = ltv == null ? null : ltv < .85 ? "low" : ltv <= 1 ? "mid" : "high";
       h += '<div class="res"><span><span style="font-size:12px;color:var(--muted)">Loan-to-Value — type in panel</span><br><span class="big">' + (ltv == null ? "–" : r100(ltv) + "%") + '</span></span>' +
         (band ? '<span class="verdict ' + ({low:"v-good",mid:"v-warn",high:"v-bad"}[band]) + '">' + ({low:"Qualified → puzzle", mid:"85–100% → ratios", high:"Over 100% → reject"}[band]) + '</span>' : '') + '</div>';
-      h += '<button type="button" class="go" data-web="ltv"' + (band ? '' : ' disabled') + '>' + ({low:"LTV selected ✓ — next loan", mid:"LTV selected ✓ → do Front/Back now", high:"Rejected in panel ✓ — next loan"}[band] || "Paste the amounts first") + '</button>';
+      h += '<button type="button" class="go" data-web="ltv"' + (band ? '' : ' disabled') + '>' + ({low:"LTV selected ✓ — next loan", mid:"LTV selected ✓ → do Back/Front now", high:"Rejected in panel ✓ — next loan"}[band] || "Paste the amounts first") + '</button>';
     } else {
       const inc = (t.I||0) + (t.A||0); const f = inc && t.P != null ? t.P / inc : null; const b = f != null && t.DE != null && t.OT != null ? (t.DE + t.OT + t.P) / inc : null;
-      h += '<div class="res"><span><span style="font-size:12px;color:var(--muted)">Front — type in panel</span><br><span class="big">' + (f == null ? "–" : r100(f) + "%") + '</span></span>' +
-        '<span><span style="font-size:12px;color:var(--muted)">Back — type in panel</span><br><span class="big">' + (b == null ? "–" : r100(b) + "%") + '</span></span>' +
+      h += '<div class="res"><span><span style="font-size:12px;color:var(--muted)">Back — type in panel</span><br><span class="big">' + (b == null ? "–" : r100(b) + "%") + '</span></span>' +
+        '<span><span style="font-size:12px;color:var(--muted)">Front — type in panel</span><br><span class="big">' + (f == null ? "–" : r100(f) + "%") + '</span></span>' +
         (b != null ? '<span class="verdict ' + (f < .25 && b < .35 ? "v-good" : "v-bad") + '">' + (f < .25 && b < .35 ? "Pass → puzzle" : "Reject") + '</span>' : '') + '</div>';
       h += '<button type="button" class="go" data-web="ratios"' + (b != null ? '' : ' disabled') + '>' + (b == null ? "Paste all 5 amounts first" : (f < .25 && b < .35 ? "Ratios selected ✓ — next loan" : "Rejected in panel ✓ — next loan")) + '</button>';
     }

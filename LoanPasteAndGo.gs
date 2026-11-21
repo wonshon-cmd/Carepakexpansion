@@ -78,7 +78,7 @@ function buildTemplate_(sh) {
     sh.getRange("E" + (Z1 + i)).setValue(lab);
     sh.getRange("F" + (Z1 + i)).setFormula(pick_("$K$" + Z1, i + 1, ["\\(I\\)|yearly income", "\\(A\\)|additional income", "\\(P\\)|mortgage payment", "\\(DE\\)|debt expense", "\\(OT\\)|other tax"][i])).setNumberFormat("#,##0").setBackground(CALC_BG).setHorizontalAlignment("right");
   });
-  sh.getRange("E12").setValue("Front page: paste 3 amounts.\nBack page: paste all 5 (replaces the 3).").setFontColor(BLUE).setFontSize(9).setWrap(true);
+  sh.getRange("E12").setValue("Back Ratio page: paste all 5 amounts.\nNo Front Ratio paste needed.").setFontColor(BLUE).setFontSize(9).setWrap(true);
   sh.getRange("A10").setValue("Paste anything: labels, blank lines or one cell.\nEach number goes to its label (L, H, V).").setFontColor(BLUE).setFontSize(9).setWrap(true);
 
   // hidden helpers: cleaned paste zones

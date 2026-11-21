@@ -337,7 +337,7 @@ const ROLES = [
   {id:"puzzsub", label:"Puzzle + Decision"},
 ];
 const STAGE = {
-  ltv:{label:"Needs LTV", c:"--s-ltv"}, ratios:{label:"Needs Front/Back", c:"--s-ratios"},
+  ltv:{label:"Needs LTV", c:"--s-ltv"}, ratios:{label:"Needs Back/Front", c:"--s-ratios"},
   puzzle:{label:"Needs puzzle", c:"--s-puzzle"}, submit:{label:"Ready for Decision", c:"--s-submit"},
   done:{label:"Approved ✓", c:"--s-done"}, rej:{label:"Rejected ✓", c:"--s-rej"}
 };
@@ -653,9 +653,8 @@ function renderTask(){
   } else if (st === "ratios") {
     h += pasteBox("ratios");
     h += field("I","Yearly income","I",d.I) + field("A","Additional income","A",d.A) + field("P","Yearly mortgage pmt","P",d.P);
-    h += '<div class="result" id="liveF"></div>';
     h += field("DE","Debt expenses","DE",d.DE) + field("OT","Other taxes","OT",d.OT);
-    h += '<div class="result" id="liveB"></div><div id="steps"></div>';
+    h += '<div class="result" id="liveB"></div><div class="result" id="liveF"></div><div id="steps"></div>';
     h += actions("Both selected in panel ✓ — next");
   } else if (st === "puzzle") {
     h += '<div class="result"><span><b>Qualified.</b> Do the word puzzle and the Decision in the bank panel.<br><span class="hint">Interest rate = how many of FIRE, FLOOD, HEAT, SOIL, WIND you find.</span></span></div><div id="steps"></div>';
@@ -691,7 +690,7 @@ const EXAMPLE = {
 };
 function pasteBox(stage){
   let seen = 0; try { seen = +(localStorage.getItem("lf.howto." + stage) || 0); localStorage.setItem("lf.howto." + stage, seen + 1); } catch(e){}
-  const where = stage === "ltv" ? "Loan-to-Value page" : "Front Ratio page (3 amounts), then Back Ratio page (all 5)";
+  const where = stage === "ltv" ? "Loan-to-Value page" : "Back Ratio page (it has all 5 amounts, so no Front Ratio paste is needed)";
   return '<div class="paste' + (seen < 3 ? ' first' : '') + '">' +
     '<textarea id="pastebox" rows="1" placeholder="Paste the $ amounts here  ·  Ctrl/⌘ + V" aria-label="Paste the dollar amounts from the bank panel"></textarea>' +
     '<div class="howto"><div class="mock" aria-hidden="true">' +
@@ -767,7 +766,7 @@ function field(k, name, sym, val){
 }
 const CLOSE_OUT = '<div class="closeout" id="closeoutRow"><span>Already entered in the bank panel? Close it out:</span><button class="btn ok" data-closeout="approve" type="button">✓ Approved</button><button class="btn danger" data-closeout="reject" type="button">✗ Rejected</button></div>';
 function actions(label){
-  return '<button class="btn primary big wide" data-save type="button">' + label + '</button>' + CLOSE_OUT + '<button class="skip" data-skip type="button">Skip this loan</button>';
+  return '<button class="btn primary big wide" data-save type="button">' + label + '</button>';
 }
 function entryBlock(d, ev){
   const dec = ev.decision;
@@ -844,7 +843,7 @@ function live(){
     if (f != null) { tf = g(f) < .25 ? '<span class="verdict v-good">&lt; 25% ✓</span>' : '<span class="verdict v-bad">≥ 25% ✗</span>';
       if ((f < .25) !== (r100(f)/100 < .25)) tf += '<span class="warnline">Borderline: rounding changes pass/fail.</span>'; }
     let tb = '';
-    if (f != null && g(f) >= .25 && b == null) tb = '<span class="verdict v-bad">Front failed → reject, Back not needed</span>';
+
     if (b != null) { const pass = g(f) < .25 && g(b) < .35;
       tb = (g(b) < .35 ? '<span class="verdict v-good">&lt; 35% ✓</span>' : '<span class="verdict v-bad">≥ 35% ✗</span>') +
            (pass ? '<span class="verdict v-good">Pass → puzzle</span>' : '<span class="verdict v-bad">Reject</span>');
@@ -865,39 +864,39 @@ function guide(v){
   let steps = [], label = null, outcome = null, note = "";
   // Short directions: only what to click now, then close the tab and move on.
   const SEL = (x, page) => "Select " + K(r100(x) + "%") + (page ? " on " + page : "") + " → " + K("Submit");
-  const REJ = [K("Decision") + " → " + K("Reject Loan"), "Close the tab " + K("Ctrl/⌘+W") + " → next application"];
-  const NEXT = "Close the tab " + K("Ctrl/⌘+W") + " → next application";
+  const ONE = (...parts) => parts.join(" → ");
+  const REJ = (sel) => [ONE(sel, K("Decision"), K("Reject Loan"), "next application")];
+  const OK = (sel) => [ONE(sel, "next application")];
   if (cur.stage === "ltv") {
     const ltv = v.L && v.H && v.V ? v.L / Math.min(v.H, v.V) : null;
     if (ltv == null) steps = ["Loan-to-Value page: copy the 3 $ amounts → paste above"];
     else {
       const b = bandOf(g(ltv));
-      if (b === "high" && !all) { outcome = "reject"; label = "Rejected in panel ✓ — next loan";
-        steps = [SEL(ltv) + ' <b class="warnline" style="width:auto">(' + r100(ltv) + ', not ' + (r100(ltv) % 100) + ')</b>'].concat(REJ); }
-      else if (b === "low") { label = "LTV selected ✓ — next loan"; steps = [SEL(ltv), "✓ Qualified. " + NEXT]; }
-      else { label = "LTV selected ✓ → do Front/Back now"; steps = [SEL(ltv), "Needs Front/Back: press the blue button"]; }
+      if (b === "high" && !all) { outcome = "reject"; label = "Rejected in panel ✓ — next loan"; steps = REJ(SEL(ltv)); }
+      else if (b === "low") { label = "LTV selected ✓ — next loan"; steps = OK(SEL(ltv)); }
+      else { label = "LTV selected ✓ → do Back/Front now"; steps = [ONE(SEL(ltv), "press the blue button")]; }
     }
   } else if (cur.stage === "ratios") {
     const inc = (v.I||0) + (v.A||0);
     const f = inc > 0 && v.P != null ? v.P/inc : null;
     const b = f != null && v.DE != null && v.OT != null ? (v.DE+v.OT+v.P)/inc : null;
-    if (f == null) steps = ["Front Ratio page: copy the 3 $ amounts → paste above"];
-    else if (g(f) >= .25 && !all) { outcome = "reject"; label = "Rejected in panel ✓ — next loan";
-      steps = [SEL(f, "Front Ratio"), "No Back Ratio needed"].concat(REJ); }
-    else if (b == null) steps = [SEL(f, "Front Ratio"), "Back Ratio page: copy all 5 $ amounts → paste above"];
-    else {
+    const BOTH = () => ONE(SEL(b, "Back Ratio"), SEL(f, "Front Ratio"));
+    if (f == null) steps = [K("Back to Application") + " → " + K("Back Ratio") + " page: copy all 5 $ amounts → paste above"];
+    else if (b == null) {
+      if (g(f) >= .25 && !all) { outcome = "reject"; label = "Rejected in panel ✓ — next loan"; steps = REJ(SEL(f, "Front Ratio")); }
+      else steps = [K("Back Ratio") + " page: copy all 5 $ amounts → paste above"];
+    } else {
       const pass = g(f) < .25 && g(b) < .35;
-      if (!pass && !all) { outcome = "reject"; label = "Rejected in panel ✓ — next loan"; steps = [SEL(b, "Back Ratio")].concat(REJ); }
-      else { label = "Ratios selected ✓ — next loan"; steps = [SEL(b, "Back Ratio"), "✓ Qualified. " + NEXT]; }
+      if (!pass && !all) { outcome = "reject"; label = "Rejected in panel ✓ — next loan"; steps = REJ(BOTH()); }
+      else { label = "Ratios selected ✓ — next loan"; steps = OK(BOTH()); }
     }
   } else if (cur.stage === "puzzle") {
     const dec = evaluate(d).decision;
-    steps = [K("Risk Assessment") + ": find the words → " + K("Submit")];
-    if (dec === "reject") { steps = steps.concat(REJ); label = "Rejected in panel ✓ — next loan"; }
-    else { steps.push(K("Decision") + ": click the rate (= words found) → " + K("Approve Loan"), NEXT); label = "Approved in panel ✓ — next loan"; }
+    if (dec === "reject") { steps = [ONE(K("Risk Assessment") + ": find the words", K("Submit"), K("Decision"), K("Reject Loan"), "next application")]; label = "Rejected in panel ✓ — next loan"; }
+    else { steps = [ONE(K("Risk Assessment") + ": find the words", K("Submit"), K("Decision") + ": click the rate (= words found)", K("Approve Loan"), "next application")]; label = "Approved in panel ✓ — next loan"; }
   } else if (cur.stage === "submit") {
     const ev = evaluate(d);
-    steps = [K("Decision") + ": " + (ev.decision === "approve" ? "click " + K(ev.rate + "%") + " → " + K("Approve Loan") : K("Reject Loan")), NEXT];
+    steps = [ONE(K("Decision"), ev.decision === "approve" ? "click " + K(ev.rate + "%") + " → " + K("Approve Loan") : K("Reject Loan"), "next application")];
   }
   cur.outcome = outcome;
   // Approved / Rejected close-out only once the result is decided (not while ratios still need checking)
