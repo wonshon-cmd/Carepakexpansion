@@ -692,7 +692,7 @@ function pasteBox(stage){
   let seen = 0; try { seen = +(localStorage.getItem("lf.howto." + stage) || 0); localStorage.setItem("lf.howto." + stage, seen + 1); } catch(e){}
   const where = stage === "ltv" ? "Loan-to-Value page" : "Back Ratio page (it has all 5 amounts, so no Front Ratio paste is needed)";
   return '<div class="paste' + (seen < 3 ? ' first' : '') + '">' +
-    '<textarea id="pastebox" rows="1" placeholder="' + (stage === "ltv" ? "Paste LTV here" : "Paste Back Ratio here") + '  ·  Ctrl/⌘ + V" aria-label="Paste the dollar amounts from the bank panel"></textarea>' +
+    '<textarea id="pastebox" rows="1" placeholder="' + (stage === "ltv" ? "Paste LTV here" : "Paste Back Ratio here") + '" aria-label="Paste the dollar amounts from the bank panel"></textarea>' +
     '<div class="howto"><div class="mock" aria-hidden="true">' +
       EXAMPLE[stage].map(([l, v]) => '<div class="mrow"><span>' + l + '</span><span class="hl">' + v + '</span></div>').join("") +
       '<span class="cursor">⇱</span></div>' +
