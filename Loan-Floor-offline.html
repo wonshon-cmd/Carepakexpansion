@@ -689,13 +689,12 @@ function renderTask(){
   } else {
     h += entryBlock(d, ev);
     h += '<div class="actions">' +
-      '<button class="btn" data-redo="ltv" type="button">Edit LTV</button>' +
+      '<button class="btn primary" data-redo="ltv" type="button">Input LTV</button>' +
       ((ev.band === "mid" || run.allTasks || d.front != null) ? '<button class="btn" data-redo="ratios" type="button">Edit ratios</button>' : '') +
       ((ev.decision === "approve" || run.allTasks || foundOf(d) != null) ? '<button class="btn" data-redo="puzzle" type="button">Edit puzzle</button>' : '') +
       (ev.stage === "submit" ? '<button class="btn primary" data-redo="submit" type="button">Do Decision</button>' : '') +
       (d.submitted ? '<button class="btn" data-unsubmit type="button">Mark decision not entered</button>' : '') +
       '<button class="btn" data-close type="button">Close</button></div>';
-    if (!d.submitted) h += CLOSE_OUT;
     h += logBlock(d);
   }
   box.innerHTML = h;
