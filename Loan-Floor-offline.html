@@ -990,7 +990,7 @@ function render(){
       '<span class="n">' + Number(id.slice(1)) + '</span><span class="v">' + val + '</span>' +
       (claim ? '<span class="who" title="' + claim + ' is on it">' + claim[0] + '</span>' : '') + '</button>';
   }).join("");
-  const pipeDefs = [["ltv","Need LTV"],["ratios","Need ratios"],["puzzle","Need puzzle"],["submit","Need Decision"],["done","Approved ✓"],["rej","Rejected ✓"]];
+  const pipeDefs = [["ltv","Need LTV"],["done","Approved ✓"],["rej","Rejected ✓"]];
   $("#pipeline").innerHTML = pipeDefs.map(([k,l]) => {
     const inner = '<i style="--c:var(' + STAGE[k].c + ')"></i><b>' + counts[k] + '</b>' + l;
     return (k === "done" || k === "rej") ? '<span>' + inner + '</span>'
