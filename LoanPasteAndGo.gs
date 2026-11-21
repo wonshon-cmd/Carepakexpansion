@@ -28,11 +28,11 @@ function clean_(ref) {
 function joined_(c1, c2) {
   return '=REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(TEXTJOIN(" ",TRUE,' + c1 + Z1 + ':' + c2 + Z2 + '),"(?i)application\\s*\\d+|round to nearest percentage[^%]*%|\\d+\\s*%"," "),"(\\d),(\\d)","$1$2"),"\\$","")';
 }
-// Value for one field: the number right after its label if the label was pasted too,
-// otherwise the k-th number in reading order (labels contain no digits, so they are skipped).
-function pick_(cell, k, labelRe) {
-  const nth = 'INDEX(SPLIT(TRIM(REGEXREPLACE(' + cell + ',"[^0-9.]+"," "))," "),1,' + k + ')';
-  return '=IF(' + cell + '="","",IFERROR(VALUE(REGEXEXTRACT(' + cell + ',"(?i)(?:' + labelRe + ')[^0-9a-z]*([0-9.]+)")),IFERROR(VALUE(' + nth + '),"")))';
+// Value for one field: the k-th number in reading order. The bank panel always lists the amounts in the same
+// order (L, H, V / I, A, P, DE, OT) and labels contain no digits, so this works whether labels are copied or not,
+// whether they come before each number or all at the top, and whether everything lands in one cell.
+function pick_(cell, k) {
+  return '=IF(' + cell + '="","",IFERROR(VALUE(INDEX(SPLIT(TRIM(REGEXREPLACE(' + cell + ',"[^0-9.]+"," "))," "),1,' + k + ')),""))';
 }
 function head_(sh, a1, text) {
   const r = sh.getRange(a1).merge().setBackground(HEAD_BG).setFontColor("#FFFFFF").setFontWeight("bold").setFontSize(12);
@@ -69,17 +69,17 @@ function buildTemplate_(sh) {
   pasteZone_(sh, "C", "▼ PASTE HERE (top cell)");
   ["Loan Amount (L)", "House Price (H)", "Appraisal Value (V)"].forEach((lab, i) => {
     sh.getRange("A" + (Z1 + i)).setValue(lab);
-    sh.getRange("B" + (Z1 + i)).setFormula(pick_("$J$" + Z1, i + 1, ["\\(L\\)|loan amount", "\\(H\\)|house price", "\\(V\\)|appraisal"][i])).setNumberFormat("#,##0").setBackground(CALC_BG).setHorizontalAlignment("right");
+    sh.getRange("B" + (Z1 + i)).setFormula(pick_("$J$" + Z1, i + 1)).setNumberFormat("#,##0").setBackground(CALC_BG).setHorizontalAlignment("right");
   });
   // STEP 2 · Front / Back
   head_(sh, "E4:G4", "STEP 2 · Back Ratio page: paste all 5 (only if YELLOW)");
   pasteZone_(sh, "G", "▼ PASTE HERE (top cell)");
   ["Yearly Income (I)", "Additional Income (A)", "Yearly Mortgage Payment (P)", "Debt Expenses (DE)", "Other Taxes (OT)"].forEach((lab, i) => {
     sh.getRange("E" + (Z1 + i)).setValue(lab);
-    sh.getRange("F" + (Z1 + i)).setFormula(pick_("$K$" + Z1, i + 1, ["\\(I\\)|yearly income", "\\(A\\)|additional income", "\\(P\\)|mortgage payment", "\\(DE\\)|debt expense", "\\(OT\\)|other tax"][i])).setNumberFormat("#,##0").setBackground(CALC_BG).setHorizontalAlignment("right");
+    sh.getRange("F" + (Z1 + i)).setFormula(pick_("$K$" + Z1, i + 1)).setNumberFormat("#,##0").setBackground(CALC_BG).setHorizontalAlignment("right");
   });
   sh.getRange("E12").setValue("Back Ratio page: paste all 5 amounts.\nNo Front Ratio paste needed.").setFontColor(BLUE).setFontSize(9).setWrap(true);
-  sh.getRange("A10").setValue("Paste anything: labels, blank lines or one cell.\nEach number goes to its label (L, H, V).").setFontColor(BLUE).setFontSize(9).setWrap(true);
+  sh.getRange("A10").setValue("Paste anything: labels, blank lines or one cell.\nThe numbers are read in order (L, H, V).").setFontColor(BLUE).setFontSize(9).setWrap(true);
 
   // hidden helpers: cleaned paste zones
   sh.getRange("J" + Z1).setFormula(joined_("C", "D"));
