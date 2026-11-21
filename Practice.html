@@ -498,9 +498,9 @@ function renderSheet(){
   h += '<div class="sblock"><div class="sgrid"><div class="h">STEP 1 · Loan-to-Value page</div><div></div><div></div><div class="ptitle">▼ PASTE (top cell)</div>' +
     zone("1", S.z1, ["Loan Amount (L)","House Price (H)","Appraisal Value (V)"], ["L","H","V"]) + '</div>' +
     '<div class="srow"><span>LTV → type in panel</span><span class="bignum ' + (ss.ltv == null ? "" : ss.ltv > 1 ? "r" : ss.ltv >= .85 ? "y" : "g") + '">' + (ss.ltv == null ? "–" : r100(ss.ltv)) + '</span><button type="button" class="clr" data-clear="1">clear</button></div></div>';
-  h += '<div class="sblock"><div class="sgrid"><div class="h' + (ss.st === "y" ? " need" : "") + '">STEP 2 · Front / Back Ratio pages (only if YELLOW)</div><div></div><div></div><div class="ptitle">▼ PASTE (top cell)</div>' +
+  h += '<div class="sblock"><div class="sgrid"><div class="h' + (ss.st === "y" ? " need" : "") + '">STEP 2 · Back Ratio page: paste all 5 (only if YELLOW)</div><div></div><div></div><div class="ptitle">▼ PASTE (top cell)</div>' +
     zone("2", S.z2, ["Yearly Income (I)","Additional Income (A)","Mortgage Payment (P)","Debt Expenses (DE)","Other Taxes (OT)"], ["I","A","P","DE","OT"]) + '</div>' +
-    '<div class="srow"><span>Front</span><span class="bignum ' + (ss.f == null ? "" : ss.f < .25 ? "g" : "r") + '">' + (ss.f == null ? "–" : r100(ss.f)) + '</span><span>Back</span><span class="bignum ' + (ss.b == null ? "" : ss.b < .35 ? "g" : "r") + '">' + (ss.b == null ? "–" : r100(ss.b)) + '</span><button type="button" class="clr" data-clear="2">clear</button></div></div>';
+    '<div class="srow"><span>Back</span><span class="bignum ' + (ss.b == null ? "" : ss.b < .35 ? "g" : "r") + '">' + (ss.b == null ? "–" : r100(ss.b)) + '</span><span>Front</span><span class="bignum ' + (ss.f == null ? "" : ss.f < .25 ? "g" : "r") + '">' + (ss.f == null ? "–" : r100(ss.f)) + '</span><button type="button" class="clr" data-clear="2">clear</button></div></div>';
   h += '<div class="status" id="sStatus"></div>';
   h += '<div class="sblock" style="margin-top:12px"><div class="sgrid" style="grid-template-columns:150px 78px"><div class="h">STEP 3 · Risk Assessment + Decision</div><div>Words found (0–5)</div><div class="p top" style="padding:0"><input id="sWords" type="number" min="0" max="5" value="' + esc(S.sWords) + '" style="width:100%;border:0;background:transparent;text-align:center"></div></div><div id="sStep3" style="font-weight:700"></div>' +
     '<div class="srow"><span>Clicked in bank panel?</span><select id="sClicked" aria-label="Clicked in bank panel"><option value=""></option><option' + (S.clicked === "Yes" ? " selected" : "") + '>Yes</option><option' + (S.clicked === "No" ? " selected" : "") + '>No</option></select></div></div></div>';
@@ -509,7 +509,7 @@ function renderSheet(){
 function renderSheetStatus(){
   const ss = sheetState(); const el = $("#sStatus"); if (!el) return;
   el.className = "status " + ss.st;
-  el.textContent = ({"": "PASTE L, H, V ABOVE", g: "✓ APPROVED — click Approve Loan", y: "NEED DATA — paste Front/Back in STEP 2", r: "✗ NOT QUALIFIED — submit Reject Loan, then this one is complete"})[ss.st];
+  el.textContent = ({"": "PASTE L, H, V ABOVE", g: "✓ APPROVED — click Approve Loan", y: "NEED DATA — paste the 5 Back Ratio amounts in STEP 2", r: "✗ NOT QUALIFIED — submit Reject Loan, then this one is complete"})[ss.st];
   const w = S.sWords; $("#sStep3").textContent = ss.st !== "g" ? "" : (w === "" ? "Do the puzzle, type words found" : "Click " + w + "% → Approve Loan → Next Application");
 }
 // typing straight into a sheet cell

@@ -69,14 +69,14 @@ svg text{font-family:var(--f);fill:var(--ink)}
   <h1>Loan Floor workflow</h1>
   <div class="legend">
     <span><i style="background:var(--g-bg)"></i>Green · QUALIFIED / APPROVED</span>
-    <span><i style="background:var(--y-bg)"></i>Yellow · NEED DATA (85–100%)</span>
+    <span><i style="background:var(--y-bg)"></i>Yellow · NEED DATA (85–100%): one paste from the Back Ratio page</span>
     <span><i style="background:var(--r-bg)"></i>Red · NOT QUALIFIED / REJECT</span>
     <span><i style="background:var(--box)"></i>White · a step you do</span>
   </div>
   <div class="chart">
   <svg viewBox="0 0 1000 1030" role="img" aria-labelledby="wfT wfD">
     <title id="wfT">Loan Floor workflow</title>
-    <desc id="wfD">Open the application, do the LTV. Over 100% is red: reject. Under 85% is green: qualified, the puzzle person approves. 85 to 100% is yellow: do Front and Back ratios; if Front is under 25% and Back under 35% it is qualified, otherwise red: reject. Every loan ends with mark done, close the tab, next application.</desc>
+    <desc id="wfD">Open the application, do the LTV. Over 100% is red: reject. Under 85% is green: qualified, the puzzle person approves. 85 to 100% is yellow: paste the 5 amounts from the Back Ratio page, which gives both ratios; if Back is under 35% and Front under 25% it is qualified, otherwise red: reject. Every loan ends with mark done, close the tab, next application.</desc>
     <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="arrowhead" d="M0,0 L10,5 L0,10 z"/></marker></defs>
 
     <!-- start -->
@@ -118,14 +118,14 @@ svg text{font-family:var(--f);fill:var(--ink)}
     <!-- yellow -->
     <rect class="bx y" x="700" y="400" width="260" height="96" rx="8"/>
     <text x="830" y="432" text-anchor="middle" class="t1 ty">NEED DATA</text>
-    <text x="830" y="456" text-anchor="middle" class="t2">Front Ratio, then Back Ratio:</text>
-    <text x="830" y="477" text-anchor="middle" class="t2">copy → paste → type % → Submit</text>
+    <text x="830" y="456" text-anchor="middle" class="t2">Back Ratio page: copy all 5 → paste</text>
+    <text x="830" y="477" text-anchor="middle" class="t2">Back % and Front % both appear</text>
     <path class="line" d="M830,496 V532" marker-end="url(#ah)"/>
 
     <!-- decision 2 -->
     <polygon class="bx" points="830,534 960,600 830,666 700,600"/>
-    <text x="830" y="596" text-anchor="middle" class="t2" style="font-weight:700">Front under 25%</text>
-    <text x="830" y="616" text-anchor="middle" class="t2" style="font-weight:700">and Back under 35%?</text>
+    <text x="830" y="596" text-anchor="middle" class="t2" style="font-weight:700">Back under 35%</text>
+    <text x="830" y="616" text-anchor="middle" class="t2" style="font-weight:700">and Front under 25%?</text>
     <path class="line" d="M700,600 H634" marker-end="url(#ah)"/>
     <text x="667" y="590" text-anchor="middle" class="lab">yes</text>
     <path class="line" d="M830,666 V738" marker-end="url(#ah)"/>
@@ -149,8 +149,8 @@ svg text{font-family:var(--f);fill:var(--ink)}
     <!-- red 2 -->
     <rect class="bx r" x="700" y="740" width="260" height="96" rx="8"/>
     <text x="830" y="772" text-anchor="middle" class="t1 tr">✗ NOT QUALIFIED</text>
-    <text x="830" y="796" text-anchor="middle" class="t2">Next Task ×3</text>
-    <text x="830" y="817" text-anchor="middle" class="t2">→ Reject Loan</text>
+    <text x="830" y="796" text-anchor="middle" class="t2">Type Back %, Front % → Submit</text>
+    <text x="830" y="817" text-anchor="middle" class="t2">→ Decision → Reject Loan</text>
 
     <!-- to the end -->
     <path class="line" d="M170,496 V938" marker-end="url(#ah)"/>

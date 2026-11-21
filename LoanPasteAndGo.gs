@@ -72,7 +72,7 @@ function buildTemplate_(sh) {
     sh.getRange("B" + (Z1 + i)).setFormula(pick_("$J$" + Z1, i + 1, ["\\(L\\)|loan amount", "\\(H\\)|house price", "\\(V\\)|appraisal"][i])).setNumberFormat("#,##0").setBackground(CALC_BG).setHorizontalAlignment("right");
   });
   // STEP 2 · Front / Back
-  head_(sh, "E4:G4", "STEP 2 · Front / Back Ratio pages (only if YELLOW)");
+  head_(sh, "E4:G4", "STEP 2 · Back Ratio page: paste all 5 (only if YELLOW)");
   pasteZone_(sh, "G", "▼ PASTE HERE (top cell)");
   ["Yearly Income (I)", "Additional Income (A)", "Yearly Mortgage Payment (P)", "Debt Expenses (DE)", "Other Taxes (OT)"].forEach((lab, i) => {
     sh.getRange("E" + (Z1 + i)).setValue(lab);
@@ -89,20 +89,20 @@ function buildTemplate_(sh) {
   sh.getRange("A" + RES).setValue("LTV → type in panel").setFontWeight("bold");
   sh.getRange("C" + RES).setFormula('=IF(COUNT(B6:B8)<3,"",B6/MIN(B7:B8))').setNumberFormat("0.00%").setFontColor(MUTED);
   sh.getRange("B" + RES).setFormula('=IF(C' + RES + '="","–",ROUND(C' + RES + '*100,0))').setFontSize(26).setFontWeight("bold").setHorizontalAlignment("center");
-  sh.getRange("E" + RES).setValue("Front → type in panel").setFontWeight("bold");
-  sh.getRange("G" + RES).setFormula('=IF(COUNT(F6:F8)<3,"",F8/(F6+F7))').setNumberFormat("0.00%").setFontColor(MUTED);
+  sh.getRange("E" + RES).setValue("Back → type in panel").setFontWeight("bold");
+  sh.getRange("G" + RES).setFormula('=IF(COUNT(F6:F10)<5,"",(F9+F10+F8)/(F6+F7))').setNumberFormat("0.00%").setFontColor(MUTED);
   sh.getRange("F" + RES).setFormula('=IF(G' + RES + '="","–",ROUND(G' + RES + '*100,0))');
-  sh.getRange("E" + (RES + 1)).setValue("Back → type in panel").setFontWeight("bold");
-  sh.getRange("G" + (RES + 1)).setFormula('=IF(COUNT(F6:F10)<5,"",(F9+F10+F8)/(F6+F7))').setNumberFormat("0.00%").setFontColor(MUTED);
+  sh.getRange("E" + (RES + 1)).setValue("Front → type in panel").setFontWeight("bold");
+  sh.getRange("G" + (RES + 1)).setFormula('=IF(COUNT(F6:F8)<3,"",F8/(F6+F7))').setNumberFormat("0.00%").setFontColor(MUTED);
   sh.getRange("F" + (RES + 1)).setFormula('=IF(G' + (RES + 1) + '="","–",ROUND(G' + (RES + 1) + '*100,0))');
   sh.getRange("F" + RES + ":F" + (RES + 1)).setFontSize(22).setFontWeight("bold").setHorizontalAlignment("center");
   sh.setRowHeight(RES, 44); sh.setRowHeight(RES + 1, 40);
 
   // state + status bar
-  const L = "C" + RES, F = "G" + RES, B = "G" + (RES + 1), ST = "$I$" + STATUS;
+  const L = "C" + RES, B = "G" + RES, F = "G" + (RES + 1), ST = "$I$" + STATUS;
   sh.getRange("I" + STATUS).setFormula('=IF(' + L + '="","",IF(' + L + '>1,"R",IF(' + L + '<0.85,"G",IF(' + F + '="","Y",IF(' + F + '>=0.25,"R",IF(' + B + '="","Y",IF(' + B + '<0.35,"G","R")))))))');
   sh.getRange("A" + STATUS + ":G" + (STATUS + 1)).merge().setFontSize(18).setFontWeight("bold").setHorizontalAlignment("center").setVerticalAlignment("middle");
-  sh.getRange("A" + STATUS).setFormula('=IF(I' + STATUS + '="","PASTE L, H, V ABOVE",IF(I' + STATUS + '="G","✓ APPROVED — click Approve Loan",IF(I' + STATUS + '="Y","NEED DATA — paste Front/Back in STEP 2","✗ NOT QUALIFIED — submit Reject Loan, then this one is complete")))');
+  sh.getRange("A" + STATUS).setFormula('=IF(I' + STATUS + '="","PASTE L, H, V ABOVE",IF(I' + STATUS + '="G","✓ APPROVED — click Approve Loan",IF(I' + STATUS + '="Y","NEED DATA — paste the 5 Back Ratio amounts in STEP 2","✗ NOT QUALIFIED — submit Reject Loan, then this one is complete")))');
   sh.setRowHeight(STATUS, 34); sh.setRowHeight(STATUS + 1, 34);
 
   // STEP 3 · puzzle + decision
@@ -123,9 +123,9 @@ function buildTemplate_(sh) {
     cf_(sh, "B" + RES, '=AND($C$' + RES + '<>"",$C$' + RES + '>1)', RED),
     cf_(sh, "B" + RES, '=AND($C$' + RES + '<>"",$C$' + RES + '>=0.85)', YELLOW),
     cf_(sh, "B" + RES, '=$C$' + RES + '<>""', GREEN),
-    cf_(sh, "F" + RES, '=AND($G$' + RES + '<>"",$G$' + RES + '>=0.25)', RED),
+    cf_(sh, "F" + RES, '=AND($G$' + RES + '<>"",$G$' + RES + '>=0.35)', RED),
     cf_(sh, "F" + RES, '=$G$' + RES + '<>""', GREEN),
-    cf_(sh, "F" + (RES + 1), '=AND($G$' + (RES + 1) + '<>"",$G$' + (RES + 1) + '>=0.35)', RED),
+    cf_(sh, "F" + (RES + 1), '=AND($G$' + (RES + 1) + '<>"",$G$' + (RES + 1) + '>=0.25)', RED),
     cf_(sh, "F" + (RES + 1), '=$G$' + (RES + 1) + '<>""', GREEN),
     cf_(sh, "E4:G4", '=' + ST + '="Y"', YELLOW),
     cf_(sh, "F3", '=$F$3="Yes"', GREEN)
@@ -145,7 +145,7 @@ function buildSummary_(sh) {
     sh.getRange(3, col).setValue(lab).setFontColor(MUTED).setFontSize(10);
     sh.getRange(4, col).setFormula(f).setFontSize(16).setFontWeight("bold");
   });
-  sh.getRange("A5:H5").setValues([["App", "Owner", "LTV", "Front", "Back", "Status", "Rate", "In panel"]])
+  sh.getRange("A5:H5").setValues([["App", "Owner", "LTV", "Back", "Front", "Status", "Rate", "In panel"]])
     .setBackground(HEAD_BG).setFontColor("#FFFFFF").setFontWeight("bold").setHorizontalAlignment("center");
   const rows = [];
   for (let n = 1; n <= N; n++) {
